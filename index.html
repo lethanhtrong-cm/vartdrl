@@ -96,24 +96,38 @@
     <div class="fixed top-[20%] right-[-5%] w-[30%] h-[30%] rounded-full bg-amber-400/10 blur-[100px] pointer-events-none"></div>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col items-center justify-center p-4 md:p-8 max-w-[1400px] mx-auto w-full mt-4 md:mt-8">
+    <main class="flex-1 flex flex-col items-center justify-center p-4 md:p-8 max-w-[1400px] mx-auto w-full mt-1 md:mt-8">
         
         <!-- SECTION 1: HEADER -->
-        <header class="text-center w-full max-w-4xl mx-auto mb-16 animate-fade-in-up">
-            <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-md border border-brand-100/50 text-brand-700 font-bold text-xs md:text-sm tracking-wide mb-10 uppercase shadow-sm shadow-brand-500/5">
-                <i data-lucide="shield-check" class="w-4 h-4 text-brand-500"></i>
-                Chi hội Kỹ thuật Điện quang và Y học Hạt nhân Việt Nam
+        <header class="text-center w-full max-w-4xl mx-auto mb-10 animate-fade-in-up flex flex-col items-center">
+            
+            <!-- LOGO CHÍNH -->
+            <div class="mb-4 transition-transform duration-500 hover:scale-110">
+                <img src="https://i.postimg.cc/fW1hBHvP/95463853-232997364644790-1939959315112656896-n.png" 
+                     alt="VART Logo" 
+                     class="h-24 md:h-28 w-auto drop-shadow-2xl"
+                     onerror="this.onerror=null; this.src='https://vnrad.tech/favicon.ico';">
+            </div>
+
+            <div class="inline-flex flex-col items-center px-6 py-3.5 rounded-[2rem] bg-white/80 backdrop-blur-md border border-brand-100/50 text-brand-700 shadow-sm shadow-brand-500/5 mb-8 text-center">
+                <div class="flex items-center gap-2 font-bold text-xs md:text-sm tracking-wide uppercase">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-brand-500"></i>
+                    Chi hội Kỹ thuật Điện quang và Y học Hạt nhân Việt Nam
+                </div>
+                <div class="text-[9px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">
+                    Vietnam Association of Radiological Technologist - VART
+                </div>
             </div>
             
-            <!-- CẬP NHẬT: Đã sửa chính xác dấu LIỀU và CHIẾU -->
-            <h1 class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tighter mb-3">
-                <div class="leading-tight">DỰ ÁN NGHIÊN CỨU</div>
-                <div class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-indigo-600 to-medical-500 pt-4 pb-2 mt-2 md:mt-2 leading-tight">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tighter">
+                <div class="leading-none">DỰ ÁN NGHIÊN CỨU</div>
+                <!-- Đã thu hẹp mt và pt để các dòng sát nhau hơn mà không mất dấu -->
+                <div class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-indigo-600 to-medical-500 pt-4 pb-2 mt-0 md:mt-1 leading-tight">
                     MỨC LIỀU THAM CHIẾU CHẨN ĐOÁN
                 </div>
             </h1>
             
-            <p class="text-base md:text-lg text-slate-400 font-semibold uppercase tracking-[0.25em] flex items-center justify-center gap-4 mt-5">
+            <p class="text-base md:text-lg text-slate-400 font-semibold uppercase tracking-[0.25em] flex items-center justify-center gap-4 mt-6">
                 Diagnostic Reference Level 
                 <span class="w-1.5 h-1.5 rounded-full bg-slate-200"></span> 
                 <span class="text-brand-500 opacity-80">VN-DRL</span>
@@ -131,7 +145,6 @@
         <!-- GLOBAL TOTALS BOXES -->
         <div id="globalStatsContainer" class="w-full flex flex-col sm:flex-row items-center justify-center gap-6 mb-16 hidden opacity-0 transition-all duration-700 transform translate-y-4">
             
-            <!-- Global Box 1 -->
             <div class="relative group w-full sm:w-auto min-w-[280px]">
                 <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-10 group-hover:opacity-25 transition duration-500"></div>
                 <div class="relative glass-panel rounded-3xl px-8 py-6 flex items-center gap-6 shadow-xl shadow-slate-200/50 transition-transform duration-300 group-hover:-translate-y-1">
@@ -145,7 +158,6 @@
                 </div>
             </div>
 
-            <!-- Global Box 2 -->
             <div class="relative group w-full sm:w-auto min-w-[280px]">
                 <div class="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-3xl blur opacity-10 group-hover:opacity-25 transition duration-500"></div>
                 <div class="relative glass-panel rounded-3xl px-8 py-6 flex items-center gap-6 shadow-xl shadow-slate-200/50 transition-transform duration-300 group-hover:-translate-y-1">
@@ -163,24 +175,16 @@
 
         <!-- SECTION 2: STATS BOXES -->
         <div id="statsContainer" class="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-8 hidden opacity-0 transition-opacity duration-700">
-            <!-- Content will be injected here via JavaScript -->
         </div>
 
-        <!-- SECTION 3: VIBRANT CTA BUTTON AREA -->
+        <!-- SECTION 3: CTA AREA -->
         <div class="mt-20 mb-12 text-center w-full hidden opacity-0 transition-all duration-1000 delay-500" id="ctaContainer">
             <div class="max-w-3xl mx-auto relative group">
-                <!-- Outer Animated Glowing Border -->
                 <div class="absolute -inset-1 bg-gradient-to-r from-brand-400 via-indigo-500 to-medical-400 rounded-[2.5rem] blur opacity-30 group-hover:opacity-60 transition duration-1000 animate-gradient-xy"></div>
-                
-                <!-- Main Container -->
                 <div class="relative glass-panel rounded-[2.5rem] p-1 md:p-1 overflow-hidden shadow-2xl">
                     <div class="bg-gradient-to-br from-white/90 via-slate-50/50 to-brand-50/30 rounded-[2.4rem] p-8 md:p-12 relative overflow-hidden">
-                        
-                        <!-- Background Decorations -->
                         <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
                         <div class="absolute -left-10 -top-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-                        
-                        <!-- Content Area -->
                         <div class="relative z-10 flex flex-col items-center">
                             <div class="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand-500/40">
                                 <span class="relative flex h-2 w-2">
@@ -189,27 +193,128 @@
                                 </span>
                                 Cổng thông tin nhập liệu
                             </div>
-                            
                             <h4 class="text-2xl md:text-3xl font-black text-slate-900 mb-4 tracking-tight">
                                 Góp phần xây dựng chuẩn <span class="text-brand-600">Liều xạ Việt Nam</span>
                             </h4>
-                            
                             <p class="text-slate-500 font-medium mb-10 max-w-lg leading-relaxed">
                                 Dành riêng cho Kỹ thuật viên và Cơ sở y tế tham gia mạng lưới VN-DRL. Đăng nhập để đồng bộ hóa chỉ số CTDIvol và DLP chuẩn.
                             </p>
-                            
-                            <!-- Massive Vibrant Button -->
                             <a href="https://vnrad.tech/drl" class="group relative inline-flex items-center justify-center gap-4 bg-gradient-to-r from-brand-600 to-indigo-600 text-white px-10 py-5 rounded-2xl font-black text-xl transition-all hover:scale-105 active:scale-95 shadow-xl shadow-brand-500/40 hover:shadow-indigo-500/50 overflow-hidden">
                                 <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
                                 <i data-lucide="log-in" class="w-7 h-7 transition-transform group-hover:translate-x-1"></i>
                                 VÀO TRANG NHẬP LIỆU
                                 <i data-lucide="chevron-right" class="w-6 h-6 transition-transform group-hover:translate-x-1"></i>
                             </a>
-
                             <div class="mt-8 flex items-center gap-8 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
                                 <div class="flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> Nhanh chóng</div>
                                 <div class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i> Bảo mật</div>
                                 <div class="flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500"></i> Chính xác</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: THÔNG TIN VỀ DRL -->
+        <div class="w-full max-w-5xl mx-auto mb-16 opacity-0" id="infoContainer" style="animation: fadeInUp 0.8s ease-out 1.2s forwards;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 xl:gap-8">
+                <!-- Box 1: ICRP 135 -->
+                <div class="relative group h-full">
+                    <div class="absolute -inset-0.5 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-[2rem] blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
+                    <div class="relative flex flex-col h-full glass-panel border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 transition-transform duration-300 group-hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 mb-6 shadow-sm border border-blue-100/50">
+                            <i data-lucide="book-open" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-black text-xl text-slate-800 mb-4 tracking-tight">DRL theo ICRP 135 là gì?</h3>
+                        <div class="text-slate-500 text-[13.5px] leading-relaxed space-y-3 flex-1 text-justify">
+                            <p>
+                                Theo Ủy ban Quốc tế về Bảo vệ Bức xạ (ICRP) Ấn bản số 135, Mức liều tham chiếu chẩn đoán (DRL) <strong>không phải là giới hạn liều</strong> hay ranh giới an toàn, mà là một công cụ tối ưu hóa bức xạ.
+                            </p>
+                            <p>
+                                DRL thường được thiết lập dựa trên <strong>phân vị thứ 75 (P75)</strong> của phân bố liều trong khảo sát trên diện rộng. Khi liều trung bình của một cơ sở y tế thường xuyên vượt qua mức DRL này, đó là cảnh báo để rà soát lại quy trình, trang thiết bị và thực hiện tối ưu hóa liều xạ (nguyên tắc ALARA).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 2: Ý nghĩa -->
+                <div class="relative group h-full">
+                    <div class="absolute -inset-0.5 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-[2rem] blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
+                    <div class="relative flex flex-col h-full glass-panel border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 transition-transform duration-300 group-hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-6 shadow-sm border border-emerald-100/50">
+                            <i data-lucide="shield-plus" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-black text-xl text-slate-800 mb-4 tracking-tight">Ý nghĩa của việc xây dựng DRL</h3>
+                        <ul class="text-slate-500 text-[13.5px] leading-relaxed space-y-4 flex-1">
+                            <li class="flex gap-3 items-start">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"></i> 
+                                <span><strong>Bảo vệ bệnh nhân:</strong> Giảm thiểu tối đa nguy cơ rủi ro do tia bức xạ không cần thiết mà vẫn duy trì chất lượng hình ảnh chẩn đoán cao nhất.</span>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"></i> 
+                                <span><strong>Chuẩn hóa quy trình:</strong> Tạo ra một hệ quy chiếu chung giúp các bệnh viện tự so sánh, đánh giá và chuẩn hóa giao thức chụp (protocol) so với mặt bằng chung.</span>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"></i> 
+                                <span><strong>Cải tiến liên tục:</strong> Thúc đẩy văn hóa an toàn bức xạ, giúp Kỹ thuật viên không ngừng cải tiến kỹ năng và tinh chỉnh liều tia.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Box 3: Phân loại DRL -->
+                <div class="relative group h-full">
+                    <div class="absolute -inset-0.5 bg-gradient-to-br from-violet-400 to-purple-500 rounded-[2rem] blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
+                    <div class="relative flex flex-col h-full glass-panel border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 transition-transform duration-300 group-hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 mb-6 shadow-sm border border-violet-100/50">
+                            <i data-lucide="layers" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-black text-xl text-slate-800 mb-4 tracking-tight">Các cấp độ của DRL</h3>
+                        <ul class="text-slate-500 text-[13.5px] leading-relaxed space-y-4 flex-1">
+                            <li class="flex gap-3 items-start">
+                                <i data-lucide="crosshair" class="w-5 h-5 text-violet-500 shrink-0 mt-0.5"></i> 
+                                <span><strong>Typical Value (Liều đạt được):</strong> Giá trị liều điển hình, thường là trung vị (P50) của toàn bộ dữ liệu khảo sát.</span>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <i data-lucide="map-pin" class="w-5 h-5 text-violet-500 shrink-0 mt-0.5"></i> 
+                                <span><strong>Local DRL (LDRL):</strong> Mức liều tham chiếu tại một cơ sở y tế, thường lấy từ trung vị (P50) của các máy trong cùng một bệnh viện.</span>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <i data-lucide="map" class="w-5 h-5 text-violet-500 shrink-0 mt-0.5"></i> 
+                                <span><strong>Regional DRL (RDRL):</strong> Mức liều tham chiếu của một khu vực hoặc một tỉnh thành.</span>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <i data-lucide="globe" class="w-5 h-5 text-violet-500 shrink-0 mt-0.5"></i> 
+                                <span><strong>National DRL (NDRL):</strong> Mức liều tham chiếu quốc gia, xác định bằng phân vị 75 (P75) từ khảo sát diện rộng nhiều cơ sở trên toàn quốc.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Box 4: Cách so sánh liều -->
+                <div class="relative group h-full">
+                    <div class="absolute -inset-0.5 bg-gradient-to-br from-rose-400 to-red-500 rounded-[2rem] blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
+                    <div class="relative flex flex-col h-full glass-panel border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-slate-200/40 transition-transform duration-300 group-hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 mb-6 shadow-sm border border-rose-100/50">
+                            <i data-lucide="scale" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-black text-xl text-slate-800 mb-4 tracking-tight">Cách đối chiếu liều cơ sở</h3>
+                        <div class="text-slate-500 text-[13.5px] leading-relaxed space-y-4 flex-1">
+                            <p class="mb-2">So sánh <strong>Trung vị (P50)</strong> của cơ sở bạn với số liệu chung:</p>
+                            <div class="space-y-3">
+                                <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 flex gap-3">
+                                    <i data-lucide="trending-down" class="w-5 h-5 text-emerald-500 shrink-0"></i>
+                                    <div><strong class="text-emerald-700">Thấp hơn P50 chung:</strong> Cơ sở đang tối ưu hóa liều rất tốt (cần đảm bảo chất lượng hình ảnh vẫn đạt chuẩn).</div>
+                                </div>
+                                <div class="p-3 rounded-xl bg-amber-50 border border-amber-100 flex gap-3">
+                                    <i data-lucide="minus" class="w-5 h-5 text-amber-500 shrink-0"></i>
+                                    <div><strong class="text-amber-700">Giữa P50 và P75 (DRL):</strong> Mức liều chấp nhận được, nhưng vẫn còn không gian để cải thiện.</div>
+                                </div>
+                                <div class="p-3 rounded-xl bg-rose-50 border border-rose-100 flex gap-3">
+                                    <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-500 shrink-0"></i>
+                                    <div><strong class="text-rose-700">Vượt P75 (DRL):</strong> Mức liều cao bất thường. Cần khẩn trương rà soát lại protocol chụp và thiết bị.</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -230,20 +335,17 @@
         </div>
     </footer>
 
-    <!-- Tailwind Custom Animation Classes -->
     <style>
         @keyframes shimmer { 100% { left: 200%; } }
         .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 
-    <!-- FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Config Firebase
         const firebaseConfig = { 
             apiKey: "AIzaSyAtQdmDbA1BgOrvwevrG6gwuFzlUmBTbfY", 
             authDomain: "wb-idr.firebaseapp.com", 
@@ -255,12 +357,8 @@
         const db = getFirestore(app);
         const appId = 'wb-idr';
 
-        // Khởi tạo Icon
         lucide.createIcons();
 
-        // -------------------------------------------------------------
-        // STATISTICAL UTILITIES
-        // -------------------------------------------------------------
         function getPercentile(arr, p) {
             if (arr.length === 0) return 0;
             if (arr.length === 1) return arr[0];
@@ -292,13 +390,9 @@
             const p75 = getPercentile(arr, 75);    
             const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n > 1 ? n - 1 : 1);
             const sd = Math.sqrt(variance);
-            
             return { median, p75, mean, sd };
         }
 
-        // -------------------------------------------------------------
-        // MAIN FETCH AND RENDER LOGIC
-        // -------------------------------------------------------------
         async function fetchAndRenderData() {
             try {
                 await signInAnonymously(auth);
@@ -335,17 +429,11 @@
                     const c = parseFloat(e.ctdi);
                     const d = parseFloat(e.dlp);
                     const h = e.hospitalName || "Unknown";
-
                     let targetGroup = null;
-                    if (p.includes('low') || p.includes('thấp') || p.includes('ldct')) {
-                        targetGroup = groups.low;
-                    } else if (p.includes('head') || p.includes('sọ') || p.includes('não') || p.includes('brain')) {
-                        targetGroup = groups.head;
-                    } else if (p.includes('chest') || p.includes('ngực') || p.includes('phổi') || p.includes('thorax')) {
-                        targetGroup = groups.chest;
-                    } else if (p.includes('abdomen') || p.includes('bụng') || p.includes('abd')) {
-                        targetGroup = groups.abd;
-                    }
+                    if (p.includes('low') || p.includes('thấp') || p.includes('ldct')) targetGroup = groups.low;
+                    else if (p.includes('head') || p.includes('sọ') || p.includes('não') || p.includes('brain')) targetGroup = groups.head;
+                    else if (p.includes('chest') || p.includes('ngực') || p.includes('phổi') || p.includes('thorax')) targetGroup = groups.chest;
+                    else if (p.includes('abdomen') || p.includes('bụng') || p.includes('abd')) targetGroup = groups.abd;
 
                     if (targetGroup) {
                         targetGroup.count++;
@@ -362,17 +450,14 @@
                 Object.values(groups).forEach((g, index) => {
                     const hospitalMediansCTDI = [];
                     const hospitalMediansDLP = [];
-
                     Object.values(g.hospData).forEach(hData => {
                         const cleanCTDI = filterOutliersIQR(hData.ctdi);
                         if (cleanCTDI.length > 0) hospitalMediansCTDI.push(calculateStats(cleanCTDI).median);
                         const cleanDLP = filterOutliersIQR(hData.dlp);
                         if (cleanDLP.length > 0) hospitalMediansDLP.push(calculateStats(cleanDLP).median);
                     });
-
                     const statCTDI = calculateStats(hospitalMediansCTDI);
                     const statDLP = calculateStats(hospitalMediansDLP);
-
                     const themes = {
                         blue: { gradient: 'from-blue-500 to-indigo-600', text: 'text-blue-600', badgeBg: 'bg-blue-100', badgeText: 'text-blue-700', shadow: 'shadow-blue-500/30' },
                         cyan: { gradient: 'from-cyan-400 to-blue-500', text: 'text-cyan-600', badgeBg: 'bg-cyan-100', badgeText: 'text-cyan-700', shadow: 'shadow-cyan-500/30' },
@@ -380,7 +465,6 @@
                         emerald: { gradient: 'from-emerald-400 to-teal-500', text: 'text-teal-600', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-700', shadow: 'shadow-emerald-500/30' }
                     };
                     const t = themes[g.color];
-
                     const cardHTML = `
                         <div class="relative group h-full" style="animation: fadeInUp 0.6s ease-out ${index * 0.15}s forwards; opacity: 0; transform: translateY(20px);">
                             <div class="absolute -inset-0.5 bg-gradient-to-br ${t.gradient} rounded-[2rem] blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
@@ -405,10 +489,7 @@
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 flex-1">
                                     <div class="flex flex-col bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 relative group/col">
-                                        <div class="flex items-center justify-between mb-4">
-                                            <h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">CTDIvol</h4>
-                                            <span class="text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy</span>
-                                        </div>
+                                        <div class="flex items-center justify-between mb-4"><h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">CTDIvol</h4><span class="text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy</span></div>
                                         <div class="mb-4">
                                             <div class="text-[10px] font-bold text-slate-500 mb-1">Trung vị (P50)</div>
                                             <div class="text-3xl font-black ${t.text} tracking-tighter leading-none">${statCTDI.median.toFixed(2)}</div>
@@ -417,13 +498,13 @@
                                             <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-700">P75 (DRL)</span><i data-lucide="target" class="w-3.5 h-3.5 text-red-500"></i></div>
                                             <div class="text-xl font-black text-slate-900 leading-none">${statCTDI.p75.toFixed(2)}</div>
                                         </div>
-                                        <div class="mt-auto pt-3 border-t border-slate-200/60 text-xs font-bold text-slate-600 font-mono text-right">${statCTDI.mean.toFixed(2)} ±${statCTDI.sd.toFixed(1)}</div>
+                                        <div class="mt-auto pt-3 border-t border-slate-200/60 flex justify-between items-center">
+                                            <div class="text-[10px] font-bold text-slate-400 uppercase">Trung bình</div>
+                                            <div class="text-xs font-bold text-slate-600 font-mono text-right">${statCTDI.mean.toFixed(2)} <span class="text-[10px] text-slate-400 font-medium">±${statCTDI.sd.toFixed(1)}</span></div>
+                                        </div>
                                     </div>
                                     <div class="flex flex-col bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 relative group/col">
-                                        <div class="flex items-center justify-between mb-4">
-                                            <h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">DLP</h4>
-                                            <span class="text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy.cm</span>
-                                        </div>
+                                        <div class="flex items-center justify-between mb-4"><h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">DLP</h4><span class="text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy.cm</span></div>
                                         <div class="mb-4">
                                             <div class="text-[10px] font-bold text-slate-500 mb-1">Trung vị (P50)</div>
                                             <div class="text-3xl font-black ${t.text} tracking-tighter leading-none">${statDLP.median.toFixed(1)}</div>
@@ -432,7 +513,10 @@
                                             <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-700">P75 (DRL)</span><i data-lucide="target" class="w-3.5 h-3.5 text-red-500"></i></div>
                                             <div class="text-xl font-black text-slate-900 leading-none">${statDLP.p75.toFixed(1)}</div>
                                         </div>
-                                        <div class="mt-auto pt-3 border-t border-slate-200/60 text-xs font-bold text-slate-600 font-mono text-right">${statDLP.mean.toFixed(1)} ±${statDLP.sd.toFixed(1)}</div>
+                                        <div class="mt-auto pt-3 border-t border-slate-200/60 flex justify-between items-center">
+                                            <div class="text-[10px] font-bold text-slate-400 uppercase">Trung bình</div>
+                                            <div class="text-xs font-bold text-slate-600 font-mono text-right">${statDLP.mean.toFixed(1)} <span class="text-[10px] text-slate-400 font-medium">±${statDLP.sd.toFixed(1)}</span></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -440,7 +524,6 @@
                     `;
                     container.innerHTML += cardHTML;
                 });
-
                 document.getElementById('loadingState').style.display = 'none';
                 container.classList.remove('hidden');
                 document.getElementById('ctaContainer').classList.remove('hidden');
@@ -448,7 +531,6 @@
                     container.classList.remove('opacity-0');
                     document.getElementById('ctaContainer').classList.remove('opacity-0');
                 }, 50);
-
                 lucide.createIcons();
             } catch (error) {
                 console.error(error);
