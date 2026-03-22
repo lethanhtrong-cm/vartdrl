@@ -1,1 +1,1331 @@
 
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VN-DRL - Nhập liệu (Có AI OCR)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- THÊM THƯ VIỆN NHẬN DIỆN ẢNH TESSERACT.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#151e2e' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; overflow-x: hidden; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; min-height: 100vh; transition: background-color 0.3s ease, color 0.3s ease; }
+        
+        /* Dark Mode Styles */
+        body.dark { background: #0f172a; color: #f1f5f9; }
+        .dark .glass-card { background: rgba(30, 41, 59, 0.7); border-color: rgba(255, 255, 255, 0.1); }
+        .dark .glass-input { background: rgba(15, 23, 42, 0.6); border-color: rgba(148, 163, 184, 0.2); color: #f8fafc; }
+        .dark .glass-input:focus { border-color: #818cf8; box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.1); }
+        .dark .glass-input::placeholder { color: #64748b; }
+        .dark .section-label { color: #94a3b8; }
+        .dark .dose-highlight-box { background: rgba(255, 251, 235, 0.05); border-color: #d97706; }
+        .dark input[readonly] { background: rgba(51, 65, 85, 0.5); color: #cbd5e1; border-color: rgba(255,255,255,0.05); }
+        .dark .mesh-bg { background: radial-gradient(at 0% 0%, hsla(220,100%,10%,1) 0, transparent 50%), radial-gradient(at 100% 100%, hsla(260,100%,10%,1) 0, transparent 50%); opacity: 0.5; }
+        .dark .suggestion-list { background: #1e293b; border-color: #334155; }
+        .dark .suggestion-item { color: #e2e8f0; border-bottom-color: #334155; }
+        .dark .suggestion-item:hover { background-color: #334155; }
+
+        .mesh-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(at 0% 0%, hsla(220,100%,95%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(260,100%,92%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(190,100%,92%,1) 0, transparent 50%), radial-gradient(at 0% 100%, hsla(260,100%,92%,1) 0, transparent 50%); }
+        
+        .app-layout { margin-top: 1rem; padding: 0 1rem 1rem 1rem; max-width: 90%; width: 100%; margin-left: auto; margin-right: auto; display: flex; flex-direction: column; flex: 1; }
+        .glass-card { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05); transition: background 0.3s, border 0.3s; }
+        .glass-input { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0, 0, 0, 0.08); color: #1e293b; transition: all 0.3s ease; }
+        .glass-input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); outline: none; }
+        
+        /* Validation Styles */
+        .glass-input.input-error { border-color: #ef4444 !important; background-color: rgba(254, 226, 226, 0.3) !important; }
+        .dark .glass-input.input-error { background-color: rgba(127, 29, 29, 0.2) !important; }
+        .error-msg { display: none; font-size: 10px; color: #ef4444; margin-top: 4px; font-weight: 600; padding-left: 4px; }
+        .input-error + .error-msg { display: block; animation: slideDown 0.2s ease-out; }
+
+        /* Highlight Row Style */
+        .highlight-row { background-color: rgba(254, 243, 199, 0.5) !important; border-left: 4px solid #f59e0b !important; }
+        .dark .highlight-row { background-color: rgba(120, 53, 15, 0.3) !important; border-left: 4px solid #f59e0b !important; }
+        
+        /* OCR Highlight animation */
+        .ocr-success { animation: flashGreen 2s ease-out; }
+        @keyframes flashGreen {
+            0% { background-color: #dcfce7; border-color: #10b981; }
+            100% { background-color: transparent; border-color: #fcd34d; }
+        }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: #64748b; }
+        .dose-highlight-box { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px solid #f59e0b; }
+        .tab-btn { transition: all 0.3s ease; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+        
+        /* Dashboard Transition */
+        #dashboardSection { transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, margin 0.5s ease; overflow: hidden; max-height: 2000px; opacity: 1; }
+        #dashboardSection.collapsed { max-height: 0; opacity: 0; margin-bottom: 0 !important; }
+
+        #globalLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s ease-out, visibility 0.5s ease-out; }
+        .loader-spinner { width: 48px; height: 48px; border: 5px solid #e2e8f0; border-bottom-color: #4f46e5; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        #toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; pointer-events: none; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); width: 90%; max-width: 400px; }
+        .hidden { display: none !important; }
+        #bannedOverlay { backdrop-filter: blur(8px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .instruction-scroll::-webkit-scrollbar { width: 4px; }
+        .instruction-scroll::-webkit-scrollbar-track { background: transparent; }
+        .instruction-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+
+        .suggestions-list { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); max-height: 200px; overflow-y: auto; z-index: 50; margin-top: 0.25rem; }
+        .suggestion-item { padding: 0.75rem 1rem; cursor: pointer; font-size: 0.875rem; font-weight: 500; color: #334155; transition: all 0.2s; border-bottom: 1px solid #f1f5f9; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background-color: #eff6ff; color: #4f46e5; }
+        .suggestion-match { font-weight: 800; color: #4f46e5; }
+    </style>
+</head>
+<body class="antialiased font-inter text-slate-900 transition-colors duration-300">
+    <div id="globalLoader"><div class="flex flex-col items-center gap-4"><span class="loader-spinner"></span><p class="text-xs font-black text-indigo-900 tracking-widest uppercase animate-pulse">Đang tải ứng dụng...</p></div></div>
+    <div class="mesh-bg"></div>
+
+    <!-- Modals -->
+    <div id="bannedOverlay" class="fixed inset-0 z-[200] bg-slate-900/80 hidden flex flex-col items-center justify-center text-white p-8 text-center"></div>
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-md hidden p-4"><div class="bg-white dark:bg-slate-800 rounded-[2.5rem] w-full max-w-md p-8 md:p-10 shadow-2xl relative"><button id="closeAuthModal" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i data-lucide="x" class="w-6 h-6"></i></button><h2 class="text-2xl font-black text-indigo-900 dark:text-indigo-400 text-center mb-6">Đăng Nhập</h2><form id="authForm" class="space-y-4"><input type="email" id="authEmail" class="w-full px-5 py-4 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white border border-slate-100 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Email" required><input type="password" id="authPassword" class="w-full px-5 py-4 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white border border-slate-100 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Mật khẩu" required><div class="flex items-center gap-2 px-1"><input type="checkbox" id="rememberMe" class="custom-checkbox w-4 h-4" checked><label for="rememberMe" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 cursor-pointer select-none">Ghi nhớ đăng nhập</label></div><button type="submit" id="authSubmitBtn" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase active:scale-95">Vào Hệ Thống</button></form><div class="relative my-6"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-100 dark:border-slate-700"></div></div><div class="relative flex justify-center text-xs uppercase"><span class="bg-white dark:bg-slate-800 px-2 text-slate-400">Hoặc</span></div></div><button id="googleLoginBtn" class="bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600 text-slate-900 border border-slate-200 w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.71v2.24h2.91c1.71-1.57 2.68-3.88 2.68-6.58z" fill="#4285F4"/><path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.24c-.8.54-1.84.85-3.05.85-2.34 0-4.32-1.58-5.03-3.71H.95v2.3C2.43 15.89 5.5 18 9 18z" fill="#34A853"/><path d="M3.97 10.72c-.18-.54-.28-1.11-.28-1.72s.1-1.18.28-1.72V4.98H.95C.34 6.19 0 7.56 0 9s.34 2.81.95 4.02l3.02-2.3z" fill="#FBBC05"/><path d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0 5.5 0 2.43 2.11.95 5.12l3.02 2.3c.71-2.13 2.69-3.71 5.03-3.71z" fill="#EA4335"/></svg>Tiếp tục với Google</button><div class="mt-4 text-center border-t border-slate-50 dark:border-slate-700 pt-4"><button id="openAdminLogin" class="text-[9px] font-black text-slate-300 hover:text-indigo-500 uppercase tracking-widest">Admin Access</button></div></div></div>
+    
+    <div id="adminAuthModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4"><div class="bg-white dark:bg-slate-800 rounded-[2rem] w-full max-w-xs p-8 shadow-2xl relative"><button onclick="document.getElementById('adminAuthModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-300 hover:text-slate-500"><i data-lucide="x" class="w-5 h-5"></i></button><h3 class="text-lg font-black text-slate-900 dark:text-white uppercase text-center mb-4">Admin Key</h3><form id="adminAuthForm" class="space-y-4"><input type="password" id="adminPassInput" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white dark:border-slate-600 border border-slate-100 rounded-xl font-bold text-center tracking-widest outline-none focus:ring-2 focus:ring-red-500" placeholder="••••••••" required><button type="submit" class="w-full py-3 bg-red-500 text-white rounded-xl font-black text-[10px] uppercase shadow-lg hover:bg-red-600">Xác nhận</button></form></div></div>
+    <div id="confirmModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4"><div class="bg-white dark:bg-slate-800 rounded-[2rem] w-full max-w-sm p-6 shadow-2xl text-center"><h3 class="text-lg font-black text-slate-900 dark:text-white mb-2">Xác nhận</h3><p id="confirmMessage" class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6"></p><div class="flex gap-3"><button id="confirmCancelBtn" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs uppercase">Hủy</button><button id="confirmOkBtn" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase">Đồng ý</button></div></div></div>
+    <div id="inputModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4"><div class="bg-white dark:bg-slate-800 rounded-[2rem] w-full max-w-sm p-6 shadow-2xl"><h3 id="inputModalTitle" class="text-lg font-black text-slate-900 dark:text-white mb-4 text-center">Nhập thông tin</h3><input type="text" id="inputModalValue" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:text-white dark:border-slate-600 border-slate-200 border rounded-xl text-sm font-bold mb-6 outline-none focus:ring-2 focus:ring-indigo-500"><div class="flex gap-3"><button id="inputCancelBtn" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs uppercase">Hủy</button><button id="inputSaveBtn" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase">Lưu</button></div></div></div>
+
+    <!-- User Monitor Modal -->
+    <div id="userMonitorModal" class="fixed inset-0 z-[140] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4"><div class="bg-white dark:bg-slate-800 rounded-[2.5rem] w-full max-w-2xl p-6 md:p-8 shadow-2xl border border-indigo-100 dark:border-slate-700 h-[80vh] flex flex-col"><div class="text-center mb-4 flex-none"><div class="bg-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 text-white shadow-lg"><i data-lucide="users" class="w-6 h-6"></i></div><h3 class="text-lg font-black text-slate-900 dark:text-white uppercase">Giám sát Người dùng</h3><div class="mt-4 px-2"><input type="text" id="userSearchInput" placeholder="Tìm kiếm..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 dark:text-white border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold outline-none text-center"></div><div class="flex justify-center gap-2 mt-4"><button onclick="switchUserTab('online')" id="btn-user-online" class="px-4 py-2 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 flex items-center gap-2">Online</button><button onclick="switchUserTab('all')" id="btn-user-all" class="px-4 py-2 rounded-lg text-xs font-bold bg-white text-slate-500 border border-slate-100">Tất cả</button></div></div><div id="user-tab-online" class="flex-1 overflow-hidden flex flex-col gap-4"><div id="onlineUsersList" class="flex-1 overflow-y-auto custom-scrollbar border border-slate-100 dark:border-slate-700 rounded-2xl p-2 space-y-2"></div></div><div id="user-tab-all" class="flex-1 overflow-hidden flex-col gap-4 hidden"><div id="allUsersList" class="flex-1 overflow-y-auto custom-scrollbar border border-slate-100 dark:border-slate-700 rounded-2xl p-2 space-y-2"></div></div><div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end mt-4 flex-none"><button onclick="document.getElementById('userMonitorModal').classList.add('hidden')" class="px-6 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white text-slate-600 rounded-xl text-xs font-black uppercase">Đóng</button></div></div></div>
+
+    <div id="hospitalManageModal" class="hidden fixed inset-0 z-[140] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"><div class="bg-white dark:bg-slate-800 rounded-[2.5rem] w-full max-w-2xl p-6 shadow-2xl h-[80vh] flex flex-col"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-black uppercase dark:text-white">Quản lý Bệnh viện</h3><button onclick="document.getElementById('hospitalManageModal').classList.add('hidden')" class="dark:text-slate-400"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="flex gap-2 mb-4"><button onclick="switchHospTab('active')" id="btn-hosp-active" class="px-4 py-2 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700">Hoạt động</button><button onclick="switchHospTab('trash')" id="btn-hosp-trash" class="px-4 py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 dark:text-slate-300 text-slate-500 border border-slate-100 dark:border-slate-600">Thùng rác <span id="trashCount">0</span></button></div><div id="hosp-tab-active" class="flex-1 overflow-hidden flex flex-col gap-4"><form id="addHospitalForm" class="flex gap-2"><input id="newHospitalName" class="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-700 dark:text-white border rounded-xl text-xs font-bold" placeholder="Thêm mới..." required><button class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase">Thêm</button></form><div id="activeHospitalsList" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 p-2 border rounded-xl dark:border-slate-700"></div></div><div id="hosp-tab-trash" class="hidden flex-1 overflow-y-auto custom-scrollbar space-y-2 p-2 border rounded-xl dark:border-slate-700"><div id="trashHospitalsList"></div></div></div></div>
+    <div id="manufacturerManageModal" class="hidden fixed inset-0 z-[140] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"><div class="bg-white dark:bg-slate-800 rounded-[2.5rem] w-full max-w-2xl p-6 shadow-2xl h-[80vh] flex flex-col"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-black uppercase dark:text-white">Quản lý Hãng máy</h3><button onclick="document.getElementById('manufacturerManageModal').classList.add('hidden')" class="dark:text-slate-400"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="flex gap-2 mb-4"><button onclick="switchManuTab('active')" id="btn-manu-active" class="px-4 py-2 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700">Hoạt động</button><button onclick="switchManuTab('trash')" id="btn-manu-trash" class="px-4 py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 dark:text-slate-300 text-slate-500 border border-slate-100 dark:border-slate-600">Thùng rác <span id="trashManuCount">0</span></button></div><div id="manu-tab-active" class="flex-1 overflow-hidden flex flex-col gap-4"><form id="addManufacturerForm" class="flex gap-2"><input id="newManufacturerName" class="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-700 dark:text-white border rounded-xl text-xs font-bold" placeholder="Thêm mới..." required><button class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase">Thêm</button></form><div id="activeManufacturersList" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 p-2 border rounded-xl dark:border-slate-700"></div></div><div id="manu-tab-trash" class="hidden flex-1 overflow-y-auto custom-scrollbar space-y-2 p-2 border rounded-xl dark:border-slate-700"><div id="trashManufacturersList"></div></div></div></div>
+
+    <!-- Header -->
+    <header class="relative z-50 px-2 md:px-4 pt-2 md:pt-6 max-w-[90%] mx-auto w-full">
+        <nav class="glass-card rounded-2xl px-4 py-3 flex flex-wrap justify-between items-center shadow-lg border-white dark:border-slate-600 text-slate-900 dark:text-white gap-y-2">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-2 rounded-xl text-white"><i data-lucide="activity" class="w-5 h-5"></i></div>
+                <h1 class="text-lg font-black tracking-tighter uppercase">VN-DRL <span class="text-indigo-600 dark:text-indigo-400">STUDY</span></h1>
+            </div>
+            
+            <button id="btnToggleDashboard" class="md:hidden px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span>Thống kê</span>
+            </button>
+
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar hidden md:flex">
+                <a href="index.html" class="tab-btn active px-3 py-2 text-xs font-black uppercase tracking-widest flex items-center gap-2 text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400">
+                    <i data-lucide="keyboard" class="w-4 h-4"></i> Nhập liệu
+                </a>
+                <a href="https://vnrad.tech/thongke" class="tab-btn px-3 py-2 text-xs font-black uppercase tracking-widest flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                    <i data-lucide="pie-chart" class="w-4 h-4"></i> Thống kê
+                </a>
+                <a href="https://vnrad.tech/drldata" target="_blank" class="tab-btn px-3 py-2 text-xs font-black uppercase tracking-widest flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                    <i data-lucide="database" class="w-4 h-4"></i> Dữ liệu
+                </a>
+                <a href="https://vnrad.tech/chart" target="_blank" class="tab-btn px-3 py-2 text-xs font-black uppercase tracking-widest flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i> Biểu đồ
+                </a>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="themeToggleBtn" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-yellow-400 transition-colors">
+                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                </button>
+                <button id="btnUserMonitor" onclick="document.getElementById('userMonitorModal').classList.remove('hidden')" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all border border-emerald-100 dark:border-emerald-800 shadow-sm" title="Người dùng Online">
+                    <div class="relative flex items-center justify-center w-2.5 h-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </div>
+                    <span id="headerOnlineCount">0</span>
+                </button>
+                <button id="userMenuBtn" class="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+                    <i data-lucide="user" class="w-4 h-4 text-slate-600 dark:text-slate-300"></i>
+                    <span id="userEmailDisplay" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-[100px]">Khách</span>
+                </button>
+                <button id="navLoginBtn" onclick="document.getElementById('authModal').classList.remove('hidden')" class="px-4 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase rounded-xl hover:bg-indigo-700 shadow-lg">Login</button>
+                <button id="navLogoutBtn" class="hidden px-4 py-2 bg-slate-100 dark:bg-slate-700 text-red-500 text-[10px] font-black uppercase rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600">Logout</button>
+            </div>
+        </nav>
+        
+        <!-- Khối thông tin nổi bật dưới Header -->
+        <div class="mt-4 mx-auto w-full">
+            <div class="flex items-center justify-center gap-2.5 p-3.5 bg-indigo-50/80 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800/50 rounded-2xl shadow-sm text-center backdrop-blur-md transition-all hover:shadow-md hover:bg-indigo-100/80 dark:hover:bg-indigo-900/40">
+                <i data-lucide="shield-check" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-none"></i>
+                <p class="text-[11px] sm:text-xs font-semibold text-indigo-900 dark:text-indigo-200 leading-relaxed">
+                    Hệ thống thu thập dữ liệu phục vụ dự án thiết lập <span class="font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-wide">Mức liều tham chiếu chẩn đoán (DRL) Quốc gia</span> kỹ thuật Cắt lớp vi tính (CT).
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-layout gap-6">
+        
+        <!-- Dashboard Section (Collapsible) -->
+        <div id="dashboardSection" class="flex flex-col gap-6">
+            <!-- Progress -->
+            <div id="progressChartSection" class="glass-card p-6 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-indigo-600 p-2 rounded-xl text-white"><i data-lucide="bar-chart-horizontal" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="section-label text-indigo-900 dark:text-indigo-300 text-sm">Tiến độ nhập liệu (Ẩn danh)</h3>
+                            <p class="text-[9px] font-bold text-slate-400">Mục tiêu: <span class="text-indigo-600 dark:text-indigo-400">n ≥ 30</span> ca/protocol</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar max-h-[300px]">
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead class="bg-slate-50 dark:bg-slate-700 sticky top-0 z-10 text-xs font-black text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                            <tr><th class="p-3 rounded-tl-xl text-indigo-900 dark:text-indigo-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('hospitalName')">Bệnh viện</th><th class="p-3 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('Head')">Sọ não</th><th class="p-3 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('Chest')">Ngực</th><th class="p-3 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('Abdomen')">Bụng</th><th class="p-3 text-center rounded-tr-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('LDCT')">LDCT</th></tr>
+                        </thead>
+                        <tbody id="progressTableBody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div id="summaryCardsSection" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+                <!-- Card 1: Samples -->
+                <div class="glass-card p-4 rounded-[2rem] shadow-md flex flex-col justify-between bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 relative overflow-hidden h-full">
+                    <div class="relative z-10">
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Tổng số mẫu</p>
+                        <h3 id="summaryTotalSamples" class="text-3xl font-black text-slate-900 dark:text-white">0</h3>
+                    </div>
+                    <div class="absolute right-2 bottom-2 text-slate-100 dark:text-slate-700"><i data-lucide="database" class="w-10 h-10"></i></div>
+                </div>
+
+                <!-- Card 2: Facilities -->
+                <div class="glass-card p-4 rounded-[2rem] shadow-md flex flex-col justify-between bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 relative overflow-hidden h-full">
+                     <div class="relative z-10">
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Cơ sở tham gia</p>
+                        <h3 id="summaryTotalFacilities" class="text-3xl font-black text-slate-900 dark:text-white">0</h3>
+                    </div>
+                    <div class="absolute right-2 bottom-2 text-slate-100 dark:text-slate-700"><i data-lucide="building-2" class="w-10 h-10"></i></div>
+                </div>
+
+                <!-- Protocol Cards -->
+                <div class="glass-card p-4 rounded-[2rem] bg-indigo-50/50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 flex flex-col justify-center text-center shadow-sm h-full">
+                    <span class="text-[10px] font-black uppercase text-indigo-400 dark:text-indigo-300 mb-1 tracking-wider">Sọ não</span>
+                    <h4 id="sumHead" class="text-2xl font-black text-indigo-700 dark:text-indigo-400">0</h4>
+                </div>
+                <div class="glass-card p-4 rounded-[2rem] bg-blue-50/50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 flex flex-col justify-center text-center shadow-sm h-full">
+                    <span class="text-[10px] font-black uppercase text-blue-400 dark:text-blue-300 mb-1 tracking-wider">Ngực</span>
+                    <h4 id="sumChest" class="text-2xl font-black text-blue-700 dark:text-blue-400">0</h4>
+                </div>
+                <div class="glass-card p-4 rounded-[2rem] bg-orange-50/50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800 flex flex-col justify-center text-center shadow-sm h-full">
+                    <span class="text-[10px] font-black uppercase text-orange-400 dark:text-orange-300 mb-1 tracking-wider">Bụng</span>
+                    <h4 id="sumAbd" class="text-2xl font-black text-orange-700 dark:text-orange-400">0</h4>
+                </div>
+                <div class="glass-card p-4 rounded-[2rem] bg-teal-50/50 dark:bg-teal-900/30 border border-teal-100 dark:border-teal-800 flex flex-col justify-center text-center shadow-sm h-full">
+                    <span class="text-[10px] font-black uppercase text-teal-400 dark:text-teal-300 mb-1 tracking-wider">LDCT</span>
+                    <h4 id="sumLdct" class="text-2xl font-black text-teal-700 dark:text-teal-400">0</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+            
+            <!-- Left: Entry Form -->
+            <aside class="glass-card rounded-[2.5rem] flex flex-col overflow-hidden relative shadow-2xl border-2 border-white dark:border-slate-700 h-full">
+                <div class="p-6 border-b border-slate-100 dark:border-slate-700 bg-white/40 dark:bg-slate-800/40 z-20 flex justify-between items-center">
+                    <h2 class="font-black text-slate-900 dark:text-white flex items-center gap-3 uppercase tracking-widest text-sm"><i data-lucide="plus-circle" class="text-indigo-600 w-6 h-6"></i> Nhập liệu</h2>
+                    <div class="flex items-center gap-2">
+                        <button onclick="downloadTemplate()" class="px-2 py-1 bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-300 rounded-lg" title="Tải mẫu"><i data-lucide="download" class="w-4 h-4"></i></button>
+                        <label for="importExcelInput" class="cursor-pointer px-2 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg" title="Import"><i data-lucide="upload" class="w-4 h-4"></i></label>
+                        <input type="file" id="importExcelInput" accept=".xlsx, .xls" class="hidden">
+                    </div>
+                </div>
+                <form id="drlForm" class="flex flex-col flex-1 p-6 space-y-5 bg-white/60 dark:bg-slate-800/60">
+                    <div class="space-y-3">
+                        <label class="section-label text-indigo-500 dark:text-indigo-400">1. Cơ sở & Thiết bị</label>
+                        <div class="flex gap-2 relative">
+                            <select id="hospitalSelect" class="glass-input w-full px-4 py-3 rounded-xl text-sm font-medium border-blue-300 text-blue-900 dark:text-blue-100" data-required="true" data-msg="Vui lòng chọn Bệnh viện"></select>
+                            <span class="error-msg"></span>
+                            <button type="button" id="btnManageHospitals" class="p-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl hover:text-indigo-600"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                        </div>
+                        
+                        <div id="customHospitalContainer" class="relative hidden">
+                            <input type="text" id="customHospitalName" placeholder="Nhập hoặc tìm kiếm tên BV..." class="glass-input w-full px-4 py-3 rounded-xl text-sm border-blue-300 text-blue-900 dark:text-blue-100 focus:ring-2 focus:ring-indigo-500" autocomplete="off">
+                            <div id="hospitalSuggestions" class="suggestions-list hidden"></div>
+                        </div>
+
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800 text-[10px] text-blue-700 dark:text-blue-300 leading-relaxed">
+                            <i data-lucide="info" class="w-3 h-3 inline-block mr-1"></i>
+                            Nếu nhiều người nhập 1 viện: <b>Gõ tên viện vào ô trên</b> &rarr; <b>Chọn gợi ý</b> để gộp chung dữ liệu.
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="flex flex-col gap-1 w-full">
+                                <div class="flex gap-1">
+                                    <select id="manufacturer" class="glass-input w-full px-3 py-3 rounded-xl text-xs font-bold border-blue-300 text-blue-900 dark:text-blue-100" data-required="true" data-msg="Chọn hãng máy"></select>
+                                    <button type="button" id="btnManageManufacturers" class="p-2 bg-white dark:bg-slate-700 border dark:border-slate-600 rounded-xl"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="flex flex-col gap-1 w-full">
+                                <select id="sliceCount" class="glass-input px-3 py-3 rounded-xl text-xs font-bold border-blue-300 text-blue-900 dark:text-blue-100" data-required="true" data-msg="Chọn số lát cắt"></select>
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Updated Modulation Section: Red Dot Fix -->
+                        <div class="flex flex-col gap-2 bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border-2 border-indigo-200 dark:border-indigo-800 shadow-sm relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity"><i data-lucide="zap" class="w-12 h-12 text-indigo-500"></i></div>
+                            <span class="text-[10px] font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-wider z-10">Tùy biến liều tia (mA Modulation) <span class="text-red-500">*</span></span>
+                            <div class="flex gap-6 z-10">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="doseModulation" value="Có" class="peer sr-only">
+                                    <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold text-xs transition-all 
+                                        peer-checked:border-indigo-500 peer-checked:bg-indigo-100 dark:peer-checked:bg-indigo-900/50 peer-checked:text-indigo-700 dark:peer-checked:text-indigo-300 peer-checked:shadow-md hover:bg-slate-50 dark:hover:bg-slate-600
+                                        peer-checked:[&>.radio-circle]:border-red-500 peer-checked:[&>.radio-circle>.radio-dot]:opacity-100">
+                                        <div class="radio-circle w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center">
+                                            <div class="radio-dot w-2 h-2 rounded-full bg-red-500 opacity-0 transition-opacity"></div>
+                                        </div>
+                                        <span>Có (On)</span>
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="doseModulation" value="Không" class="peer sr-only">
+                                    <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold text-xs transition-all 
+                                        peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-900/20 peer-checked:text-red-700 dark:peer-checked:text-red-400 peer-checked:shadow-md hover:bg-slate-50 dark:hover:bg-slate-600
+                                        peer-checked:[&>.radio-circle]:border-red-500 peer-checked:[&>.radio-circle>.radio-dot]:opacity-100">
+                                        <div class="radio-circle w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center">
+                                            <div class="radio-dot w-2 h-2 rounded-full bg-red-500 opacity-0 transition-opacity"></div>
+                                        </div>
+                                        <span>Không (Off)</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="section-label text-indigo-500 dark:text-indigo-400">2. Bệnh nhân & Kỹ thuật</label>
+                        <div class="w-full">
+                            <select id="protocol" class="glass-input w-full px-4 py-3 border-blue-300 rounded-xl text-sm font-black text-indigo-700 dark:text-indigo-300" data-required="true" data-msg="Vui lòng chọn Protocol"></select>
+                            <span class="error-msg"></span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="text" id="patientId" placeholder="Mã BN (Tùy chọn)" class="glass-input px-4 py-3 border-blue-300 rounded-xl text-sm font-medium text-blue-900 dark:text-blue-100">
+                            <div class="w-full">
+                                <input type="date" id="scanDate" class="glass-input w-full px-4 py-3 border-blue-300 rounded-xl text-sm font-medium text-blue-900 dark:text-blue-100" data-required="true" data-msg="Chọn ngày chụp">
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <input type="number" id="yob" placeholder="Năm sinh" class="glass-input px-2 py-3 border-blue-300 rounded-xl text-xs text-center font-bold text-blue-900 dark:text-blue-100" min="1900" max="2100">
+                            <div>
+                                <input type="number" id="age" placeholder="Tuổi" class="glass-input w-full px-2 py-3 border-blue-300 rounded-xl text-xs text-center font-bold text-blue-900 dark:text-blue-100" min="0" data-required="true" data-msg="Nhập tuổi">
+                                <span class="error-msg text-center"></span>
+                            </div>
+                            <div>
+                                <select id="gender" class="glass-input w-full px-2 py-3 border-blue-300 rounded-xl text-xs text-center font-bold text-blue-900 dark:text-blue-100" data-required="true" data-msg="Chọn giới tính">
+                                    <option value="" disabled selected>Giới tính</option>
+                                    <option value="M">Nam</option><option value="F">Nữ</option>
+                                </select>
+                                <span class="error-msg text-center"></span>
+                            </div>
+                        </div>
+
+                        <!-- Nổi bật Cân Nặng và Chiều Cao -->
+                        <div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase flex justify-center tracking-wider">Cân nặng (kg)</label>
+                                    <input type="number" id="weight" placeholder="0.0" class="w-full px-2 py-2.5 bg-emerald-50/50 dark:bg-emerald-900/20 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl text-sm text-center font-black text-emerald-900 dark:text-emerald-100 focus:border-emerald-500 outline-none transition-all" min="0" step="0.1" data-required="true" data-msg="Nhập Kg">
+                                    <span class="error-msg text-center"></span>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black text-sky-600 dark:text-sky-400 uppercase flex justify-center tracking-wider">Chiều cao (cm)</label>
+                                    <input type="number" id="height" placeholder="0" class="w-full px-2 py-2.5 bg-sky-50/50 dark:bg-sky-900/20 border-2 border-sky-200 dark:border-sky-800 rounded-xl text-sm text-center font-black text-sky-900 dark:text-sky-100 focus:border-sky-500 outline-none transition-all" min="0" data-required="true" data-msg="Nhập cm">
+                                    <span class="error-msg text-center"></span>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase flex justify-center tracking-wider">Chỉ số BMI</label>
+                                    <input type="text" id="bmi" placeholder="-" readonly class="w-full px-2 py-2.5 bg-slate-100 dark:bg-slate-700 rounded-xl text-sm text-center font-black text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-600 outline-none">
+                                </div>
+                            </div>
+                            <!-- Cảnh báo nhập nhầm -->
+                            <div id="swapWarning" class="hidden text-[10px] font-black text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-2 text-center mt-2 animate-pulse flex items-center justify-center gap-1.5">
+                                <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> CẢNH BÁO: Hình như bạn đang nhập NGƯỢC Cân nặng và Chiều cao!
+                            </div>
+                        </div>
+                        
+                        <!-- Moved kVp and mAs here with Blue Border -->
+                        <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase ml-1">kVp</label>
+                                <select id="kvp" class="glass-input w-full px-3 py-2 border-blue-300 rounded-xl text-base font-bold text-blue-900 dark:text-blue-100 text-center focus:border-indigo-500 outline-none transition-all cursor-pointer">
+                                    <option value="" disabled selected>-- Chọn --</option>
+                                    <option value="80">80</option>
+                                    <option value="90">90</option>
+                                    <option value="100">100</option>
+                                    <option value="110">110</option>
+                                    <option value="120">120</option>
+                                    <option value="130">130</option>
+                                    <option value="140">140</option>
+                                    <option value="other">Khác...</option>
+                                </select>
+                                <input type="number" id="customKvp" placeholder="Nhập kVp" class="hidden mt-2 glass-input w-full px-3 py-2 border-blue-300 rounded-xl text-base font-bold text-blue-900 dark:text-blue-100 text-center focus:border-indigo-500 outline-none transition-all" min="50" max="200">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase ml-1">mAs</label>
+                                <input type="number" id="mas" placeholder="200" class="glass-input w-full px-3 py-2 border-blue-300 rounded-xl text-base font-bold text-blue-900 dark:text-blue-100 text-center focus:border-indigo-500 outline-none transition-all" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 dose-highlight-box p-4 rounded-2xl">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="section-label text-amber-700 dark:text-amber-500 flex items-center gap-2"><i data-lucide="zap" class="w-3 h-3 fill-amber-500"></i> 3. Thông số liều</label>
+                            
+                            <!-- OCR BUTTON -->
+                            <label class="cursor-pointer bg-white dark:bg-slate-700 border border-amber-200 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1.5 shadow-sm">
+                                <i data-lucide="camera" class="w-3.5 h-3.5"></i> Quét ảnh (OCR)
+                                <input type="file" id="ocrInput" accept="image/*" class="hidden">
+                            </label>
+                        </div>
+                        
+                        <!-- OCR Progress Bar -->
+                        <div id="ocrProgress" class="hidden w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mb-2 overflow-hidden">
+                            <div id="ocrProgressBar" class="bg-amber-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <p id="ocrStatus" class="hidden text-[9px] text-amber-600 dark:text-amber-400 font-bold mb-2 text-right animate-pulse">Đang phân tích ảnh... (Lần đầu sẽ mất thêm vài giây tải AI)</p>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-amber-600 dark:text-amber-500 uppercase">CTDIvol (mGy)</label>
+                                <input type="number" step="0.01" id="ctdi" placeholder="0.00" class="w-full px-3 py-2 bg-white dark:bg-slate-700 border-2 border-amber-200 dark:border-amber-700 rounded-xl text-lg font-black text-amber-600 dark:text-amber-500 text-center focus:border-amber-500 outline-none transition-colors" min="0" data-required="true" data-msg="Nhập CTDI">
+                                <span class="error-msg text-center"></span>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-amber-600 dark:text-amber-500 uppercase">DLP (mGy.cm)</label>
+                                <input type="number" step="0.1" id="dlp" placeholder="0.0" class="w-full px-3 py-2 bg-white dark:bg-slate-700 border-2 border-amber-200 dark:border-amber-700 rounded-xl text-lg font-black text-amber-600 dark:text-amber-500 text-center focus:border-amber-500 outline-none transition-colors" min="0" data-required="true" data-msg="Nhập DLP">
+                                <span class="error-msg text-center"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 px-1">
+                        <input type="checkbox" id="batchMode" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                        <label for="batchMode" class="text-xs font-bold text-slate-600 dark:text-slate-400 select-none cursor-pointer">Chế độ nhập liên tục (Giữ lại Protocol & Ngày)</label>
+                    </div>
+
+                    <div class="flex flex-col gap-3 mt-1">
+                        <button type="submit" id="submitBtn" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black uppercase shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Lưu Dữ Liệu</button>
+                        <a href="https://vnrad.tech/drldata" target="_blank" class="w-full py-4 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-xl font-black uppercase shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2">
+                            <i data-lucide="database" class="w-5 h-5 text-indigo-500 dark:text-indigo-400"></i> Xem Dữ Liệu Của Tôi
+                        </a>
+                    </div>
+                </form>
+            </aside>
+
+            <!-- Right: Instructions -->
+            <aside class="glass-card rounded-[2.5rem] flex flex-col overflow-hidden relative shadow-lg h-full bg-white dark:bg-slate-800">
+                <div class="p-6 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 z-20 flex justify-between items-center sticky top-0">
+                    <h2 class="font-black text-slate-900 dark:text-white flex items-center gap-3 uppercase tracking-widest text-sm"><i data-lucide="book-open" class="text-emerald-500 w-6 h-6"></i> Hướng dẫn nhập liệu</h2>
+                </div>
+                <div class="p-6 overflow-y-auto flex-1 instruction-scroll text-slate-600 dark:text-slate-300 space-y-6 text-base leading-relaxed pb-12">
+                    <div class="space-y-2"><h3 class="font-black text-indigo-900 dark:text-indigo-400 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-[10px]">1</span> Chọn Protocol</h3><p class="text-sm">Chỉ nhập dữ liệu cho các ca chụp <b>người lớn (≥ 18 tuổi)</b> và <b>KHÔNG TIÊM THUỐC</b> cản quang (Non-contrast).</p><ul class="list-disc pl-5 space-y-1 text-sm marker:text-indigo-300"><li><b>Sọ não (Head):</b> Chụp sọ não thường quy, chấn thương.</li><li><b>Ngực (Chest):</b> Chụp lồng ngực thường quy.</li><li><b>Bụng (Abdomen):</b> Chụp ổ bụng - tiểu khung.</li><li><b>Phổi liều thấp (LDCT):</b> Tầm soát ung thư phổi.</li></ul></div>
+                    <div class="space-y-2"><h3 class="font-black text-amber-700 dark:text-amber-500 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-[10px]">2</span> Thông số liều (Quan trọng)</h3><div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl border border-amber-100 dark:border-amber-800 text-sm"><p class="mb-2">Thông số nằm trong <b>Dose Report</b> (hoặc Patient Protocol) ở cuối ca chụp.</p><div class="grid grid-cols-2 gap-2"><div class="bg-white dark:bg-slate-700 p-2 rounded border border-amber-100 dark:border-slate-600"><span class="block font-bold text-amber-800 dark:text-amber-400">CTDIvol</span><span class="text-xs text-slate-400">Đơn vị: mGy</span><p class="text-xs mt-1 italic">Lấy giá trị của loạt cắt chính (Axial/Helical).</p></div><div class="bg-white dark:bg-slate-700 p-2 rounded border border-amber-100 dark:border-slate-600"><span class="block font-bold text-amber-800 dark:text-amber-400">DLP</span><span class="text-xs text-slate-400">Đơn vị: mGy.cm</span><p class="text-xs mt-1 italic">Lấy giá trị DLP của loạt cắt chính (Helical/Axial), <b>KHÔNG</b> lấy Total DLP.</p></div></div></div></div>
+                    <div class="space-y-2"><h3 class="font-black text-emerald-700 dark:text-emerald-500 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-[10px]">3</span> Dose Modulation</h3><p class="text-sm">Kỹ thuật tự động điều chỉnh dòng (mA) theo kích thước bệnh nhân. Tên gọi khác nhau tùy hãng:</p><div class="grid grid-cols-2 gap-2 text-sm font-bold text-slate-500 dark:text-slate-400"><div class="bg-slate-50 dark:bg-slate-700 p-2 rounded">GE: SmartmA / Auto mA</div><div class="bg-slate-50 dark:bg-slate-700 p-2 rounded">Siemens: CARE Dose 4D</div><div class="bg-slate-50 dark:bg-slate-700 p-2 rounded">Philips: DOM / Z-DOM</div><div class="bg-slate-50 dark:bg-slate-700 p-2 rounded">Canon: SureExposure</div></div><p class="text-sm italic mt-1 text-slate-400">*Nếu máy có bật tính năng này, hãy chọn "Có".</p></div>
+                    <div class="space-y-2"><h3 class="font-black text-blue-700 dark:text-blue-400 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[10px]">4</span> Thông tin Bệnh nhân</h3><ul class="list-disc pl-5 space-y-1 text-sm marker:text-blue-300"><li><b>Mã BN (Patient ID):</b> Dùng để đối chiếu, dữ liệu được mã hóa khi thống kê.</li><li><b>Chiều cao/Cân nặng:</b> Bắt buộc để tính BMI và đánh giá mức liều phù hợp thể trạng.</li></ul></div>
+                    <div class="space-y-2"><h3 class="font-black text-rose-700 dark:text-rose-500 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center text-[10px]">5</span> Các trường bắt buộc (*)</h3><ul class="list-disc pl-5 space-y-1 text-sm marker:text-rose-300"><li><b>Cơ sở & Thiết bị:</b> Bệnh viện, Hãng máy, Số lát cắt, Tùy biến liều (mA Modulation).</li><li><b>Bệnh nhân & Kỹ thuật:</b> Protocol, Ngày chụp, Tuổi, Giới tính, Cân nặng, Chiều cao.</li><li><b>Thông số liều:</b> CTDIvol, DLP.</li></ul></div>
+                    <div class="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800 flex items-start gap-3"><i data-lucide="info" class="w-5 h-5 text-indigo-500 dark:text-indigo-400 flex-none mt-0.5"></i><p class="text-sm text-indigo-800 dark:text-indigo-200"><b>Lưu ý:</b> Dữ liệu nhập vào sẽ được sử dụng để xây dựng DRL Quốc gia. Vui lòng đảm bảo tính chính xác. Nếu nhập sai, vui lòng liên hệ Admin để sửa/xóa.</p></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 bg-white dark:bg-slate-800 border-2 border-indigo-100 dark:border-slate-700 rounded-[2rem] shadow-2xl z-[300] opacity-0 scale-90 pointer-events-none transition-all duration-300 flex flex-col items-center gap-3 text-slate-900 dark:text-white font-black min-w-[200px]">
+        <div class="p-4 rounded-full bg-emerald-100 text-emerald-600 shadow-sm mb-1"><i data-lucide="check" class="w-8 h-8"></i></div>
+        <p id="toastMessage" class="text-sm uppercase tracking-wider text-center"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const INITIAL_HOSPITALS = ["Bệnh viện đa khoa tỉnh Quảng Ninh","Bệnh viện đa khoa tỉnh Bắc Ninh","Bệnh viện hữu nghị Việt Tiệp","Bệnh viện 30 - 04, Bộ Công An","Bệnh viện Gia An 115"];
+        const MANUFACTURERS = ["GE HealthCare","Siemens Healthineers","Philips Healthcare","Canon Medical Systems","Fujifilm","Neusoft","United Imaging"];
+        const SLICE_COUNTS = ["16 - 32 lát","64 - 128 lát","256 - 512 lát","Máy 2 bóng (Dual Source)"];
+        const PROTOCOLS = ["Sọ não không thuốc (Head)", "Ngực không thuốc (Chest)", "Bụng không thuốc (Abdomen)", "Phổi liều thấp (LDCT)"];
+        
+        const firebaseConfig = { apiKey: "AIzaSyAtQdmDbA1BgOrvwevrG6gwuFzlUmBTbfY", authDomain: "wb-idr.firebaseapp.com", projectId: "wb-idr", appId: "1:716649486328:web:340d7ae8dd0bafa1e0680d" };
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app); const appId = 'wb-idr';
+        
+        const el = (id) => document.getElementById(id);
+        const on = (id, ev, fn) => { const e = el(id); if(e) e.addEventListener(ev, fn); };
+        const setText = (id, val) => { const e = el(id); if(e) e.textContent = val; };
+        
+        let toastTimeout;
+        const showToast = (msg, type='success') => { 
+            const t = el('toast'); 
+            if(!t) return;
+            
+            if(toastTimeout) clearTimeout(toastTimeout);
+            
+            setText('toastMessage', msg); 
+            const d = t.querySelector('div');
+            
+            if(type === 'error') {
+                d.className = "p-4 rounded-full bg-red-100 text-red-600 shadow-sm mb-1";
+                d.innerHTML = '<i data-lucide="alert-circle" class="w-8 h-8"></i>';
+            } else {
+                d.className = "p-4 rounded-full bg-emerald-100 text-emerald-600 shadow-sm mb-1";
+                d.innerHTML = '<i data-lucide="check" class="w-8 h-8"></i>';
+            }
+            lucide.createIcons();
+
+            t.classList.remove('opacity-0', 'scale-90', 'pointer-events-none'); 
+            toastTimeout = setTimeout(() => t.classList.add('opacity-0', 'scale-90', 'pointer-events-none'), 2000); 
+        };
+
+        const ADMIN_PASSWORD = "gm@191223";
+        let user = null, isAdmin = false, entries = [], customHospitals = new Set(), deletedHospitals = new Set(), hospitalOrder = [];
+        let customManufacturers = new Set(), deletedManufacturers = new Set(), manufacturerOrder = [];
+        let latestUserRegistryData = [];
+        // State cho việc sắp xếp bảng: Mặc định sắp xếp theo Tổng số ca (Total) tăng dần (asc)
+        let currentSort = { key: 'Total', dir: 'asc' };
+
+        // UI Helpers
+        window.showConfirm = (msg, cb) => { setText('confirmMessage',msg); el('confirmModal').classList.remove('hidden'); el('confirmOkBtn').onclick=()=>{el('confirmModal').classList.add('hidden');if(cb)cb();}; el('confirmCancelBtn').onclick=()=>{el('confirmModal').classList.add('hidden');}; };
+        window.showInput = (t, v, cb) => { setText('inputModalTitle',t); el('inputModalValue').value=v||''; el('inputModal').classList.remove('hidden'); el('inputModalValue').focus(); el('inputSaveBtn').onclick=()=>{const val=el('inputModalValue').value.trim();if(val){el('inputModal').classList.add('hidden');if(cb)cb(val);}else el('inputModalValue').classList.add('warning')}; el('inputCancelBtn').onclick=()=>{el('inputModal').classList.add('hidden');}; };
+        function handleQuotaError(){ const o=el('bannedOverlay'); o.innerHTML=`<div class="bg-amber-500 p-4 rounded-full mb-6 shadow-2xl"><i data-lucide="alert-octagon" class="w-12 h-12 text-white"></i></div><h2 class="text-2xl font-black uppercase text-white mb-2">Hệ thống tạm ngưng</h2><p class="text-sm text-slate-200">Hết hạn mức miễn phí trong ngày (Reset: 15h00).</p>`; o.classList.remove('hidden'); lucide.createIcons(); }
+
+        // --- NEW FEATURES IMPLEMENTATION ---
+
+        // 1. Dark Mode
+        const themeBtn = el('themeToggleBtn');
+        const toggleTheme = () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('drl_theme', isDark ? 'dark' : 'light');
+        };
+        if (localStorage.getItem('drl_theme') === 'dark') document.body.classList.add('dark');
+        on('themeToggleBtn', 'click', toggleTheme);
+
+        // 2. Mobile Dashboard Toggle
+        const dashBtn = el('btnToggleDashboard');
+        const dashSec = el('dashboardSection');
+        on('btnToggleDashboard', 'click', () => {
+            dashSec.classList.toggle('collapsed');
+            const isHidden = dashSec.classList.contains('collapsed');
+            dashBtn.innerHTML = isHidden ? '<i data-lucide="layout-dashboard" class="w-4 h-4"></i> Hiện TK' : '<i data-lucide="minimize-2" class="w-4 h-4"></i> Ẩn TK';
+            lucide.createIcons();
+        });
+        
+        // Khôi phục mặc định: Bảng thống kê và Tiến độ nhập liệu luôn hiển thị thay vì bị ẩn trên Mobile
+        dashSec.classList.remove('collapsed');
+        dashBtn.innerHTML = '<i data-lucide="minimize-2" class="w-4 h-4"></i> Ẩn TK';
+
+        // 3. Inline Validation
+        const validateField = (input) => {
+            const isRequired = input.dataset.required === "true";
+            if (!isRequired) return true;
+            
+            const val = input.value.trim();
+            const msgSpan = input.parentElement.querySelector('.error-msg') || input.parentElement.parentElement.querySelector('.error-msg');
+            let isValid = true;
+            let msg = '';
+
+            if (!val) {
+                isValid = false;
+                msg = input.dataset.msg || "Bắt buộc nhập";
+            } else if (input.type === 'number' && parseFloat(val) < 0) {
+                isValid = false;
+                msg = "Không được âm";
+            }
+
+            if (!isValid) {
+                input.classList.add('input-error');
+                if(msgSpan) { msgSpan.textContent = msg; }
+            } else {
+                input.classList.remove('input-error');
+                if(msgSpan) { msgSpan.textContent = ''; }
+            }
+            return isValid;
+        };
+
+        const inputs = document.querySelectorAll('#drlForm input, #drlForm select');
+        inputs.forEach(i => {
+            i.addEventListener('blur', () => validateField(i));
+            i.addEventListener('input', () => {
+                if(i.classList.contains('input-error')) validateField(i);
+            });
+        });
+
+        // 4. Enter to Next Input
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+                    e.preventDefault();
+                    const form = el('drlForm');
+                    const formElements = Array.from(form.querySelectorAll('input:not([type="hidden"]), select, button[type="submit"]'));
+                    const index = formElements.indexOf(e.target);
+                    if (index > -1 && index < formElements.length - 1) {
+                        formElements[index + 1].focus();
+                    } else if (index === formElements.length - 1) {
+                        // If it's the submit button, let it trigger click logic
+                        el('submitBtn').click();
+                    }
+                }
+            }
+        });
+
+
+        // Existing Code (Restored & Integrated)
+        function renderSummary() {
+            const total = entries.length;
+            const uniqueHospitals = new Set(entries.map(e => e.hospitalName)).size;
+            setText('summaryTotalSamples', total);
+            setText('summaryTotalFacilities', uniqueHospitals);
+            const count = (key) => entries.filter(e => e.protocol && e.protocol.includes(key)).length;
+            setText('sumHead', count('Head'));
+            setText('sumChest', count('Chest'));
+            setText('sumAbd', count('Abdomen'));
+            setText('sumLdct', count('LDCT'));
+        }
+
+        function renderUserMonitor(allUsers) {
+            const onlineList = el('onlineUsersList'); const allList = el('allUsersList');
+            if(!onlineList || !allList) return;
+            onlineList.innerHTML = ''; allList.innerHTML = '';
+            
+            const now = new Date(); const onlineThreshold = 2 * 60 * 1000;
+            let onlineCount = 0; let onlineNames = [];
+            
+            allUsers.sort((a,b) => new Date(b.lastActive) - new Date(a.lastActive));
+            
+            allUsers.forEach(u => {
+                const emailDisplay = u.displayName || u.email || 'Ẩn danh';
+                const lastActiveDate = new Date(u.lastActive);
+                const isOnline = (now - lastActiveDate) < onlineThreshold;
+                const status = u.status || 'pending';
+                
+                if (isOnline) {
+                    onlineCount++;
+                    onlineNames.push(emailDisplay);
+                }
+                
+                const timeStr = lastActiveDate.toLocaleString('vi-VN');
+                let statusBadge = status === 'blocked' ? '<span class="text-[8px] font-black text-red-600 bg-red-100 px-1.5 py-0.5 rounded uppercase">Đã khóa</span>' : '<span class="text-[8px] font-black text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Hoạt động</span>';
+                let adminControls = isAdmin ? `${status !== 'blocked' ? `<button onclick="window.setUserStatus('${u.uid}', 'blocked')" class="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Khóa"><i data-lucide="ban" class="w-4 h-4"></i></button>` : `<button onclick="window.setUserStatus('${u.uid}', 'approved')" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded" title="Mở khóa"><i data-lucide="check-circle" class="w-4 h-4"></i></button>`}` : '';
+                
+                const itemHtml = `<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full ${isOnline ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'} flex items-center justify-center font-bold text-xs">${emailDisplay.charAt(0).toUpperCase()}</div><div><p class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">${emailDisplay} ${statusBadge}</p><p class="text-[9px] ${isOnline ? 'text-emerald-500' : 'text-slate-400'} font-medium">${isOnline ? 'Online' : 'Offline'}</p></div></div><div class="flex items-center gap-2"><span class="text-[9px] font-bold text-slate-400">${isOnline ? timeStr.split(' ')[1] : timeStr}</span>${adminControls}</div>`;
+                const div = document.createElement('div'); div.className = `flex items-center justify-between p-3 rounded-xl border ${isOnline ? 'bg-emerald-50/50 border-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800' : 'bg-white dark:bg-slate-700/50 border-slate-100 dark:border-slate-600'}`;
+                div.innerHTML = itemHtml; if (isOnline) onlineList.appendChild(div.cloneNode(true)); allList.appendChild(div);
+            });
+
+            if (el('headerOnlineCount')) el('headerOnlineCount').textContent = onlineCount;
+            const btn = el('btnUserMonitor');
+            if(btn) btn.title = onlineNames.length > 0 ? "Đang online: " + onlineNames.slice(0, 5).join(', ') + (onlineNames.length > 5 ? '...' : '') : "Không có người dùng online";
+            lucide.createIcons();
+        }
+
+        async function updateUserHeartbeat(currentUser) {
+            if (!currentUser || currentUser.isAnonymous) return;
+            try {
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'user_registry', currentUser.uid);
+                await setDoc(userRef, { email: currentUser.email, displayName: currentUser.displayName || currentUser.email, lastActive: new Date().toISOString(), uid: currentUser.uid }, { merge: true });
+            } catch (e) { if (e.code === 'resource-exhausted') handleQuotaError(); }
+        }
+
+        window.setUserStatus = async (targetUid, newStatus) => {
+            if (!isAdmin) return showToast("Chỉ Admin mới có quyền này!", 'error');
+            window.showConfirm(newStatus === 'blocked' ? "CẢNH BÁO: KHÓA tài khoản này?" : "DUYỆT tài khoản này?", async () => {
+                try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'user_registry', targetUid), { status: newStatus }); showToast("Đã cập nhật!"); } 
+                catch (e) { if (e.code === 'resource-exhausted') handleQuotaError(); else showToast("Lỗi: " + e.message, 'error'); }
+            });
+        };
+        
+        window.switchUserTab = (tab) => {
+            const isOnline = tab === 'online';
+            el('user-tab-online').classList.toggle('hidden', !isOnline);
+            el('user-tab-all').classList.toggle('hidden', isOnline);
+            const btnOnline = el('btn-user-online'); const btnAll = el('btn-user-all');
+            if (isOnline) {
+                btnOnline.className = "px-4 py-2 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 flex items-center gap-2";
+                btnAll.className = "px-4 py-2 rounded-lg text-xs font-bold bg-white text-slate-500 border border-slate-100 hover:bg-slate-50";
+            } else {
+                btnOnline.className = "px-4 py-2 rounded-lg text-xs font-bold bg-white text-slate-500 border border-slate-100 hover:bg-slate-50 flex items-center gap-2";
+                btnAll.className = "px-4 py-2 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100";
+            }
+        };
+        
+        // Cập nhật lại downloadTemplate
+        window.downloadTemplate = () => {
+            const hospitals = getActiveList('hospital');
+            const manus = getActiveList('manufacturer');
+            const slices = SLICE_COUNTS;
+            const protocols = PROTOCOLS;
+
+            const templateData = [{
+                "Ngày chụp": new Date().toISOString().split('T')[0],
+                "Bệnh viện": hospitals[0] || "Bệnh viện X",
+                "Hãng máy": manus[0] || "GE HealthCare",
+                "Số lát cắt": slices[1] || "64 - 128 lát",
+                "Protocol": protocols[0] || "Sọ não không thuốc (Head)",
+                "Mã BN": "BN001",
+                "Năm sinh": 1980,
+                "Tuổi": 44,
+                "Giới tính (M/F)": "M",
+                "Cân nặng (kg)": 65,
+                "Chiều cao (cm)": 165,
+                "kVp": 120,
+                "mAs": 200,
+                "CTDIvol": 45.5,
+                "DLP": 800.2,
+                "Dose Modulation (Có/Không)": "Có"
+            }];
+            
+            const ws = XLSX.utils.json_to_sheet(templateData);
+            ws['!cols'] = [{wch: 15}, {wch: 25}, {wch: 20}, {wch: 20}, {wch: 30}, {wch: 15}, {wch: 10}, {wch: 10}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 10}, {wch: 10}, {wch: 15}, {wch: 15}, {wch: 25}];
+
+            const maxLen = Math.max(hospitals.length, manus.length, slices.length, protocols.length);
+            const dictData = [];
+            for(let i=0; i<maxLen; i++) {
+                dictData.push({
+                    "Bệnh viện (Copy/Paste)": hospitals[i] || "",
+                    "Hãng máy (Copy/Paste)": manus[i] || "",
+                    "Số lát cắt hợp lệ": slices[i] || "",
+                    "Protocol hợp lệ": protocols[i] || ""
+                });
+            }
+            const wsDict = XLSX.utils.json_to_sheet(dictData);
+            wsDict['!cols'] = [{wch: 35}, {wch: 25}, {wch: 25}, {wch: 30}];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Nhap_Lieu");
+            XLSX.utils.book_append_sheet(wb, wsDict, "Danh_Muc_Tham_Khao");
+            
+            XLSX.writeFile(wb, "VN-DRL_Template.xlsx");
+            showToast("Đã tải template thành công!");
+        };
+
+        function getActiveList(type) {
+             const isH = type === 'hospital';
+             let base = isH ? [...INITIAL_HOSPITALS] : [...MANUFACTURERS];
+             (isH?customHospitals:customManufacturers).forEach(i => {if(!base.includes(i)) base.push(i)});
+             entries.forEach(e => { const val = isH ? e.hospitalName : e.manufacturer; if(val && val !== '-- Chọn --' && !e.isDeleted && !base.includes(val)) base.push(val); });
+             base = base.filter(i => !(isH?deletedHospitals:deletedManufacturers).has(i));
+             const order = isH ? hospitalOrder : manufacturerOrder;
+             if(order.length) base.sort((a,b) => { const ia=order.indexOf(a), ib=order.indexOf(b); return ia!==-1&&ib!==-1 ? ia-ib : (ia!==-1?-1:ib!==-1?1:a.localeCompare(b)); });
+             else base.sort();
+             return base;
+        }
+        
+        function getHospitalAliasMap() {
+            const all = getActiveList('hospital').sort((a,b) => a.localeCompare(b));
+            const map = {}; all.forEach((h, i) => { map[h] = `Cơ sở ẩn danh #${i + 1}`; });
+            return map;
+        }
+
+        function renderHospitalSelect() {
+            const s = el('hospitalSelect'); const m = el('manufacturer');
+            if(!s) return;
+            const savedH = localStorage.getItem('drl_saved_hospitalSelect');
+            const hVal = (s.value && s.value !== '-- Chọn --') ? s.value : savedH;
+            s.innerHTML = `<option disabled ${!hVal?'selected':''}>-- Chọn --</option>`;
+            
+            let list = isAdmin ? getActiveList('hospital') : Array.from(new Set(entries.filter(e=>e.userId===user?.uid).map(e=>e.hospitalName))).sort();
+            if(isAdmin && list.length===0) list = getActiveList('hospital'); 
+
+            list.forEach(h => s.innerHTML+=`<option value="${h}" ${h===hVal?'selected':''}>${h}</option>`);
+            s.innerHTML += `<option value="other">➕ Thêm bệnh viện</option>`;
+            
+            if(hVal==='other') el('customHospitalContainer').classList.remove('hidden');
+            else el('customHospitalContainer').classList.add('hidden');
+
+            const savedM = localStorage.getItem('drl_saved_manufacturer');
+            const mVal = (m.value && m.value !== '-- Chọn --') ? m.value : savedM;
+            m.innerHTML = `<option disabled ${!mVal?'selected':''}>-- Chọn --</option>`;
+            getActiveList('manufacturer').forEach(i => m.innerHTML+=`<option value="${i}" ${i===mVal?'selected':''}>${i}</option>`);
+            
+            // Trigger highlight khi render xong select
+            renderProgress();
+        }
+
+        function renderProgress() {
+            const tbody = el('progressTableBody'); if (!tbody) return;
+            
+            // Re-render Header để gắn sự kiện sort
+            const thead = document.querySelector('#progressChartSection thead tr');
+            if(thead) {
+                thead.innerHTML = `
+                    <th class="p-3 rounded-tl-xl text-indigo-900 dark:text-indigo-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('hospitalName')">
+                        Bệnh viện ${currentSort.key==='hospitalName' ? (currentSort.dir==='asc'?'↑':'↓') : ''}
+                    </th>
+                    <th class="p-3 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('Head')">
+                        Sọ não ${currentSort.key==='Head' ? (currentSort.dir==='asc'?'↑':'↓') : ''}
+                    </th>
+                    <th class="p-3 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('Chest')">
+                        Ngực ${currentSort.key==='Chest' ? (currentSort.dir==='asc'?'↑':'↓') : ''}
+                    </th>
+                    <th class="p-3 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('Abdomen')">
+                        Bụng ${currentSort.key==='Abdomen' ? (currentSort.dir==='asc'?'↑':'↓') : ''}
+                    </th>
+                    <th class="p-3 text-center rounded-tr-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSort('LDCT')">
+                        LDCT ${currentSort.key==='LDCT' ? (currentSort.dir==='asc'?'↑':'↓') : ''}
+                    </th>`;
+            }
+
+            tbody.innerHTML = ''; 
+            const active = getActiveList('hospital');
+            const aliasMap = getHospitalAliasMap();
+            const myHospitals = new Set(entries.filter(e=>e.userId===user?.uid).map(e=>e.hospitalName));
+            
+            // Lấy bệnh viện đang chọn để highlight
+            const selectedHospital = el('hospitalSelect') ? el('hospitalSelect').value : null;
+
+            // Chuẩn bị dữ liệu
+            let data = active.map(h => {
+                const getCount = (kw) => entries.filter(e => e.hospitalName === h && e.protocol && e.protocol.includes(kw)).length;
+                const hCount = getCount('Head');
+                const cCount = getCount('Chest');
+                const aCount = getCount('Abdomen');
+                const lCount = getCount('LDCT');
+                
+                return {
+                    hospitalName: h, 
+                    Head: hCount,
+                    Chest: cCount,
+                    Abdomen: aCount,
+                    LDCT: lCount,
+                    Total: hCount + cCount + aCount + lCount // Tính tổng để sắp xếp
+                };
+            });
+
+            // Logic sắp xếp
+            data.sort((a,b) => {
+                let valA = a[currentSort.key];
+                let valB = b[currentSort.key];
+                
+                // Nếu sort theo tên thì dùng localeCompare
+                if (currentSort.key === 'hospitalName') {
+                    // Safe guard strings
+                    const strA = String(valA || '');
+                    const strB = String(valB || '');
+                    return currentSort.dir === 'asc' ? strA.localeCompare(strB) : strB.localeCompare(strA);
+                }
+                // Sort theo số lượng (bao gồm cả Total)
+                return currentSort.dir === 'asc' ? (valA||0) - (valB||0) : (valB||0) - (valA||0);
+            });
+
+            data.forEach(item => {
+                const isSelected = item.hospitalName === selectedHospital; // FIXED
+                const row = document.createElement('tr'); 
+                // Thêm class highlight-row nếu trùng tên bệnh viện đang chọn
+                row.className = `hover:bg-slate-50 border-b border-slate-50 dark:hover:bg-slate-700 dark:border-slate-700 transition-colors ${isSelected ? 'highlight-row' : ''}`;
+                
+                let dn = aliasMap[item.hospitalName] || item.hospitalName; // FIXED
+                if (isAdmin || myHospitals.has(item.hospitalName)) { // FIXED
+                    dn = item.hospitalName; // FIXED
+                    if(isAdmin && aliasMap[item.hospitalName]) dn += ` <span class="text-[9px] text-slate-400">(${aliasMap[item.hospitalName]})</span>`; // FIXED
+                }
+                
+                let html = `<td class="p-3 font-bold text-slate-700 dark:text-slate-300 text-xs border-r border-slate-50 dark:border-slate-700 sticky left-0 bg-white dark:bg-slate-800 z-10 min-w-[150px] ${isSelected ? 'bg-amber-50 dark:bg-amber-900/20' : ''}">${dn}</td>`;
+                
+                ['Head','Chest','Abdomen','LDCT'].forEach(kw => {
+                    const count = item[kw];
+                    const pct = Math.min((count/30)*100, 100);
+                    
+                    // Logic màu sắc (Traffic Light)
+                    let colorClass = 'bg-red-500'; // Mặc định đỏ (<10)
+                    let textClass = 'text-red-500';
+                    
+                    if (count >= 30) {
+                        colorClass = 'bg-emerald-500'; // Xanh (>=30)
+                        textClass = 'text-emerald-600 dark:text-emerald-400';
+                    } else if (count >= 10) {
+                        colorClass = 'bg-amber-400'; // Vàng (10-29)
+                        textClass = 'text-amber-600 dark:text-amber-400';
+                    }
+
+                    html += `<td class="p-3 border-r border-slate-50 dark:border-slate-700 align-middle">
+                        <div class="flex flex-col gap-1 items-center">
+                            <span class="text-[10px] font-black ${textClass}">${count}/30</span>
+                            <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 min-w-[60px]">
+                                <div class="${colorClass} h-1.5 rounded-full transition-all duration-500" style="width:${pct}%"></div>
+                            </div>
+                        </div>
+                    </td>`;
+                });
+                row.innerHTML = html; tbody.appendChild(row);
+                
+                // Scroll tới dòng được highlight nếu có
+                if(isSelected && !window.hasScrolledToHighlight) {
+                    // row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // window.hasScrolledToHighlight = true; // Tránh scroll liên tục gây phiền
+                }
+            });
+        }
+        
+        // Hàm xử lý click sort
+        window.handleSort = (key) => {
+            if (currentSort.key === key) {
+                currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.key = key;
+                currentSort.dir = 'desc'; // Mặc định giảm dần cho số liệu để thấy cái nhiều nhất trước
+                if (key === 'hospitalName') currentSort.dir = 'asc';
+            }
+            renderProgress();
+        };
+
+        window.onload = async () => {
+            setTimeout(() => el('globalLoader').style.display='none', 1000);
+            const fill = (id, list) => { const s=el(id); if(!s)return; list.forEach(i=>{ s.innerHTML+=`<option value="${i}">${i}</option>` }); };
+            fill('protocol', PROTOCOLS); fill('sliceCount', SLICE_COUNTS);
+            
+            setInterval(() => { if(latestUserRegistryData.length > 0) renderUserMonitor(latestUserRegistryData); }, 30000);
+
+            // --- AI OCR LOGIC THÔNG MINH (SMART HEURISTICS) ---
+            const ocrInput = el('ocrInput');
+            const ocrProgress = el('ocrProgress');
+            const ocrProgressBar = el('ocrProgressBar');
+            const ocrStatus = el('ocrStatus');
+
+            if(ocrInput) {
+                on('ocrInput', 'change', async (e) => {
+                    const file = e.target.files[0];
+                    if(!file) return;
+
+                    ocrProgress.classList.remove('hidden');
+                    ocrStatus.classList.remove('hidden');
+                    
+                    // Fake Progress để tránh lỗi DataCloneError trên một số trình duyệt
+                    ocrProgressBar.style.width = '100%';
+                    ocrProgressBar.classList.add('animate-pulse');
+                    el('submitBtn').disabled = true;
+
+                    try {
+                        // Khởi tạo Tesseract an toàn (không gửi function logger vào Worker)
+                        const worker = await Tesseract.createWorker('eng');
+                        
+                        // PSM 6: Chế độ tối ưu để đọc văn bản dạng Bảng (Table/Uniform block)
+                        await worker.setParameters({
+                            tessedit_pageseg_mode: '6',
+                        });
+
+                        const { data: { text } } = await worker.recognize(file);
+                        await worker.terminate();
+
+                        // Tiền xử lý văn bản: Đổi phẩy thành chấm, tách thành các dòng, xóa dòng trống
+                        const lines = text.toUpperCase().replace(/,/g, '.').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+                        let ctdiVal = null;
+                        let dlpVal = null;
+                        let maxCtdi = 0;
+
+                        // BƯỚC 1: TÌM HÀNG TIÊU ĐỀ (HÀNG 1)
+                        let headerIndex = -1;
+                        for (let i = 0; i < lines.length; i++) {
+                            if (lines[i].includes('CTDI') || lines[i].includes('DLP')) {
+                                headerIndex = i;
+                                break; // Xác định được Hàng 1
+                            }
+                        }
+
+                        // BƯỚC 2: GIÓNG XUỐNG HÀNG 2 VÀ HÀNG 3 (Bỏ qua phần Total ở dưới cùng)
+                        if (headerIndex !== -1) {
+                            // Chỉ lấy 3 dòng tiếp theo (Hàng 2 là Scout, Hàng 3 là Phase chụp chính)
+                            const limit = Math.min(headerIndex + 4, lines.length);
+                            
+                            for (let i = headerIndex + 1; i < limit; i++) {
+                                const line = lines[i];
+                                
+                                // Nếu gặp dòng Total/Sum thì dừng gióng
+                                if (line.includes('TOTAL') || line.includes('ACCUMULATED') || line.includes('SUM')) {
+                                    break;
+                                }
+
+                                // BƯỚC 3: TRÍCH XUẤT SỐ LIỆU TRÊN CÙNG CỘT
+                                // Tìm tất cả các con số trong hàng
+                                let nums = line.match(/\d+\.\d+|\d+/g);
+                                if (!nums || nums.length < 2) continue;
+
+                                // Lọc bỏ các con số gây nhiễu (kích thước phantom 16, 32)
+                                nums = nums.map(n => parseFloat(n)).filter(n => n !== 16 && n !== 32);
+
+                                if (nums.length >= 2) {
+                                    // CTDI và DLP luôn là 2 cột ở ngoài cùng bên phải của bảng
+                                    let lineDlp = nums[nums.length - 1];
+                                    let lineCtdi = nums[nums.length - 2];
+
+                                    // Kiểm tra logic: CTDI thường nhỏ hơn DLP và không quá lớn (ví dụ < 200)
+                                    if (lineCtdi <= lineDlp && lineCtdi > 0 && lineCtdi < 200) {
+                                        // BƯỚC 4: CHỌN PHASE CHỤP (Loại bỏ Scout)
+                                        // Scout luôn có CTDI cực thấp, ta lấy hàng có CTDI cao nhất làm kết quả
+                                        if (lineCtdi > maxCtdi) {
+                                            maxCtdi = lineCtdi;
+                                            ctdiVal = lineCtdi;
+                                            dlpVal = lineDlp;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Fallback: Nếu không đọc được theo cấu trúc bảng, thử tìm regex cơ bản
+                        if (!ctdiVal || !dlpVal) {
+                            for (let line of lines) {
+                                if (line.includes('TOTAL') || line.includes('ACCUMULATED') || line.includes('EXAM')) continue;
+                                const cMatch = line.match(/CTDI.*?(?:VOL)?.*?(\d+\.\d+|\d+)/);
+                                const dMatch = line.match(/DLP.*?(\d+\.\d+|\d+)/);
+                                
+                                if (cMatch) {
+                                    let cVal = parseFloat(cMatch[1]);
+                                    if (cVal > maxCtdi && cVal !== 16 && cVal !== 32 && cVal < 200) {
+                                        maxCtdi = cVal;
+                                        ctdiVal = cVal;
+                                        if (dMatch) dlpVal = parseFloat(dMatch[1]);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Hiển thị kết quả lên giao diện
+                        if(ctdiVal) {
+                            const cInput = el('ctdi');
+                            cInput.value = ctdiVal;
+                            cInput.classList.add('ocr-success');
+                            setTimeout(() => cInput.classList.remove('ocr-success'), 2000);
+                        }
+                        if(dlpVal) {
+                            const dInput = el('dlp');
+                            dInput.value = dlpVal;
+                            dInput.classList.add('ocr-success');
+                            setTimeout(() => dInput.classList.remove('ocr-success'), 2000);
+                        }
+
+                        // Báo trạng thái
+                        if(ctdiVal || dlpVal) {
+                            showToast("Trích xuất xong! Vui lòng kiểm tra lại độ chính xác của số liệu.");
+                            document.querySelectorAll('.input-error').forEach(i => i.classList.remove('input-error'));
+                            document.querySelectorAll('.error-msg').forEach(s => s.textContent = '');
+                        } else {
+                            showToast("AI không tìm thấy số liệu rõ ràng. Vui lòng nhập bằng tay.", "error");
+                        }
+
+                    } catch (err) {
+                        console.error("OCR Error:", err);
+                        showToast("Lỗi khi đọc ảnh. Vui lòng thử lại.", "error");
+                    } finally {
+                        ocrProgress.classList.add('hidden');
+                        ocrStatus.classList.add('hidden');
+                        ocrProgressBar.classList.remove('animate-pulse');
+                        ocrProgressBar.style.width = '0%';
+                        el('submitBtn').disabled = false;
+                        e.target.value = ''; 
+                    }
+                });
+            }
+
+            onAuthStateChanged(auth, async(u) => {
+                user = u; if(!u) await signInAnonymously(auth);
+                const isReal = u && !u.isAnonymous;
+                const storedAdmin = localStorage.getItem('vnDrlAdmin'); if(storedAdmin==='true') isAdmin=true;
+                
+                el('navLoginBtn').classList.toggle('hidden', isReal || isAdmin);
+                el('navLogoutBtn').classList.toggle('hidden', !(isReal || isAdmin));
+                el('userEmailDisplay').textContent = isAdmin ? 'Administrator' : (isReal ? (u.displayName||u.email) : 'Khách');
+                if(isAdmin) el('openAdminLogin').textContent = 'Admin Active';
+
+                if (isReal) { 
+                    updateUserHeartbeat(u); 
+                    setInterval(() => updateUserHeartbeat(u), 30000); 
+                }
+
+                try {
+                    const hC=await getDoc(doc(db,'artifacts',appId,'public','data','app_settings','hospital_config')); if(hC.exists()){const d=hC.data();customHospitals=new Set(d.customHospitals||[]);deletedHospitals=new Set(d.deletedHospitals||[]);hospitalOrder=d.hospitalOrder||[];}
+                    const mC=await getDoc(doc(db,'artifacts',appId,'public','data','app_settings','manufacturer_config')); if(mC.exists()){const d=mC.data();customManufacturers=new Set(d.customManufacturers||[]);deletedManufacturers=new Set(d.deletedManufacturers||[]);manufacturerOrder=d.manufacturerOrder||[];}
+                    
+                    onSnapshot(collection(db,'artifacts',appId,'public','data','drl_entries'),(s)=>{
+                        entries=s.docs.map(d=>d.data()).filter(e=>!e.isDeleted); 
+                        renderHospitalSelect(); 
+                        renderProgress();
+                        renderSummary(); 
+                    },(e)=>{if(e.code==='resource-exhausted')handleQuotaError();});
+                    
+                    onSnapshot(collection(db,'artifacts',appId,'public','data','user_registry'),(s)=>{
+                        latestUserRegistryData = s.docs.map(d=>d.data());
+                        renderUserMonitor(latestUserRegistryData);
+                    }, (e)=>{if(e.code==='resource-exhausted')handleQuotaError();});
+
+                } catch(e){ if(e.code==='resource-exhausted') handleQuotaError(); }
+            });
+
+            // Handlers
+            on('hospitalSelect', 'change', (e) => {
+                const isOther = e.target.value === 'other';
+                const customContainer = el('customHospitalContainer');
+                const customInput = el('customHospitalName');
+                customContainer.classList.toggle('hidden', !isOther);
+                if (isOther) { e.target.blur(); setTimeout(() => customInput.focus(), 100); }
+                localStorage.setItem('drl_saved_hospitalSelect', e.target.value);
+                
+                // Cập nhật lại bảng để highlight dòng mới chọn
+                renderProgress();
+            });
+            on('manufacturer','change',(e)=>localStorage.setItem('drl_saved_manufacturer',e.target.value));
+            on('protocol','change',(e)=>localStorage.setItem('drl_saved_protocol',e.target.value));
+            on('scanDate','change',(e)=>localStorage.setItem('drl_saved_scanDate',e.target.value));
+            
+            // Xử lý sự kiện khi chọn kVp
+            on('kvp', 'change', (e) => {
+                const isOther = e.target.value === 'other';
+                el('customKvp').classList.toggle('hidden', !isOther);
+                if(isOther) { 
+                    e.target.blur(); 
+                    setTimeout(() => el('customKvp').focus(), 100); 
+                }
+                localStorage.setItem('drl_saved_kvp', e.target.value);
+            });
+            on('customKvp', 'input', (e) => localStorage.setItem('drl_saved_customKvp', e.target.value));
+            
+            // Phục hồi lại dữ liệu đã lưu khi F5
+            ['protocol','scanDate','kvp','customKvp'].forEach(id=>{
+                const v = localStorage.getItem('drl_saved_'+id);
+                if(v) el(id).value = v;
+            });
+            if(el('kvp').value === 'other') {
+                el('customKvp').classList.remove('hidden');
+            }
+            if(!el('scanDate').value) el('scanDate').valueAsDate=new Date();
+
+            // Autocomplete
+            const customHospInput = el('customHospitalName');
+            const suggestionBox = el('hospitalSuggestions');
+            on('customHospitalName', 'input', (e) => {
+                const val = e.target.value.toLowerCase();
+                suggestionBox.innerHTML = '';
+                if (!val) { suggestionBox.classList.add('hidden'); return; }
+                const allHospitals = getActiveList('hospital');
+                const matches = allHospitals.filter(h => h.toLowerCase().includes(val));
+                if (matches.length > 0) {
+                    suggestionBox.classList.remove('hidden');
+                    matches.forEach(h => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        const regex = new RegExp(`(${val})`, 'gi');
+                        const highlighted = h.replace(regex, '<span class="suggestion-match">$1</span>');
+                        div.innerHTML = `${highlighted} <span class="text-xs text-emerald-500 ml-2 italic">(Đã có)</span>`;
+                        div.onclick = () => { customHospInput.value = h; suggestionBox.classList.add('hidden'); showToast(`Đã chọn: ${h}`); };
+                        suggestionBox.appendChild(div);
+                    });
+                } else { suggestionBox.classList.add('hidden'); }
+            });
+            document.addEventListener('click', (e) => { if (!customHospInput.contains(e.target) && !suggestionBox.contains(e.target)) suggestionBox.classList.add('hidden'); });
+
+            on('authForm','submit',async(e)=>{e.preventDefault();try{await signInWithEmailAndPassword(auth,el('authEmail').value,el('authPassword').value);el('authModal').classList.add('hidden');}catch(err){showToast("Lỗi: "+err.message,'error')}});
+            on('navLogoutBtn','click',()=>{isAdmin=false;localStorage.removeItem('vnDrlAdmin');signOut(auth);location.reload()});
+            on('navLoginBtn','click',()=>{el('authModal').classList.remove('hidden')});
+            on('googleLoginBtn','click',async()=>{try{await setPersistence(auth,browserLocalPersistence);await signInWithPopup(auth,new GoogleAuthProvider());el('authModal').classList.add('hidden');}catch(e){if(e.code!=='auth/popup-closed-by-user')showToast(e.message,'error')}});
+            on('openAdminLogin','click',()=>{el('authModal').classList.add('hidden');el('adminAuthModal').classList.remove('hidden');el('adminPassInput').focus()});
+            on('adminAuthForm','submit',(e)=>{e.preventDefault();if(el('adminPassInput').value===ADMIN_PASSWORD){isAdmin=true;localStorage.setItem('vnDrlAdmin','true');location.reload();}else showToast('Sai mã!','error')});
+            
+            on('btnManageHospitals','click',()=>{if(!isAdmin)return showToast("Chỉ Admin!",'error'); renderHospModal(); el('hospitalManageModal').classList.remove('hidden')});
+            on('btnManageManufacturers','click',()=>{if(!isAdmin)return showToast("Chỉ Admin!",'error'); renderManuModal(); el('manufacturerManageModal').classList.remove('hidden')});
+
+            on('drlForm','submit',async(e)=>{
+                e.preventDefault();
+                if(!isAdmin && (!user || user.isAnonymous)) return showToast("Vui lòng đăng nhập!",'error');
+                
+                // Final Check
+                let hasError = false;
+                document.querySelectorAll('#drlForm [data-required="true"]').forEach(i => {
+                    if(!validateField(i)) hasError = true;
+                });
+                if(hasError) return showToast("Vui lòng kiểm tra lại các trường báo đỏ", 'error');
+
+                // Check Radio Button (Bắt buộc chọn Modulation)
+                const doseMod = document.querySelector('input[name="doseModulation"]:checked');
+                if (!doseMod) return showToast("Vui lòng chọn trạng thái Dose Modulation (Có/Không)!", 'error');
+
+                // Check Weight/Height Swap
+                const wVal = parseFloat(el('weight').value);
+                const hVal = parseFloat(el('height').value);
+                if (wVal > 0 && hVal > 0 && wVal >= hVal) {
+                    el('weight').focus();
+                    return showToast("Lỗi: Cân nặng đang lớn hơn Chiều cao! Vui lòng sửa lại.", 'error');
+                }
+
+                let h=el('hospitalSelect').value, m=el('manufacturer').value;
+                if(!h||h==='-- Chọn --') return showToast("Chưa chọn Bệnh viện!",'error');
+                if(h==='other'){h=el('customHospitalName').value.trim();if(!h)return showToast("Nhập tên BV mới!",'error');}
+                if(!m||m==='-- Chọn --') return showToast("Chưa chọn Hãng máy!",'error');
+                
+                const age = parseFloat(el('age').value);
+                if (age < 16) {
+                    window.showConfirm("Cảnh báo: Bệnh nhân dưới 16 tuổi. Bạn có chắc muốn nhập?", async () => { await submitData(h, m); });
+                    return;
+                }
+                await submitData(h, m);
+            });
+
+            async function submitData(h, m) {
+                 try{
+                    document.activeElement.blur();
+                    
+                    // Xử lý lấy giá trị kVp (Lấy từ input ẩn nếu chọn "Khác...")
+                    let finalKvp = el('kvp').value;
+                    if(finalKvp === 'other') {
+                        finalKvp = el('customKvp').value.trim();
+                    }
+
+                    // Đã sửa để gán mặc định an toàn cho form thủ công (N/A hoặc ?) để tránh bị lỗi undefined bên data viewer
+                    await addDoc(collection(db,'artifacts',appId,'public','data','drl_entries'),{
+                        hospitalName:h, manufacturer:m, protocol:el('protocol').value, 
+                        sliceCount: el('sliceCount').value,
+                        patientId: el('patientId').value || 'N/A', 
+                        scanDate: el('scanDate').value || new Date().toISOString().split('T')[0], 
+                        age: el('age').value || '?', 
+                        gender: el('gender').value || '?', 
+                        weight: el('weight').value || '?', 
+                        height: el('height').value || '?',
+                        doseModulation: document.querySelector('input[name="doseModulation"]:checked').value, 
+                        ctdi: el('ctdi').value, 
+                        dlp: el('dlp').value,
+                        kvp: finalKvp || '?', 
+                        mas: el('mas').value || '?', 
+                        userId: user?user.uid:'admin', createdAt:new Date().toISOString()
+                    });
+                    showToast("Đã lưu thành công!");
+                    
+                    // Batch Mode Logic
+                    const isBatch = el('batchMode').checked;
+                    // Đã LOẠI BỎ 'kvp' và 'customKvp' khỏi danh sách làm trắng (fieldsToClear) để nó luôn giữ nguyên sau khi lưu
+                    const fieldsToClear = ['patientId','age','yob','weight','height','bmi','ctdi','dlp','mas'];
+                    
+                    // Nếu KHÔNG phải chế độ nhập liên tục, reset cả radio button và protocol
+                    if(!isBatch) {
+                        fieldsToClear.push('protocol', 'sliceCount'); 
+                        document.querySelectorAll('input[name="doseModulation"]').forEach(r => r.checked = false);
+                    }
+                    
+                    fieldsToClear.forEach(i => { if(el(i)) el(i).value = ''; });
+                    
+                    // Reset errors visually
+                    document.querySelectorAll('.input-error').forEach(i => i.classList.remove('input-error'));
+                    document.querySelectorAll('.error-msg').forEach(s => s.textContent = '');
+                    
+                    // Re-focus appropriate field
+                    if(isBatch) el('patientId').focus();
+
+                }catch(e){if(e.code==='resource-exhausted')handleQuotaError();else showToast(e.message,'error')}
+            }
+
+            // Sửa triệt để hàm Import: Ánh xạ chuẩn, chống bỏ trống và gán giá trị mặc định (Fallback)
+            on('importExcelInput','change',(e)=>{
+                if(!isAdmin && (!user || user.isAnonymous)) return showToast("Cần đăng nhập!",'error');
+                const r=new FileReader(); r.onload=async(ev)=>{
+                    try {
+                        const wb = XLSX.read(ev.target.result, {type:'array'});
+                        // {defval: ""} đảm bảo nếu ô bị trống, key vẫn được tạo ra là chuỗi "" (thay vì undefined)
+                        const d = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval: ""}); 
+                        
+                        for(const row of d){
+                            let calcAge = row['Tuổi'];
+                            if (!calcAge && row['Năm sinh']) {
+                                calcAge = new Date().getFullYear() - parseInt(row['Năm sinh']);
+                            }
+
+                            await addDoc(collection(db,'artifacts',appId,'public','data','drl_entries'),{
+                                hospitalName: row['Bệnh viện'] || 'Imported',
+                                manufacturer: row['Hãng máy'] || 'Unknown',
+                                sliceCount: row['Số lát cắt'] || 'Unknown',
+                                protocol: row['Protocol'] || 'Head',
+                                scanDate: row['Ngày chụp'] || new Date().toISOString().split('T')[0],
+                                patientId: row['Mã BN'] ? String(row['Mã BN']) : 'N/A',
+                                age: calcAge !== "" ? String(calcAge) : '?',
+                                gender: row['Giới tính (M/F)'] || '?',
+                                weight: row['Cân nặng (kg)'] ? String(row['Cân nặng (kg)']) : '?',
+                                height: row['Chiều cao (cm)'] ? String(row['Chiều cao (cm)']) : '?',
+                                kvp: row['kVp'] ? String(row['kVp']) : '?',
+                                mas: row['mAs'] ? String(row['mAs']) : '?',
+                                ctdi: row['CTDIvol'] ? parseFloat(row['CTDIvol']) : 0,
+                                dlp: row['DLP'] ? parseFloat(row['DLP']) : 0,
+                                doseModulation: row['Dose Modulation (Có/Không)'] || 'Có',
+                                userId: user ? user.uid : 'admin',
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                        showToast("Import thành công!");
+                    } catch(err) {
+                        console.error(err);
+                        showToast("Lỗi khi import file Excel!", 'error');
+                    }
+                    e.target.value = ''; // Reset file input sau khi import
+                }; 
+                r.readAsArrayBuffer(e.target.files[0]);
+            });
+
+            const updBMI=()=>{
+                const wRaw = parseFloat(el('weight').value);
+                const hRaw = parseFloat(el('height').value);
+                const h = hRaw / 100;
+                
+                // Cập nhật BMI
+                el('bmi').value = (wRaw > 0 && h > 0) ? (wRaw / (h * h)).toFixed(1) : '';
+
+                // Cảnh báo nhập nhầm
+                const warningEl = el('swapWarning');
+                const wInput = el('weight');
+                const hInput = el('height');
+                
+                if (wRaw > 0 && hRaw > 0 && wRaw >= hRaw) {
+                    warningEl.classList.remove('hidden');
+                    wInput.classList.add('!border-red-500', '!bg-red-50', 'dark:!bg-red-900/30', '!text-red-600');
+                    hInput.classList.add('!border-red-500', '!bg-red-50', 'dark:!bg-red-900/30', '!text-red-600');
+                } else {
+                    warningEl.classList.add('hidden');
+                    wInput.classList.remove('!border-red-500', '!bg-red-50', 'dark:!bg-red-900/30', '!text-red-600');
+                    hInput.classList.remove('!border-red-500', '!bg-red-50', 'dark:!bg-red-900/30', '!text-red-600');
+                }
+            };
+            
+            el('weight').oninput=updBMI; el('height').oninput=updBMI;
+            el('age').oninput=function(){if(this.value)el('yob').value=new Date().getFullYear()-this.value};
+            el('yob').oninput=function(){if(this.value)el('age').value=new Date().getFullYear()-this.value};
+            lucide.createIcons();
+        };
+
+        // Render Helpers for Management
+        function renderHospModal(){ 
+            const d=el('activeHospitalsList'); d.innerHTML=''; getActiveList('hospital').forEach(h=>{
+                d.innerHTML+=`<div class="flex justify-between p-2 bg-slate-50 dark:bg-slate-700 rounded mb-1"><span class="text-xs font-bold dark:text-white">${h}</span><div><button onclick="window.editHosp('${h}')" class="text-blue-500 mr-2"><i data-lucide="pencil" class="w-3 h-3"></i></button><button onclick="window.delHosp('${h}')" class="text-red-500"><i data-lucide="trash" class="w-3 h-3"></i></button></div></div>`;
+            }); lucide.createIcons();
+        }
+        function renderManuModal(){
+            const d=el('activeManufacturersList'); d.innerHTML=''; getActiveList('manufacturer').forEach(m=>{
+                d.innerHTML+=`<div class="flex justify-between p-2 bg-slate-50 dark:bg-slate-700 rounded mb-1"><span class="text-xs font-bold dark:text-white">${m}</span><div><button onclick="window.editManu('${m}')" class="text-blue-500 mr-2"><i data-lucide="pencil" class="w-3 h-3"></i></button><button onclick="window.delManu('${m}')" class="text-red-500"><i data-lucide="trash" class="w-3 h-3"></i></button></div></div>`;
+            }); lucide.createIcons();
+        }
+        window.switchHospTab=(t)=>{el('hosp-tab-active').classList.toggle('hidden',t!=='active');el('hosp-tab-trash').classList.toggle('hidden',t!=='trash')};
+        window.switchManuTab=(t)=>{el('manu-tab-active').classList.toggle('hidden',t!=='active');el('manu-tab-trash').classList.toggle('hidden',t!=='trash')};
+        window.editHosp=async(o)=>{showInput("Sửa tên BV",o,async(n)=>{if(n!==o){customHospitals.delete(o);customHospitals.add(n);await saveHospConfig();renderHospModal();renderHospitalSelect();}})};
+        window.delHosp=async(n)=>{deletedHospitals.add(n);await saveHospConfig();renderHospModal();renderHospitalSelect();};
+        window.editManu=async(o)=>{showInput("Sửa Hãng",o,async(n)=>{if(n!==o){customManufacturers.delete(o);customManufacturers.add(n);await saveManuConfig();renderManuModal();renderHospitalSelect();}})};
+        window.delManu=async(n)=>{deletedManufacturers.add(n);await saveManuConfig();renderManuModal();renderHospitalSelect();};
+        async function saveHospConfig(){ try { await setDoc(doc(db,'artifacts',appId,'public','data','app_settings','hospital_config'),{customHospitals:[...customHospitals],deletedHospitals:[...deletedHospitals],hospitalOrder}); } catch (e) { if (e.code === 'resource-exhausted') handleQuotaError(); } }
+        async function saveManuConfig(){ try { await setDoc(doc(db,'artifacts',appId,'public','data','app_settings','manufacturer_config'),{customManufacturers:[...customManufacturers],deletedManufacturers:[...deletedManufacturers],manufacturerOrder}); } catch (e) { if (e.code === 'resource-exhausted') handleQuotaError(); } }
+    </script>
+</body>
+</html>
