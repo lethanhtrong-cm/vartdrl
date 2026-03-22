@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi" class="scroll-smooth">
 <head>
@@ -406,7 +405,7 @@
                     <div class="filter-stat-card border-l-4 border-l-blue-500">
                         <span class="stat-label text-blue-600 dark:text-blue-400">CTDIvol (mGy)</span>
                         <div class="stat-value-big text-blue-700 dark:text-blue-300" id="dCTDIMedian">0</div>
-                        <div class="text-[10px] text-blue-400 dark:text-blue-500 font-bold mb-3 uppercase tracking-wider">Median (50th)</div>
+                        <div class="text-[10px] text-blue-400 dark:text-blue-500 font-bold mb-3 uppercase tracking-wider" id="lblCTDIMedian">Median (50th)</div>
                         
                         <div class="stats-detail-box">
                             <div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1">
@@ -423,7 +422,7 @@
                     <div class="filter-stat-card border-l-4 border-l-emerald-500">
                         <span class="stat-label text-emerald-600 dark:text-emerald-400">DLP (mGy.cm)</span>
                         <div class="stat-value-big text-emerald-700 dark:text-emerald-300" id="dDLPMedian">0</div>
-                        <div class="text-[10px] text-emerald-400 dark:text-emerald-500 font-bold mb-3 uppercase tracking-wider">Median (50th)</div>
+                        <div class="text-[10px] text-emerald-400 dark:text-emerald-500 font-bold mb-3 uppercase tracking-wider" id="lblDLPMedian">Median (50th)</div>
                         
                         <div class="stats-detail-box">
                             <div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1">
@@ -440,7 +439,7 @@
                     <div class="filter-stat-card border-l-4 border-l-amber-500">
                         <span class="stat-label text-amber-600 dark:text-amber-400">Chiều dài quét (cm)</span>
                         <div class="stat-value-big text-amber-700 dark:text-amber-300" id="dLenMedian">0</div>
-                        <div class="text-[10px] text-amber-400 dark:text-amber-500 font-bold mb-3 uppercase tracking-wider">Median (50th)</div>
+                        <div class="text-[10px] text-amber-400 dark:text-amber-500 font-bold mb-3 uppercase tracking-wider" id="lblLenMedian">Median (50th)</div>
                         
                         <div class="stats-detail-box">
                             <div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1">
@@ -457,7 +456,7 @@
                     <div class="filter-stat-card border-l-4 border-l-purple-500">
                         <span class="stat-label text-purple-600 dark:text-purple-400">Liều hiệu dụng (mSv)</span>
                         <div class="stat-value-big text-purple-700 dark:text-purple-300" id="dEffMedian">0</div>
-                        <div class="text-[10px] text-purple-400 dark:text-purple-500 font-bold mb-3 uppercase tracking-wider">Median (50th)</div>
+                        <div class="text-[10px] text-purple-400 dark:text-purple-500 font-bold mb-3 uppercase tracking-wider" id="lblEffMedian">Median (50th)</div>
                         
                         <div class="stats-detail-box">
                             <div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1">
@@ -1709,6 +1708,35 @@
             fillBulk('beManu', m, false);
         }
         
+        // --- NEW: HÀM TÍNH PERCENTILE CHUẨN ---
+        function getPercentileValue(arr, p) {
+            if (arr.length === 0) return 0;
+            if (arr.length === 1) return arr[0];
+            const sorted = [...arr].sort((a, b) => a - b);
+            const index = (sorted.length - 1) * p / 100;
+            const lower = Math.floor(index);
+            const upper = Math.ceil(index);
+            const weight = index - lower;
+            return sorted[lower] * (1 - weight) + sorted[upper] * weight;
+        }
+
+        // --- NEW: BỘ LỌC TỨ PHÂN VỊ (IQR FILTER) ---
+        function filterOutliersIQR(arr) {
+            // Cần ít nhất 4 giá trị để tính IQR có ý nghĩa, nếu ít hơn thì giữ nguyên mảng
+            if (!arr || arr.length < 4) return arr; 
+            
+            const sorted = [...arr].sort((a, b) => a - b);
+            const q1 = getPercentileValue(sorted, 25); // P25
+            const q3 = getPercentileValue(sorted, 75); // P75
+            const iqr = q3 - q1; // Khoảng tứ phân vị
+            
+            const lowerBound = q1 - 1.5 * iqr; // Hàng rào dưới
+            const upperBound = q3 + 1.5 * iqr; // Hàng rào trên
+            
+            // Lọc và chỉ giữ lại các giá trị nằm trong hàng rào
+            return sorted.filter(x => x >= lowerBound && x <= upperBound);
+        }
+
         function calcStats(arr) {
             if (!arr.length) return { mean: 0, sd: 0, median: 0, p75: 0 };
             const n = arr.length;
@@ -1723,7 +1751,7 @@
         }
 
         function updateDynamicStats(data) {
-            el('dCount').innerText = data.length.toLocaleString();
+            if(el('dCount')) el('dCount').innerText = data.length.toLocaleString();
             
             // Helper defined inside (or reuse existing if moved out)
             const getKFactor = (protocol) => {
@@ -1750,6 +1778,11 @@
 
             // LOGIC CHANGE: If viewing ALL hospitals OR Custom Selection, calculate stats based on HOSPITAL MEDIANS (National DRL methodology)
             if (currentHospFilter === 'all' || currentHospFilter === 'custom') {
+                if(el('lblCTDIMedian')) el('lblCTDIMedian').innerText = "Median (Cơ sở)";
+                if(el('lblDLPMedian')) el('lblDLPMedian').innerText = "Median (Cơ sở)";
+                if(el('lblLenMedian')) el('lblLenMedian').innerText = "Median (Cơ sở)";
+                if(el('lblEffMedian')) el('lblEffMedian').innerText = "Median (Cơ sở)";
+
                 // Group data by hospital
                 const hospMap = {};
                 data.forEach(e => {
@@ -1770,13 +1803,20 @@
                     if (!isNaN(c) && !isNaN(d) && c !== 0) hospMap[name].len.push(d / c);
                 });
 
-                // Calculate Medians for each hospital
+                // Tính P50 (Trung vị) cho từng bệnh viện trước (ĐÃ ÁP DỤNG IQR FILTER)
                 const medCTDI = [], medDLP = [], medLen = [], medEff = [];
                 Object.values(hospMap).forEach(h => {
-                    if(h.ctdi.length) medCTDI.push(calcStats(h.ctdi).median);
-                    if(h.dlp.length) medDLP.push(calcStats(h.dlp).median);
-                    if(h.len.length) medLen.push(calcStats(h.len).median);
-                    if(h.eff.length) medEff.push(calcStats(h.eff).median);
+                    // 1. Lọc nhiễu bằng IQR cho từng bệnh viện
+                    const cleanCTDI = filterOutliersIQR(h.ctdi);
+                    const cleanDLP = filterOutliersIQR(h.dlp);
+                    const cleanLen = filterOutliersIQR(h.len);
+                    const cleanEff = filterOutliersIQR(h.eff);
+
+                    // 2. Tính Median trên dữ liệu đã sạch và đưa vào mảng
+                    if(cleanCTDI.length) medCTDI.push(calcStats(cleanCTDI).median);
+                    if(cleanDLP.length) medDLP.push(calcStats(cleanDLP).median);
+                    if(cleanLen.length) medLen.push(calcStats(cleanLen).median);
+                    if(cleanEff.length) medEff.push(calcStats(cleanEff).median);
                 });
 
                 // Calculate final stats based on the distribution of Hospital Medians
@@ -1787,6 +1827,11 @@
 
             } else {
                 // LOGIC FOR SINGLE HOSPITAL: Calculate based on PATIENT DISTRIBUTION (Standard descriptive stats)
+                if(el('lblCTDIMedian')) el('lblCTDIMedian').innerText = "Median (50th)";
+                if(el('lblDLPMedian')) el('lblDLPMedian').innerText = "Median (50th)";
+                if(el('lblLenMedian')) el('lblLenMedian').innerText = "Median (50th)";
+                if(el('lblEffMedian')) el('lblEffMedian').innerText = "Median (50th)";
+
                 const ctdis = data.map(e => parseFloat(e.ctdi)).filter(n => !isNaN(n));
                 const dlps = data.map(e => parseFloat(e.dlp)).filter(n => !isNaN(n));
                 const lengths = []; const effDoses = [];
@@ -1797,17 +1842,33 @@
                     if (!isNaN(d)) { const k = getKFactor(e.protocol); if (k > 0) effDoses.push(d * k); }
                 });
 
-                sCTDI = calcStats(ctdis);
-                sDLP = calcStats(dlps);
-                sLen = calcStats(lengths);
-                sEff = calcStats(effDoses);
+                // Áp dụng bộ lọc IQR khi tính toán cho 1 Bệnh viện cụ thể
+                sCTDI = calcStats(filterOutliersIQR(ctdis));
+                sDLP = calcStats(filterOutliersIQR(dlps));
+                sLen = calcStats(filterOutliersIQR(lengths));
+                sEff = calcStats(filterOutliersIQR(effDoses));
             }
 
             // Update UI
-            el('dCTDIMean').innerText = sCTDI.mean.toFixed(2); el('dCTDISD').innerText = sCTDI.sd.toFixed(2); el('dCTDIMedian').innerText = sCTDI.median.toFixed(2); el('dCTDIP75').innerText = sCTDI.p75.toFixed(2);
-            el('dDLPMean').innerText = sDLP.mean.toFixed(1); el('dDLPSD').innerText = sDLP.sd.toFixed(1); el('dDLPMedian').innerText = sDLP.median.toFixed(1); el('dDLPP75').innerText = sDLP.p75.toFixed(1);
-            el('dLenMean').innerText = sLen.mean.toFixed(1); el('dLenSD').innerText = sLen.sd.toFixed(1); el('dLenMedian').innerText = sLen.median.toFixed(1); el('dLenP75').innerText = sLen.p75.toFixed(1);
-            el('dEffMean').innerText = sEff.mean.toFixed(2); el('dEffSD').innerText = sEff.sd.toFixed(2); el('dEffMedian').innerText = sEff.median.toFixed(2); el('dEffP75').innerText = sEff.p75.toFixed(2);
+            if(el('dCTDIMean')) el('dCTDIMean').innerText = sCTDI.mean.toFixed(2); 
+            if(el('dCTDISD')) el('dCTDISD').innerText = sCTDI.sd.toFixed(2); 
+            if(el('dCTDIMedian')) el('dCTDIMedian').innerText = sCTDI.median.toFixed(2); 
+            if(el('dCTDIP75')) el('dCTDIP75').innerText = sCTDI.p75.toFixed(2);
+            
+            if(el('dDLPMean')) el('dDLPMean').innerText = sDLP.mean.toFixed(1); 
+            if(el('dDLPSD')) el('dDLPSD').innerText = sDLP.sd.toFixed(1); 
+            if(el('dDLPMedian')) el('dDLPMedian').innerText = sDLP.median.toFixed(1); 
+            if(el('dDLPP75')) el('dDLPP75').innerText = sDLP.p75.toFixed(1);
+            
+            if(el('dLenMean')) el('dLenMean').innerText = sLen.mean.toFixed(1); 
+            if(el('dLenSD')) el('dLenSD').innerText = sLen.sd.toFixed(1); 
+            if(el('dLenMedian')) el('dLenMedian').innerText = sLen.median.toFixed(1); 
+            if(el('dLenP75')) el('dLenP75').innerText = sLen.p75.toFixed(1);
+            
+            if(el('dEffMean')) el('dEffMean').innerText = sEff.mean.toFixed(2); 
+            if(el('dEffSD')) el('dEffSD').innerText = sEff.sd.toFixed(2); 
+            if(el('dEffMedian')) el('dEffMedian').innerText = sEff.median.toFixed(2); 
+            if(el('dEffP75')) el('dEffP75').innerText = sEff.p75.toFixed(2);
         }
 
         function updateGlobalStats(data) {
