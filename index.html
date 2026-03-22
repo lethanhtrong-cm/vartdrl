@@ -1,1 +1,459 @@
 
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VN-DRL - Mức Liều Tham Chiếu Chẩn Đoán Quốc Gia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        medical: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6', // Teal
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            900: '#134e4a',
+                        },
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6', // Blue
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        
+        /* Modern Glass Panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Smooth Loading Animation */
+        .pulse-ring {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+        .pulse-ring::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            z-index: -1;
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { opacity: 0.3; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* Custom Background with subtle grid */
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+        }
+
+        /* New Vibrant CTA Animations */
+        @keyframes gradient-xy {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-xy {
+            animation: gradient-xy 5s ease infinite;
+            background-size: 400% 400%;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col text-slate-800 antialiased relative overflow-x-hidden">
+
+    <!-- Premium Animated Background Orbs -->
+    <div class="fixed inset-0 z-[-2] bg-grid-pattern opacity-60"></div>
+    <div class="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400/20 blur-[120px] pointer-events-none"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-teal-400/20 blur-[120px] pointer-events-none"></div>
+    <div class="fixed top-[20%] right-[-5%] w-[30%] h-[30%] rounded-full bg-amber-400/10 blur-[100px] pointer-events-none"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col items-center justify-center p-4 md:p-8 max-w-[1400px] mx-auto w-full mt-4 md:mt-8">
+        
+        <!-- SECTION 1: HEADER -->
+        <header class="text-center w-full max-w-4xl mx-auto mb-12 animate-fade-in-up">
+            <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-md border border-brand-100/50 text-brand-700 font-bold text-xs md:text-sm tracking-wide mb-8 uppercase shadow-sm shadow-brand-500/5">
+                <i data-lucide="shield-check" class="w-4 h-4 text-brand-500"></i>
+                Chi hội Kỹ thuật Điện quang và Y học Hạt nhân Việt Nam
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tighter leading-[1.1] mb-6">
+                DỰ ÁN NGHIÊN CỨU <br class="hidden md:block">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-indigo-600 to-medical-500 pb-2">MỨC LIỀU THAM CHIẾU</span>
+            </h1>
+            
+            <p class="text-base md:text-xl text-slate-500 font-semibold uppercase tracking-[0.2em] flex items-center justify-center gap-4">
+                Diagnostic Reference Level 
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span> 
+                <span class="text-brand-600">VN-DRL</span>
+            </p>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="flex flex-col items-center justify-center py-20 w-full">
+            <div class="pulse-ring mb-6 flex items-center justify-center bg-white rounded-full shadow-lg">
+                <i data-lucide="activity" class="w-8 h-8 text-brand-600"></i>
+            </div>
+            <p class="text-brand-700 font-semibold tracking-wide animate-pulse">Đang đồng bộ dữ liệu hệ thống...</p>
+        </div>
+
+        <!-- GLOBAL TOTALS BOXES -->
+        <div id="globalStatsContainer" class="w-full flex flex-col sm:flex-row items-center justify-center gap-6 mb-16 hidden opacity-0 transition-all duration-700 transform translate-y-4">
+            
+            <!-- Global Box 1 -->
+            <div class="relative group w-full sm:w-auto min-w-[280px]">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-10 group-hover:opacity-25 transition duration-500"></div>
+                <div class="relative glass-panel rounded-3xl px-8 py-6 flex items-center gap-6 shadow-xl shadow-slate-200/50 transition-transform duration-300 group-hover:-translate-y-1">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center text-blue-600 shadow-inner border border-blue-200/50">
+                        <i data-lucide="building-2" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Tổng số cơ sở</div>
+                        <div class="text-4xl font-black text-slate-800 tracking-tighter" id="lblTotalHosps">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Box 2 -->
+            <div class="relative group w-full sm:w-auto min-w-[280px]">
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-3xl blur opacity-10 group-hover:opacity-25 transition duration-500"></div>
+                <div class="relative glass-panel rounded-3xl px-8 py-6 flex items-center gap-6 shadow-xl shadow-slate-200/50 transition-transform duration-300 group-hover:-translate-y-1">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-200/50">
+                        <i data-lucide="database" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Tổng số ca dữ liệu</div>
+                        <div class="text-4xl font-black text-slate-800 tracking-tighter" id="lblTotalCases">0</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION 2: STATS BOXES -->
+        <div id="statsContainer" class="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-8 hidden opacity-0 transition-opacity duration-700">
+            <!-- Content will be injected here via JavaScript -->
+        </div>
+
+        <!-- SECTION 3: VIBRANT CTA BUTTON AREA -->
+        <div class="mt-20 mb-12 text-center w-full hidden opacity-0 transition-all duration-1000 delay-500" id="ctaContainer">
+            <div class="max-w-3xl mx-auto relative group">
+                <!-- Outer Animated Glowing Border -->
+                <div class="absolute -inset-1 bg-gradient-to-r from-brand-400 via-indigo-500 to-medical-400 rounded-[2.5rem] blur opacity-30 group-hover:opacity-60 transition duration-1000 animate-gradient-xy"></div>
+                
+                <!-- Main Container -->
+                <div class="relative glass-panel rounded-[2.5rem] p-1 md:p-1 overflow-hidden shadow-2xl">
+                    <div class="bg-gradient-to-br from-white/90 via-slate-50/50 to-brand-50/30 rounded-[2.4rem] p-8 md:p-12 relative overflow-hidden">
+                        
+                        <!-- Background Decorations -->
+                        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="absolute -left-10 -top-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                        
+                        <!-- Content Area -->
+                        <div class="relative z-10 flex flex-col items-center">
+                            <div class="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand-500/40">
+                                <span class="relative flex h-2 w-2">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                                </span>
+                                Cổng thông tin nhập liệu
+                            </div>
+                            
+                            <h4 class="text-2xl md:text-3xl font-black text-slate-900 mb-4 tracking-tight">
+                                Góp phần xây dựng chuẩn <span class="text-brand-600">Liều xạ Việt Nam</span>
+                            </h4>
+                            
+                            <p class="text-slate-500 font-medium mb-10 max-w-lg leading-relaxed">
+                                Dành riêng cho Kỹ thuật viên và Cơ sở y tế tham gia mạng lưới VN-DRL. Đăng nhập để đồng bộ hóa chỉ số CTDIvol và DLP chuẩn.
+                            </p>
+                            
+                            <!-- Massive Vibrant Button -->
+                            <a href="https://vnrad.tech/drl" class="group relative inline-flex items-center justify-center gap-4 bg-gradient-to-r from-brand-600 to-indigo-600 text-white px-10 py-5 rounded-2xl font-black text-xl transition-all hover:scale-105 active:scale-95 shadow-xl shadow-brand-500/40 hover:shadow-indigo-500/50 overflow-hidden">
+                                <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                                <i data-lucide="log-in" class="w-7 h-7 transition-transform group-hover:translate-x-1"></i>
+                                VÀO TRANG NHẬP LIỆU
+                                <i data-lucide="chevron-right" class="w-6 h-6 transition-transform group-hover:translate-x-1"></i>
+                            </a>
+
+                            <div class="mt-8 flex items-center gap-8 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                                <div class="flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> Nhanh chóng</div>
+                                <div class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i> Bảo mật</div>
+                                <div class="flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500"></i> Chính xác</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-8 mt-auto relative z-10">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between text-xs font-medium text-slate-400 border-t border-slate-200/60 pt-6">
+            <p>© 2026 VARTNM - Vietnam Association of Radiologic Technology and Nuclear Medicine.</p>
+            <div class="flex items-center gap-2 mt-4 md:mt-0 bg-slate-100/50 px-3 py-1.5 rounded-full border border-slate-200/50">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Hệ thống đang hoạt động trực tuyến
+            </div>
+        </div>
+    </footer>
+
+    <!-- Tailwind Custom Animation Classes -->
+    <style>
+        @keyframes shimmer { 100% { left: 200%; } }
+        .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+
+    <!-- FIREBASE & LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Config Firebase
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAtQdmDbA1BgOrvwevrG6gwuFzlUmBTbfY", 
+            authDomain: "wb-idr.firebaseapp.com", 
+            projectId: "wb-idr", 
+            appId: "1:716649486328:web:340d7ae8dd0bafa1e0680d" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = 'wb-idr';
+
+        // Khởi tạo Icon
+        lucide.createIcons();
+
+        // -------------------------------------------------------------
+        // STATISTICAL UTILITIES
+        // -------------------------------------------------------------
+        function getPercentile(arr, p) {
+            if (arr.length === 0) return 0;
+            if (arr.length === 1) return arr[0];
+            const sorted = [...arr].sort((a, b) => a - b);
+            const index = (sorted.length - 1) * p / 100;
+            const lower = Math.floor(index);
+            const upper = Math.ceil(index);
+            const weight = index - lower;
+            return sorted[lower] * (1 - weight) + sorted[upper] * weight;
+        }
+
+        function filterOutliersIQR(arr) {
+            if (!arr || arr.length < 4) return arr; 
+            const sorted = [...arr].sort((a, b) => a - b);
+            const q1 = getPercentile(sorted, 25);
+            const q3 = getPercentile(sorted, 75);
+            const iqr = q3 - q1;
+            const lowerBound = q1 - 1.5 * iqr;
+            const upperBound = q3 + 1.5 * iqr;
+            return sorted.filter(x => x >= lowerBound && x <= upperBound);
+        }
+
+        function calculateStats(arr) {
+            if (!arr || arr.length === 0) return { median: 0, p75: 0, mean: 0, sd: 0 };
+            const n = arr.length;
+            const sum = arr.reduce((a, b) => a + b, 0);
+            const mean = sum / n;
+            const median = getPercentile(arr, 50);
+            const p75 = getPercentile(arr, 75);    
+            const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n > 1 ? n - 1 : 1);
+            const sd = Math.sqrt(variance);
+            
+            return { median, p75, mean, sd };
+        }
+
+        // -------------------------------------------------------------
+        // MAIN FETCH AND RENDER LOGIC
+        // -------------------------------------------------------------
+        async function fetchAndRenderData() {
+            try {
+                await signInAnonymously(auth);
+                const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'drl_entries'));
+                const allEntries = snap.docs.map(d => d.data()).filter(e => !e.isDeleted);
+
+                const totalCases = allEntries.length;
+                const totalHosps = new Set(allEntries.map(e => e.hospitalName).filter(Boolean)).size;
+
+                document.getElementById('lblTotalCases').innerText = totalCases.toLocaleString();
+                document.getElementById('lblTotalHosps').innerText = totalHosps;
+                
+                const globalContainer = document.getElementById('globalStatsContainer');
+                globalContainer.classList.remove('hidden');
+                setTimeout(() => {
+                    globalContainer.classList.remove('opacity-0');
+                    globalContainer.classList.remove('translate-y-4');
+                }, 100);
+
+                const standardEntries = allEntries.filter(e => {
+                    const w = parseFloat(e.weight);
+                    return !isNaN(w) && w >= 50 && w <= 70;
+                });
+
+                const groups = {
+                    head: { name: "Sọ não", subname: "Không thuốc", icon: "brain", color: "blue", hospData: {}, hospitals: new Set(), count: 0 },
+                    chest: { name: "Ngực", subname: "Không thuốc", icon: "lungs", color: "cyan", hospData: {}, hospitals: new Set(), count: 0 },
+                    abd: { name: "Ổ bụng", subname: "Không thuốc", icon: "activity", color: "amber", hospData: {}, hospitals: new Set(), count: 0 },
+                    low: { name: "Phổi", subname: "Liều thấp", icon: "wind", color: "emerald", hospData: {}, hospitals: new Set(), count: 0 }
+                };
+
+                standardEntries.forEach(e => {
+                    const p = (e.protocol || "").toLowerCase();
+                    const c = parseFloat(e.ctdi);
+                    const d = parseFloat(e.dlp);
+                    const h = e.hospitalName || "Unknown";
+
+                    let targetGroup = null;
+                    if (p.includes('low') || p.includes('thấp') || p.includes('ldct')) {
+                        targetGroup = groups.low;
+                    } else if (p.includes('head') || p.includes('sọ') || p.includes('não') || p.includes('brain')) {
+                        targetGroup = groups.head;
+                    } else if (p.includes('chest') || p.includes('ngực') || p.includes('phổi') || p.includes('thorax')) {
+                        targetGroup = groups.chest;
+                    } else if (p.includes('abdomen') || p.includes('bụng') || p.includes('abd')) {
+                        targetGroup = groups.abd;
+                    }
+
+                    if (targetGroup) {
+                        targetGroup.count++;
+                        targetGroup.hospitals.add(h);
+                        if (!targetGroup.hospData[h]) targetGroup.hospData[h] = { ctdi: [], dlp: [] };
+                        if (!isNaN(c) && c > 0) targetGroup.hospData[h].ctdi.push(c);
+                        if (!isNaN(d) && d > 0) targetGroup.hospData[h].dlp.push(d);
+                    }
+                });
+
+                const container = document.getElementById('statsContainer');
+                container.innerHTML = '';
+
+                Object.values(groups).forEach((g, index) => {
+                    const hospitalMediansCTDI = [];
+                    const hospitalMediansDLP = [];
+
+                    Object.values(g.hospData).forEach(hData => {
+                        const cleanCTDI = filterOutliersIQR(hData.ctdi);
+                        if (cleanCTDI.length > 0) hospitalMediansCTDI.push(calculateStats(cleanCTDI).median);
+                        const cleanDLP = filterOutliersIQR(hData.dlp);
+                        if (cleanDLP.length > 0) hospitalMediansDLP.push(calculateStats(cleanDLP).median);
+                    });
+
+                    const statCTDI = calculateStats(hospitalMediansCTDI);
+                    const statDLP = calculateStats(hospitalMediansDLP);
+
+                    const themes = {
+                        blue: { gradient: 'from-blue-500 to-indigo-600', text: 'text-blue-600', badgeBg: 'bg-blue-100', badgeText: 'text-blue-700', shadow: 'shadow-blue-500/30' },
+                        cyan: { gradient: 'from-cyan-400 to-blue-500', text: 'text-cyan-600', badgeBg: 'bg-cyan-100', badgeText: 'text-cyan-700', shadow: 'shadow-cyan-500/30' },
+                        amber: { gradient: 'from-amber-400 to-orange-500', text: 'text-orange-600', badgeBg: 'bg-amber-100', badgeText: 'text-amber-700', shadow: 'shadow-amber-500/30' },
+                        emerald: { gradient: 'from-emerald-400 to-teal-500', text: 'text-teal-600', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-700', shadow: 'shadow-emerald-500/30' }
+                    };
+                    const t = themes[g.color];
+
+                    const cardHTML = `
+                        <div class="relative group h-full" style="animation: fadeInUp 0.6s ease-out ${index * 0.15}s forwards; opacity: 0; transform: translateY(20px);">
+                            <div class="absolute -inset-0.5 bg-gradient-to-br ${t.gradient} rounded-[2rem] blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
+                            <div class="relative flex flex-col h-full glass-panel border border-white/80 rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 transition-transform duration-300 group-hover:-translate-y-1 overflow-hidden">
+                                <div class="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br ${t.gradient} opacity-10 rounded-full blur-2xl"></div>
+                                <div class="flex items-center gap-5 mb-8 relative z-10">
+                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white shadow-lg ${t.shadow} flex-shrink-0">
+                                        <i data-lucide="${g.icon}" class="w-7 h-7"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-black text-xl text-slate-800 tracking-tight leading-tight">${g.name}</h3>
+                                        <div class="text-[13px] font-semibold text-slate-400 mb-2">${g.subname}</div>
+                                        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 uppercase tracking-wide">
+                                                <i data-lucide="building" class="w-3 h-3"></i> ${g.hospitals.size} Viện
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${t.badgeBg} ${t.badgeText} uppercase tracking-wide cursor-help" title="Lọc chuẩn bệnh nhân 50-70kg">
+                                                <i data-lucide="user-check" class="w-3 h-3"></i> ${g.count} Ca
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 flex-1">
+                                    <div class="flex flex-col bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 relative group/col">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">CTDIvol</h4>
+                                            <span class="text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy</span>
+                                        </div>
+                                        <div class="mb-4">
+                                            <div class="text-[10px] font-bold text-slate-500 mb-1">Trung vị (P50)</div>
+                                            <div class="text-3xl font-black ${t.text} tracking-tighter leading-none">${statCTDI.median.toFixed(2)}</div>
+                                        </div>
+                                        <div class="mb-4 bg-white rounded-xl p-3 border border-slate-200/60 shadow-sm transition-colors group-hover/col:border-red-200">
+                                            <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-700">P75 (DRL)</span><i data-lucide="target" class="w-3.5 h-3.5 text-red-500"></i></div>
+                                            <div class="text-xl font-black text-slate-900 leading-none">${statCTDI.p75.toFixed(2)}</div>
+                                        </div>
+                                        <div class="mt-auto pt-3 border-t border-slate-200/60 text-xs font-bold text-slate-600 font-mono text-right">${statCTDI.mean.toFixed(2)} ±${statCTDI.sd.toFixed(1)}</div>
+                                    </div>
+                                    <div class="flex flex-col bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 relative group/col">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">DLP</h4>
+                                            <span class="text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy.cm</span>
+                                        </div>
+                                        <div class="mb-4">
+                                            <div class="text-[10px] font-bold text-slate-500 mb-1">Trung vị (P50)</div>
+                                            <div class="text-3xl font-black ${t.text} tracking-tighter leading-none">${statDLP.median.toFixed(1)}</div>
+                                        </div>
+                                        <div class="mb-4 bg-white rounded-xl p-3 border border-slate-200/60 shadow-sm transition-colors group-hover/col:border-red-200">
+                                            <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-700">P75 (DRL)</span><i data-lucide="target" class="w-3.5 h-3.5 text-red-500"></i></div>
+                                            <div class="text-xl font-black text-slate-900 leading-none">${statDLP.p75.toFixed(1)}</div>
+                                        </div>
+                                        <div class="mt-auto pt-3 border-t border-slate-200/60 text-xs font-bold text-slate-600 font-mono text-right">${statDLP.mean.toFixed(1)} ±${statDLP.sd.toFixed(1)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHTML;
+                });
+
+                document.getElementById('loadingState').style.display = 'none';
+                container.classList.remove('hidden');
+                document.getElementById('ctaContainer').classList.remove('hidden');
+                setTimeout(() => {
+                    container.classList.remove('opacity-0');
+                    document.getElementById('ctaContainer').classList.remove('opacity-0');
+                }, 50);
+
+                lucide.createIcons();
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loadingState').innerHTML = `<div class="text-red-500">Lỗi tải dữ liệu.</div>`;
+            }
+        }
+        fetchAndRenderData();
+    </script>
+</body>
+</html>
