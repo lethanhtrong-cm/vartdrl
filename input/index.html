@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VN-DRL - Nhập liệu (Có AI OCR)</title>
+    <title>VN-DRL - Nhập liệu </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- THÊM THƯ VIỆN NHẬN DIỆN ẢNH TESSERACT.JS -->
+    <!-- THÊM THƯ VIỆN NHẬN DIỆN ẢNH TESSERACT.JS VÀ DICOM-PARSER -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://unpkg.com/dicom-parser@1.8.21/dist/dicomParser.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
@@ -57,11 +58,11 @@
         .highlight-row { background-color: rgba(254, 243, 199, 0.5) !important; border-left: 4px solid #f59e0b !important; }
         .dark .highlight-row { background-color: rgba(120, 53, 15, 0.3) !important; border-left: 4px solid #f59e0b !important; }
         
-        /* OCR Highlight animation */
-        .ocr-success { animation: flashGreen 2s ease-out; }
+        /* OCR / DICOM Highlight animation */
+        .ocr-success { animation: flashGreen 2.5s ease-out; }
         @keyframes flashGreen {
-            0% { background-color: #dcfce7; border-color: #10b981; }
-            100% { background-color: transparent; border-color: #fcd34d; }
+            0% { background-color: #10b981; border-color: #059669; color: white; }
+            100% { background-color: transparent; border-color: #fcd34d; color: inherit; }
         }
 
         /* Hiệu ứng chớp đỏ cảnh báo liều tia */
@@ -410,18 +411,18 @@
                         <div class="flex justify-between items-center mb-2">
                             <label class="section-label text-amber-700 dark:text-amber-500 flex items-center gap-2"><i data-lucide="zap" class="w-3 h-3 fill-amber-500"></i> 3. Thông số liều</label>
                             
-                            <!-- OCR BUTTON -->
-                            <label class="cursor-pointer bg-white dark:bg-slate-700 border border-amber-200 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1.5 shadow-sm">
-                                <i data-lucide="camera" class="w-3.5 h-3.5"></i> Quét ảnh (OCR)
-                                <input type="file" id="ocrInput" accept="image/*" class="hidden">
+                            <!-- OCR & DICOM BUTTON -->
+                            <label class="cursor-pointer bg-white dark:bg-slate-700 border border-amber-200 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1.5 shadow-sm" title="Upload ảnh chụp màn hình hoặc file DICOM (.dcm)">
+                                <i data-lucide="scan-text" class="w-3.5 h-3.5"></i> Quét ảnh / File DICOM
+                                <input type="file" id="ocrInput" accept="image/*,.dcm,.ima" class="hidden">
                             </label>
                         </div>
                         
-                        <!-- OCR Progress Bar -->
+                        <!-- Progress Bar -->
                         <div id="ocrProgress" class="hidden w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mb-2 overflow-hidden">
                             <div id="ocrProgressBar" class="bg-amber-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                         </div>
-                        <p id="ocrStatus" class="hidden text-[9px] text-amber-600 dark:text-amber-400 font-bold mb-2 text-right animate-pulse">Đang phân tích ảnh... (Lần đầu sẽ mất thêm vài giây tải AI)</p>
+                        <p id="ocrStatus" class="hidden text-[9px] text-amber-600 dark:text-amber-400 font-bold mb-2 text-right animate-pulse">Đang phân tích file... (Xin chờ giây lát)</p>
 
                         <div class="grid grid-cols-2 gap-3">
                             <div class="space-y-1">
@@ -463,7 +464,7 @@
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 instruction-scroll text-slate-600 dark:text-slate-300 space-y-6 text-base leading-relaxed pb-12">
                     <div class="space-y-2"><h3 class="font-black text-indigo-900 dark:text-indigo-400 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-[10px]">1</span> Chọn Protocol</h3><p class="text-sm">Chỉ nhập dữ liệu cho các ca chụp <b>người lớn (≥ 18 tuổi)</b> và <b>KHÔNG TIÊM THUỐC</b> cản quang (Non-contrast).</p><ul class="list-disc pl-5 space-y-1 text-sm marker:text-indigo-300"><li><b>Sọ não (Head):</b> Chụp sọ não thường quy, chấn thương.</li><li><b>Ngực (Chest):</b> Chụp lồng ngực thường quy.</li><li><b>Bụng (Abdomen):</b> Chụp ổ bụng - tiểu khung.</li><li><b>Phổi liều thấp (LDCT):</b> Tầm soát ung thư phổi.</li></ul></div>
-                    <div class="space-y-2"><h3 class="font-black text-amber-700 dark:text-amber-500 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-[10px]">2</span> Thông số liều (Quan trọng)</h3><div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl border border-amber-100 dark:border-amber-800 text-sm"><p class="mb-2">Thông số nằm trong <b>Dose Report</b> (hoặc Patient Protocol) ở cuối ca chụp.</p><div class="grid grid-cols-2 gap-2"><div class="bg-white dark:bg-slate-700 p-2 rounded border border-amber-100 dark:border-slate-600"><span class="block font-bold text-amber-800 dark:text-amber-400">CTDIvol</span><span class="text-xs text-slate-400">Đơn vị: mGy</span><p class="text-xs mt-1 italic">Lấy giá trị của loạt cắt chính (Axial/Helical).</p></div><div class="bg-white dark:bg-slate-700 p-2 rounded border border-amber-100 dark:border-slate-600"><span class="block font-bold text-amber-800 dark:text-amber-400">DLP</span><span class="text-xs text-slate-400">Đơn vị: mGy.cm</span><p class="text-xs mt-1 italic">Lấy giá trị DLP của loạt cắt chính (Helical/Axial), <b>KHÔNG</b> lấy Total DLP.</p></div></div></div></div>
+                    <div class="space-y-2"><h3 class="font-black text-amber-700 dark:text-amber-500 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-[10px]">2</span> Thông số liều (Quan trọng)</h3><div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl border border-amber-100 dark:border-amber-800 text-sm"><p class="mb-2">Tải file <b>DICOM RDSR</b> (chính xác nhất) hoặc quét ảnh Dose Report ở cuối ca chụp.</p><div class="grid grid-cols-2 gap-2"><div class="bg-white dark:bg-slate-700 p-2 rounded border border-amber-100 dark:border-slate-600"><span class="block font-bold text-amber-800 dark:text-amber-400">CTDIvol</span><span class="text-xs text-slate-400">Đơn vị: mGy</span><p class="text-xs mt-1 italic">Lấy giá trị của loạt cắt chính (Axial/Helical).</p></div><div class="bg-white dark:bg-slate-700 p-2 rounded border border-amber-100 dark:border-slate-600"><span class="block font-bold text-amber-800 dark:text-amber-400">DLP</span><span class="text-xs text-slate-400">Đơn vị: mGy.cm</span><p class="text-xs mt-1 italic">Lấy giá trị DLP của loạt cắt chính (Helical/Axial), <b>KHÔNG</b> lấy Total DLP.</p></div></div></div></div>
                     <div class="space-y-2"><h3 class="font-black text-emerald-700 dark:text-emerald-500 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-[10px]">3</span> Dose Modulation</h3><p class="text-sm">Kỹ thuật tự động điều chỉnh dòng (mA) theo kích thước bệnh nhân. Tên gọi khác nhau tùy hãng:</p><div class="grid grid-cols-2 gap-2 text-sm font-bold text-slate-500 dark:text-slate-400"><div class="bg-slate-50 dark:bg-slate-700 p-2 rounded">GE: SmartmA / Auto mA</div><div class="bg-slate-50 dark:bg-slate-700 p-2 rounded">Siemens: CARE Dose 4D</div><div class="bg-slate-50 dark:bg-slate-700 p-2 rounded">Philips: DOM / Z-DOM</div><div class="bg-slate-50 dark:bg-slate-700 p-2 rounded">Canon: SureExposure</div></div><p class="text-sm italic mt-1 text-slate-400">*Nếu máy có bật tính năng này, hãy chọn "Có".</p></div>
                     <div class="space-y-2"><h3 class="font-black text-blue-700 dark:text-blue-400 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[10px]">4</span> Thông tin Bệnh nhân</h3><ul class="list-disc pl-5 space-y-1 text-sm marker:text-blue-300"><li><b>Mã BN (Patient ID):</b> Dùng để đối chiếu, dữ liệu được mã hóa khi thống kê.</li><li><b>Chiều cao/Cân nặng:</b> Bắt buộc để tính BMI và đánh giá mức liều phù hợp thể trạng.</li></ul></div>
                     <div class="space-y-2"><h3 class="font-black text-rose-700 dark:text-rose-500 uppercase text-sm tracking-wider flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center text-[10px]">5</span> Các trường bắt buộc (*)</h3><ul class="list-disc pl-5 space-y-1 text-sm marker:text-rose-300"><li><b>Cơ sở & Thiết bị:</b> Bệnh viện, Hãng máy, Số lát cắt, Tùy biến liều (mA Modulation).</li><li><b>Bệnh nhân & Kỹ thuật:</b> Protocol, Ngày chụp, Tuổi, Giới tính, Cân nặng, Chiều cao.</li><li><b>Thông số liều:</b> CTDIvol, DLP.</li></ul></div>
@@ -890,12 +891,6 @@
                     </td>`;
                 });
                 row.innerHTML = html; tbody.appendChild(row);
-                
-                // Scroll tới dòng được highlight nếu có
-                if(isSelected && !window.hasScrolledToHighlight) {
-                    // row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    // window.hasScrolledToHighlight = true; // Tránh scroll liên tục gây phiền
-                }
             });
         }
         
@@ -968,147 +963,302 @@
             on('dlp', 'input', checkDoseWarnings);
             on('protocol', 'change', checkDoseWarnings);
 
-            // --- AI OCR LOGIC THÔNG MINH (SMART HEURISTICS) ---
+            // Hàm áp dụng hiệu ứng nháy xanh thành công cho các ô được tự động điền
+            const applySuccessFlash = (ids) => {
+                ids.forEach(id => {
+                    const elem = el(id);
+                    if(elem && elem.value) {
+                        // Loại bỏ để trigger lại animation
+                        elem.classList.remove('ocr-success');
+                        void elem.offsetWidth; // Force reflow
+                        elem.classList.add('ocr-success');
+                        setTimeout(() => elem.classList.remove('ocr-success'), 2500);
+                    }
+                });
+            }
+
+            // --- AI OCR & DICOM PARSER LOGIC ---
             const ocrInput = el('ocrInput');
             const ocrProgress = el('ocrProgress');
             const ocrProgressBar = el('ocrProgressBar');
             const ocrStatus = el('ocrStatus');
+
+            // Hàm hỗ trợ nhận diện Protocol từ chuỗi văn bản
+            const autoDetectProtocol = (text) => {
+                if (!text) return null;
+                const str = text.toUpperCase();
+                // LDCT xét trước để không bị nhầm với Chest thường
+                if (str.includes('LDCT') || str.includes('LOW DOSE') || str.includes('LOW-DOSE')) return "Phổi liều thấp (LDCT)";
+                if (str.includes('HEAD') || str.includes('BRAIN') || str.includes('SO NAO') || str.includes('SỌ NÃO') || str.includes('CRANIUM')) return "Sọ não không thuốc (Head)";
+                if (str.includes('CHEST') || str.includes('THORAX') || str.includes('NGUC') || str.includes('NGỰC') || str.includes('LUNG') || str.includes('PHOI') || str.includes('PHỔI')) return "Ngực không thuốc (Chest)";
+                if (str.includes('ABDOMEN') || str.includes('PELVIS') || str.includes('BUNG') || str.includes('BỤNG') || str.includes('ABD')) return "Bụng không thuốc (Abdomen)";
+                return null;
+            };
 
             if(ocrInput) {
                 on('ocrInput', 'change', async (e) => {
                     const file = e.target.files[0];
                     if(!file) return;
 
+                    const isDicomFile = file.name.toLowerCase().endsWith('.dcm') || file.name.toLowerCase().endsWith('.ima');
+
                     ocrProgress.classList.remove('hidden');
                     ocrStatus.classList.remove('hidden');
-                    
-                    // Fake Progress để tránh lỗi DataCloneError trên một số trình duyệt
-                    ocrProgressBar.style.width = '100%';
-                    ocrProgressBar.classList.add('animate-pulse');
                     el('submitBtn').disabled = true;
 
-                    try {
-                        // Khởi tạo Tesseract an toàn (không gửi function logger vào Worker)
-                        const worker = await Tesseract.createWorker('eng');
-                        
-                        // PSM 6: Chế độ tối ưu để đọc văn bản dạng Bảng (Table/Uniform block)
-                        await worker.setParameters({
-                            tessedit_pageseg_mode: '6',
-                        });
+                    if (isDicomFile) {
+                        // ==== XỬ LÝ FILE DICOM RDSR ====
+                        ocrStatus.textContent = 'Đang phân tích cấu trúc cây DICOM RDSR...';
+                        ocrProgressBar.style.width = '100%';
+                        ocrProgressBar.classList.add('animate-pulse');
 
-                        const { data: { text } } = await worker.recognize(file);
-                        await worker.terminate();
-
-                        // Tiền xử lý văn bản: Đổi phẩy thành chấm, tách thành các dòng, xóa dòng trống
-                        const lines = text.toUpperCase().replace(/,/g, '.').split('\n').map(l => l.trim()).filter(l => l.length > 0);
-
-                        let ctdiVal = null;
-                        let dlpVal = null;
-                        let maxCtdi = 0;
-
-                        // BƯỚC 1: TÌM HÀNG TIÊU ĐỀ (HÀNG 1)
-                        let headerIndex = -1;
-                        for (let i = 0; i < lines.length; i++) {
-                            if (lines[i].includes('CTDI') || lines[i].includes('DLP')) {
-                                headerIndex = i;
-                                break; // Xác định được Hàng 1
-                            }
-                        }
-
-                        // BƯỚC 2: GIÓNG XUỐNG HÀNG 2 VÀ HÀNG 3 (Bỏ qua phần Total ở dưới cùng)
-                        if (headerIndex !== -1) {
-                            // Chỉ lấy 3 dòng tiếp theo (Hàng 2 là Scout, Hàng 3 là Phase chụp chính)
-                            const limit = Math.min(headerIndex + 4, lines.length);
-                            
-                            for (let i = headerIndex + 1; i < limit; i++) {
-                                const line = lines[i];
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            try {
+                                const byteArray = new Uint8Array(event.target.result);
+                                const dataSet = dicomParser.parseDicom(byteArray);
                                 
-                                // Nếu gặp dòng Total/Sum thì dừng gióng
-                                if (line.includes('TOTAL') || line.includes('ACCUMULATED') || line.includes('SUM')) {
-                                    break;
+                                // 1. Trích xuất thông tin bệnh nhân
+                                const ptId = dataSet.string('x00100020');
+                                const ptSex = dataSet.string('x00100040'); // 'M' or 'F'
+                                let ptAge = dataSet.string('x00101010');
+                                if(ptAge) ptAge = parseInt(ptAge.replace(/[^0-9]/g, ''));
+                                
+                                const ptWeightStr = dataSet.string('x00101030');
+                                const ptSizeStr = dataSet.string('x00101020'); // m
+                                
+                                let ptWeight = ptWeightStr ? parseFloat(ptWeightStr) : null;
+                                let ptHeight = ptSizeStr ? parseFloat(ptSizeStr) : null;
+                                if (ptHeight !== null && ptHeight < 3) ptHeight = ptHeight * 100; // Convert to cm
+
+                                // Điền thông tin cơ bản
+                                if(ptId) el('patientId').value = ptId;
+                                if(ptSex && (ptSex === 'M' || ptSex === 'F')) el('gender').value = ptSex;
+                                if(ptAge) {
+                                    el('age').value = ptAge;
+                                    el('yob').value = new Date().getFullYear() - ptAge;
+                                }
+                                if(ptWeight) el('weight').value = ptWeight.toFixed(1);
+                                if(ptHeight) el('height').value = ptHeight.toFixed(0);
+                                updBMI();
+
+                                // --- BỔ SUNG: Tự động nhận diện Protocol từ DICOM ---
+                                const studyDesc = dataSet.string('x00081030') || '';
+                                const protocolName = dataSet.string('x00181030') || '';
+                                const seriesDesc = dataSet.string('x0008103e') || '';
+                                const combinedDesc = studyDesc + " " + protocolName + " " + seriesDesc;
+                                
+                                const detectedProto = autoDetectProtocol(combinedDesc);
+                                if (detectedProto) {
+                                    el('protocol').value = detectedProto;
+                                    localStorage.setItem('drl_saved_protocol', detectedProto);
+                                }
+                                // -----------------------------------------------------
+
+                                // 2. Duyệt cây SR để tìm thông số Liều
+                                let acquisitions = [];
+                                
+                                function getNumericValue(ds) {
+                                    const mvs = ds.elements['x0040a300'];
+                                    if (mvs && mvs.items && mvs.items[0] && mvs.items[0].dataSet) {
+                                        const val = mvs.items[0].dataSet.string('x0040a30a');
+                                        if (val) return parseFloat(val);
+                                    }
+                                    const tv = ds.string('x0040a160');
+                                    if (tv) return parseFloat(tv);
+                                    return null;
                                 }
 
-                                // BƯỚC 3: TRÍCH XUẤT SỐ LIỆU TRÊN CÙNG CỘT
-                                // Tìm tất cả các con số trong hàng
-                                let nums = line.match(/\d+\.\d+|\d+/g);
-                                if (!nums || nums.length < 2) continue;
+                                function traverseSR(ds, currentAcq) {
+                                    if (!ds || !ds.elements) return;
+                                    for (const tag in ds.elements) {
+                                        const element = ds.elements[tag];
+                                        if (element.items) {
+                                            element.items.forEach(item => {
+                                                if (!item.dataSet) return;
+                                                const conceptSeq = item.dataSet.elements['x0040a043'];
+                                                let isNewAcq = false;
+                                                
+                                                if (conceptSeq && conceptSeq.items && conceptSeq.items[0].dataSet) {
+                                                    const codeValue = conceptSeq.items[0].dataSet.string('x00080100');
+                                                    if (codeValue === '113819') { // CT Acquisition
+                                                        let newAcq = { ctdi: 0, dlp: 0 };
+                                                        acquisitions.push(newAcq);
+                                                        traverseSR(item.dataSet, newAcq);
+                                                        isNewAcq = true; 
+                                                    } else if (codeValue === '113830' && currentAcq) { // CTDIvol
+                                                        let val = getNumericValue(item.dataSet);
+                                                        if (val) currentAcq.ctdi = val;
+                                                    } else if (codeValue === '113838' && currentAcq) { // DLP
+                                                        let val = getNumericValue(item.dataSet);
+                                                        if (val) currentAcq.dlp = val;
+                                                    } else if (codeValue === '113733' && currentAcq) { // kVp
+                                                        let val = getNumericValue(item.dataSet);
+                                                        if (val) currentAcq.kvp = val;
+                                                    }
+                                                }
+                                                if (!isNewAcq) traverseSR(item.dataSet, currentAcq);
+                                            });
+                                        }
+                                    }
+                                }
 
-                                // Lọc bỏ các con số gây nhiễu (kích thước phantom 16, 32)
-                                nums = nums.map(n => parseFloat(n)).filter(n => n !== 16 && n !== 32);
+                                traverseSR(dataSet, null);
 
-                                if (nums.length >= 2) {
-                                    // CTDI và DLP luôn là 2 cột ở ngoài cùng bên phải của bảng
-                                    let lineDlp = nums[nums.length - 1];
-                                    let lineCtdi = nums[nums.length - 2];
+                                let maxCtdi = 0;
+                                let finalDlp = 0;
+                                let finalKvp = null;
+                                
+                                // Loại bỏ Scout bằng cách chọn CTDI lớn nhất
+                                acquisitions.forEach(acq => {
+                                    if (acq.ctdi > maxCtdi) {
+                                        maxCtdi = acq.ctdi;
+                                        finalDlp = acq.dlp;
+                                        if(acq.kvp) finalKvp = acq.kvp;
+                                    }
+                                });
 
-                                    // Kiểm tra logic: CTDI thường nhỏ hơn DLP và không quá lớn (ví dụ < 200)
-                                    if (lineCtdi <= lineDlp && lineCtdi > 0 && lineCtdi < 200) {
-                                        // BƯỚC 4: CHỌN PHASE CHỤP (Loại bỏ Scout)
-                                        // Scout luôn có CTDI cực thấp, ta lấy hàng có CTDI cao nhất làm kết quả
-                                        if (lineCtdi > maxCtdi) {
-                                            maxCtdi = lineCtdi;
-                                            ctdiVal = lineCtdi;
-                                            dlpVal = lineDlp;
+                                // Điền số liệu liều
+                                if(maxCtdi > 0) el('ctdi').value = maxCtdi.toFixed(2);
+                                if(finalDlp > 0) el('dlp').value = finalDlp.toFixed(1);
+                                
+                                // Xử lý tự chọn kVp nếu có
+                                if(finalKvp) {
+                                    const kvpSelect = el('kvp');
+                                    let optionExists = false;
+                                    for(let i=0; i<kvpSelect.options.length; i++){
+                                        if(kvpSelect.options[i].value == finalKvp) {
+                                            optionExists = true; break;
+                                        }
+                                    }
+                                    if(optionExists) {
+                                        kvpSelect.value = finalKvp;
+                                        el('customKvp').classList.add('hidden');
+                                    } else {
+                                        kvpSelect.value = 'other';
+                                        el('customKvp').classList.remove('hidden');
+                                        el('customKvp').value = finalKvp;
+                                    }
+                                }
+
+                                checkDoseWarnings();
+                                
+                                // Xóa lỗi validation hiện tại
+                                document.querySelectorAll('.input-error').forEach(i => i.classList.remove('input-error'));
+                                document.querySelectorAll('.error-msg').forEach(s => s.textContent = '');
+
+                                showToast("Đã trích xuất toàn bộ dữ liệu từ DICOM RDSR!");
+                                applySuccessFlash(['patientId', 'age', 'gender', 'weight', 'height', 'ctdi', 'dlp', 'protocol']);
+
+                            } catch(err) {
+                                console.error("DICOM Parsing Error:", err);
+                                showToast("Lỗi: Không phải file RDSR hợp lệ hoặc file bị lỗi.", "error");
+                            } finally {
+                                ocrProgress.classList.add('hidden');
+                                ocrStatus.classList.add('hidden');
+                                ocrProgressBar.classList.remove('animate-pulse');
+                                el('submitBtn').disabled = false;
+                                e.target.value = ''; 
+                            }
+                        };
+                        reader.readAsArrayBuffer(file);
+                        
+                    } else {
+                        // ==== XỬ LÝ HÌNH ẢNH BẰNG OCR ====
+                        ocrProgressBar.style.width = '10%';
+                        ocrStatus.textContent = 'Đang chạy AI quét ảnh... (Có thể mất vài giây)';
+                        ocrProgressBar.classList.add('animate-pulse');
+
+                        try {
+                            const worker = await Tesseract.createWorker('eng');
+                            await worker.setParameters({ tessedit_pageseg_mode: '6' });
+
+                            const { data: { text } } = await worker.recognize(file);
+                            await worker.terminate();
+
+                            const lines = text.toUpperCase().replace(/,/g, '.').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+                            // --- BỔ SUNG: Tự động nhận diện Protocol từ Text OCR ---
+                            const detectedProto = autoDetectProtocol(text);
+                            if (detectedProto) {
+                                el('protocol').value = detectedProto;
+                                localStorage.setItem('drl_saved_protocol', detectedProto);
+                            }
+                            // -------------------------------------------------------
+
+                            let ctdiVal = null;
+                            let dlpVal = null;
+                            let maxCtdi = 0;
+
+                            let headerIndex = -1;
+                            for (let i = 0; i < lines.length; i++) {
+                                if (lines[i].includes('CTDI') || lines[i].includes('DLP')) {
+                                    headerIndex = i; break;
+                                }
+                            }
+
+                            if (headerIndex !== -1) {
+                                const limit = Math.min(headerIndex + 4, lines.length);
+                                for (let i = headerIndex + 1; i < limit; i++) {
+                                    const line = lines[i];
+                                    if (line.includes('TOTAL') || line.includes('ACCUMULATED') || line.includes('SUM')) break;
+
+                                    let nums = line.match(/\d+\.\d+|\d+/g);
+                                    if (!nums || nums.length < 2) continue;
+                                    nums = nums.map(n => parseFloat(n)).filter(n => n !== 16 && n !== 32);
+
+                                    if (nums.length >= 2) {
+                                        let lineDlp = nums[nums.length - 1];
+                                        let lineCtdi = nums[nums.length - 2];
+                                        if (lineCtdi <= lineDlp && lineCtdi > 0 && lineCtdi < 200) {
+                                            if (lineCtdi > maxCtdi) {
+                                                maxCtdi = lineCtdi; ctdiVal = lineCtdi; dlpVal = lineDlp;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        // Fallback: Nếu không đọc được theo cấu trúc bảng, thử tìm regex cơ bản
-                        if (!ctdiVal || !dlpVal) {
-                            for (let line of lines) {
-                                if (line.includes('TOTAL') || line.includes('ACCUMULATED') || line.includes('EXAM')) continue;
-                                const cMatch = line.match(/CTDI.*?(?:VOL)?.*?(\d+\.\d+|\d+)/);
-                                const dMatch = line.match(/DLP.*?(\d+\.\d+|\d+)/);
-                                
-                                if (cMatch) {
-                                    let cVal = parseFloat(cMatch[1]);
-                                    if (cVal > maxCtdi && cVal !== 16 && cVal !== 32 && cVal < 200) {
-                                        maxCtdi = cVal;
-                                        ctdiVal = cVal;
-                                        if (dMatch) dlpVal = parseFloat(dMatch[1]);
+                            if (!ctdiVal || !dlpVal) {
+                                for (let line of lines) {
+                                    if (line.includes('TOTAL') || line.includes('ACCUMULATED') || line.includes('EXAM')) continue;
+                                    const cMatch = line.match(/CTDI.*?(?:VOL)?.*?(\d+\.\d+|\d+)/);
+                                    const dMatch = line.match(/DLP.*?(\d+\.\d+|\d+)/);
+                                    if (cMatch) {
+                                        let cVal = parseFloat(cMatch[1]);
+                                        if (cVal > maxCtdi && cVal !== 16 && cVal !== 32 && cVal < 200) {
+                                            maxCtdi = cVal; ctdiVal = cVal;
+                                            if (dMatch) dlpVal = parseFloat(dMatch[1]);
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        // Hiển thị kết quả lên giao diện
-                        if(ctdiVal) {
-                            const cInput = el('ctdi');
-                            cInput.value = ctdiVal;
-                            cInput.classList.add('ocr-success');
-                            setTimeout(() => cInput.classList.remove('ocr-success'), 2000);
-                        }
-                        if(dlpVal) {
-                            const dInput = el('dlp');
-                            dInput.value = dlpVal;
-                            dInput.classList.add('ocr-success');
-                            setTimeout(() => dInput.classList.remove('ocr-success'), 2000);
-                        }
+                            if(ctdiVal) el('ctdi').value = ctdiVal;
+                            if(dlpVal) el('dlp').value = dlpVal;
 
-                        // Cập nhật cảnh báo liều (nếu có) sau khi trích xuất
-                        checkDoseWarnings();
+                            checkDoseWarnings();
 
-                        // Báo trạng thái
-                        if(ctdiVal || dlpVal) {
-                            showToast("Trích xuất xong! Vui lòng kiểm tra lại độ chính xác của số liệu.");
-                            document.querySelectorAll('.input-error').forEach(i => i.classList.remove('input-error'));
-                            document.querySelectorAll('.error-msg').forEach(s => s.textContent = '');
-                        } else {
-                            showToast("AI không tìm thấy số liệu rõ ràng. Vui lòng nhập bằng tay.", "error");
+                            if(ctdiVal || dlpVal || detectedProto) {
+                                showToast("Trích xuất xong! Vui lòng kiểm tra lại số liệu.");
+                                applySuccessFlash(['ctdi', 'dlp', 'protocol']);
+                                document.querySelectorAll('.input-error').forEach(i => i.classList.remove('input-error'));
+                                document.querySelectorAll('.error-msg').forEach(s => s.textContent = '');
+                            } else {
+                                showToast("AI không tìm thấy số liệu rõ ràng. Vui lòng nhập bằng tay.", "error");
+                            }
+
+                        } catch (err) {
+                            console.error("OCR Error:", err);
+                            showToast("Lỗi khi đọc ảnh. Vui lòng thử lại.", "error");
+                        } finally {
+                            ocrProgress.classList.add('hidden');
+                            ocrStatus.classList.add('hidden');
+                            ocrProgressBar.classList.remove('animate-pulse');
+                            ocrProgressBar.style.width = '0%';
+                            el('submitBtn').disabled = false;
+                            e.target.value = ''; 
                         }
-
-                    } catch (err) {
-                        console.error("OCR Error:", err);
-                        showToast("Lỗi khi đọc ảnh. Vui lòng thử lại.", "error");
-                    } finally {
-                        ocrProgress.classList.add('hidden');
-                        ocrStatus.classList.add('hidden');
-                        ocrProgressBar.classList.remove('animate-pulse');
-                        ocrProgressBar.style.width = '0%';
-                        el('submitBtn').disabled = false;
-                        e.target.value = ''; 
                     }
                 });
             }
