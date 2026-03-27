@@ -1,1 +1,336 @@
 
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ Vẽ Biểu Đồ DRL Boxplot Trục Kép</title>
+    <!-- Tích hợp Tailwind CSS cho giao diện đẹp -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tích hợp Plotly.js để vẽ biểu đồ khoa học -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        /* Tùy chỉnh CSS phụ trợ */
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .input-group label { display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.25rem; }
+        .input-group input { width: 100%; padding: 0.5rem; border: 1px solid #D1D5DB; border-radius: 0.375rem; outline: none; transition: border-color 0.2s; }
+        .input-group input:focus { border-color: #3B82F6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-slate-800 text-white p-6 text-center">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">📊 CÔNG CỤ VẼ BIỂU ĐỒ BOXPLOT DRL (TRỤC KÉP)</h1>
+            <p class="text-slate-300 text-sm md:text-base">Nhập các thông số thống kê tóm tắt để xuất biểu đồ chuẩn báo cáo khoa học</p>
+        </div>
+
+        <div class="p-6">
+            
+            <!-- THÔNG TIN CHUNG (Tiêu đề & Chú thích) -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 shadow-sm mb-6">
+                <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    Tùy chỉnh Văn bản
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="input-group">
+                        <label>Tiêu đề biểu đồ</label>
+                        <input type="text" id="chart-title" value="BIỂU ĐỒ BOXPLOT MỨC LIỀU BỨC XẠ CT (TRỤC KÉP)">
+                    </div>
+                    <div class="input-group">
+                        <label>Chú thích dưới biểu đồ (Footer)</label>
+                        <input type="text" id="chart-caption" value="* Ghi chú: Dữ liệu đã được loại bỏ các giá trị ngoại lai bằng phương pháp IQR." placeholder="Nhập ghi chú tùy ý...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Nhập Liệu -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                
+                <!-- CỘT 1: CTDIvol -->
+                <div class="bg-red-50 border-2 border-red-200 rounded-lg p-5 shadow-sm">
+                    <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center">
+                        <span class="bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">1</span>
+                        Thông số CTDIvol (mGy)
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label>Min (Giá trị nhỏ nhất)</label>
+                            <input type="number" step="any" id="ctdi-min" value="2.5">
+                        </div>
+                        <div class="input-group">
+                            <label>Max (Giá trị lớn nhất)</label>
+                            <input type="number" step="any" id="ctdi-max" value="10.5">
+                        </div>
+                        <div class="input-group">
+                            <label>Q1 (Tứ phân vị 1)</label>
+                            <input type="number" step="any" id="ctdi-q1" value="4.0">
+                        </div>
+                        <div class="input-group">
+                            <label>Q3 (DRL / Tứ phân vị 3)</label>
+                            <input type="number" step="any" id="ctdi-q3" value="7.2">
+                        </div>
+                        <div class="input-group col-span-2">
+                            <label>Trung vị (P50 / Median)</label>
+                            <input type="number" step="any" id="ctdi-med" value="5.5" class="border-red-300 bg-white font-bold text-red-700">
+                        </div>
+                        <div class="input-group col-span-2">
+                            <label>Ngoại lai (Cách nhau dấu phẩy, Vd: 12.5, 14)</label>
+                            <input type="text" id="ctdi-fliers" value="12.0, 15.5" placeholder="Để trống nếu không có">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CỘT 2: DLP -->
+                <div class="bg-cyan-50 border-2 border-cyan-200 rounded-lg p-5 shadow-sm">
+                    <h2 class="text-xl font-bold text-cyan-600 mb-4 flex items-center">
+                        <span class="bg-cyan-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-2">2</span>
+                        Thông số DLP (mGy.cm)
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label>Min (Giá trị nhỏ nhất)</label>
+                            <input type="number" step="any" id="dlp-min" value="150">
+                        </div>
+                        <div class="input-group">
+                            <label>Max (Giá trị lớn nhất)</label>
+                            <input type="number" step="any" id="dlp-max" value="500">
+                        </div>
+                        <div class="input-group">
+                            <label>Q1 (Tứ phân vị 1)</label>
+                            <input type="number" step="any" id="dlp-q1" value="200">
+                        </div>
+                        <div class="input-group">
+                            <label>Q3 (DRL / Tứ phân vị 3)</label>
+                            <input type="number" step="any" id="dlp-q3" value="350">
+                        </div>
+                        <div class="input-group col-span-2">
+                            <label>Trung vị (P50 / Median)</label>
+                            <input type="number" step="any" id="dlp-med" value="280" class="border-cyan-300 bg-white font-bold text-cyan-700">
+                        </div>
+                        <div class="input-group col-span-2">
+                            <label>Ngoại lai (Cách nhau dấu phẩy, Vd: 600, 750)</label>
+                            <input type="text" id="dlp-fliers" value="" placeholder="Để trống nếu không có">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nút chức năng -->
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+                <button onclick="drawChart()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors text-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    VẼ BIỂU ĐỒ
+                </button>
+                <button onclick="downloadImage()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-colors text-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    TẢI ẢNH (PNG)
+                </button>
+            </div>
+
+            <!-- Vùng hiển thị biểu đồ -->
+            <div id="chart-container" class="w-full h-[600px] border border-gray-200 rounded-lg shadow-inner bg-white"></div>
+            
+        </div>
+        <div class="bg-gray-50 p-4 border-t text-center text-gray-500 text-sm">
+            Công cụ hỗ trợ phân tích DRL Quốc gia. Thiết kế tối ưu cho báo cáo khoa học và y khoa.
+        </div>
+    </div>
+
+    <script>
+        // Hàm chuyển đổi chuỗi ngoại lai thành mảng số
+        function parseFliers(valStr) {
+            if (!valStr || valStr.trim() === "") return [];
+            return valStr.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+        }
+
+        // Lấy dữ liệu từ giao diện
+        function getData() {
+            return {
+                title: document.getElementById('chart-title').value,
+                caption: document.getElementById('chart-caption').value,
+                ctdi: {
+                    min: parseFloat(document.getElementById('ctdi-min').value),
+                    q1: parseFloat(document.getElementById('ctdi-q1').value),
+                    med: parseFloat(document.getElementById('ctdi-med').value),
+                    q3: parseFloat(document.getElementById('ctdi-q3').value),
+                    max: parseFloat(document.getElementById('ctdi-max').value),
+                    fliers: parseFliers(document.getElementById('ctdi-fliers').value)
+                },
+                dlp: {
+                    min: parseFloat(document.getElementById('dlp-min').value),
+                    q1: parseFloat(document.getElementById('dlp-q1').value),
+                    med: parseFloat(document.getElementById('dlp-med').value),
+                    q3: parseFloat(document.getElementById('dlp-q3').value),
+                    max: parseFloat(document.getElementById('dlp-max').value),
+                    fliers: parseFliers(document.getElementById('dlp-fliers').value)
+                }
+            };
+        }
+
+        // Hàm chính để vẽ biểu đồ
+        function drawChart() {
+            const data = getData();
+            const colorCTDI = '#FF6B6B';
+            const colorDLP = '#4DDBFF';
+
+            // 1. Trace cho CTDIvol
+            var traceCTDI = {
+                type: 'box',
+                x: ['CTDIvol'],
+                q1: [data.ctdi.q1],
+                median: [data.ctdi.med],
+                q3: [data.ctdi.q3],
+                lowerfence: [data.ctdi.min],
+                upperfence: [data.ctdi.max],
+                name: 'CTDIvol',
+                marker: { color: colorCTDI },
+                line: { color: 'black', width: 1.5 },
+                fillcolor: colorCTDI,
+                yaxis: 'y1',
+                width: 0.25 // Chiều rộng hộp thanh mảnh
+            };
+
+            var traceCTDI_fliers = {
+                type: 'scatter',
+                x: Array(data.ctdi.fliers.length).fill('CTDIvol'),
+                y: data.ctdi.fliers,
+                mode: 'markers',
+                marker: { color: colorCTDI, size: 8, line: {color: 'black', width: 1} },
+                showlegend: false,
+                yaxis: 'y1',
+                hoverinfo: 'y'
+            };
+
+            // 2. Trace cho DLP
+            var traceDLP = {
+                type: 'box',
+                x: ['DLP'],
+                q1: [data.dlp.q1],
+                median: [data.dlp.med],
+                q3: [data.dlp.q3],
+                lowerfence: [data.dlp.min],
+                upperfence: [data.dlp.max],
+                name: 'DLP',
+                marker: { color: colorDLP },
+                line: { color: 'black', width: 1.5 },
+                fillcolor: colorDLP,
+                yaxis: 'y2',
+                width: 0.25 // Chiều rộng hộp thanh mảnh
+            };
+
+            var traceDLP_fliers = {
+                type: 'scatter',
+                x: Array(data.dlp.fliers.length).fill('DLP'),
+                y: data.dlp.fliers,
+                mode: 'markers',
+                marker: { color: colorDLP, size: 8, line: {color: 'black', width: 1} },
+                showlegend: false,
+                yaxis: 'y2',
+                hoverinfo: 'y'
+            };
+
+            // Gộp dữ liệu
+            var plotData = [traceCTDI, traceDLP];
+            if(data.ctdi.fliers.length > 0) plotData.push(traceCTDI_fliers);
+            if(data.dlp.fliers.length > 0) plotData.push(traceDLP_fliers);
+
+            // 3. Cấu hình Layout
+            var layout = {
+                title: { 
+                    text: data.title, // Lấy tiêu đề từ ô nhập liệu
+                    font: { size: 22, color: 'navy', family: 'Arial, sans-serif', weight: 'bold' },
+                    y: 0.95
+                },
+                showlegend: false,
+                // [ĐÃ SỬA]: Tăng lề dưới (b: 150) để khung ảnh tải về đủ khoảng trống cho dòng ghi chú
+                margin: { l: 80, r: 80, t: 100, b: 150 }, 
+                xaxis: { 
+                    tickfont: { size: 16, weight: 'bold' } 
+                },
+                yaxis: {
+                    title: { text: 'CTDIvol (mGy)', font: { size: 15, color: '#D32F2F', weight: 'bold' } },
+                    tickfont: { color: '#D32F2F', size: 13 },
+                    gridcolor: 'rgba(0,0,0,0.1)',
+                    zeroline: false
+                },
+                yaxis2: {
+                    title: { text: 'DLP (mGy.cm)', font: { size: 15, color: '#00838F', weight: 'bold' } },
+                    tickfont: { color: '#00838F', size: 13 },
+                    overlaying: 'y',
+                    side: 'right',
+                    zeroline: false
+                },
+                annotations: []
+            };
+
+            // Thêm Chú thích (Caption) xuống dưới cùng
+            if(data.caption.trim() !== "") {
+                layout.annotations.push({
+                    text: data.caption,
+                    xref: 'paper', yref: 'paper',
+                    // [ĐÃ SỬA]: Điều chỉnh toạ độ chữ sao cho nằm lọt vừa vặn vào vùng lề 150px
+                    x: 0.5, y: -0.15, 
+                    xanchor: 'center', yanchor: 'top',
+                    showarrow: false,
+                    font: { size: 13, color: '#555555', style: 'italic' }
+                });
+            }
+
+            // 4. Hàm gắn nhãn các con số lên biểu đồ
+            function addAnnotations(xName, yRef, d) {
+                // Giữ lực đẩy 110px để đảm bảo chữ thoát hẳn ra ngoài hộp
+                const shiftOut = 110; 
+
+                // Nhãn Median (P50) to rõ
+                layout.annotations.push({
+                    x: xName, y: d.med, xref: 'x', yref: yRef, text: `<b>${d.med}</b>`,
+                    showarrow: false, xanchor: 'left', xshift: shiftOut, font: {size: 14, color: 'black'}
+                });
+                // Nhãn Q1, Q3
+                layout.annotations.push({
+                    x: xName, y: d.q1, xref: 'x', yref: yRef, text: `Q1: ${d.q1}`,
+                    showarrow: false, xanchor: 'left', xshift: shiftOut, font: {size: 11, color: '#333'}
+                });
+                layout.annotations.push({
+                    x: xName, y: d.q3, xref: 'x', yref: yRef, text: `Q3: ${d.q3}`,
+                    showarrow: false, xanchor: 'left', xshift: shiftOut, font: {size: 11, color: '#333'}
+                });
+                // Nhãn Min, Max (giữ ở giữa râu, đẩy nhẹ lên/xuống)
+                layout.annotations.push({
+                    x: xName, y: d.min, xref: 'x', yref: yRef, text: `Min: ${d.min}`,
+                    showarrow: false, yanchor: 'top', yshift: -10, font: {size: 11, color: 'green'}
+                });
+                layout.annotations.push({
+                    x: xName, y: d.max, xref: 'x', yref: yRef, text: `Max: ${d.max}`,
+                    showarrow: false, yanchor: 'bottom', yshift: 10, font: {size: 11, color: 'purple'}
+                });
+            }
+
+            addAnnotations('CTDIvol', 'y1', data.ctdi);
+            addAnnotations('DLP', 'y2', data.dlp);
+
+            // Cấu hình thanh công cụ mặc định của Plotly
+            var config = { responsive: true, displayModeBar: false };
+
+            // Vẽ lên div
+            Plotly.newPlot('chart-container', plotData, layout, config);
+        }
+
+        // Tải biểu đồ thành ảnh
+        function downloadImage() {
+            var chartDiv = document.getElementById('chart-container');
+            if(chartDiv.data) {
+                Plotly.downloadImage(chartDiv, {format: 'png', width: 1200, height: 800, filename: 'Bieu_Do_Boxplot_DRL'});
+            } else {
+                alert("Vui lòng ấn 'VẼ BIỂU ĐỒ' trước khi tải ảnh!");
+            }
+        }
+
+        // Vẽ biểu đồ ngay khi vừa mở trang web
+        window.onload = drawChart;
+    </script>
+</body>
+</html>
