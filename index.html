@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" class="scroll-smooth">
 <head>
-    <script src="https://cdn.counter.dev/script.js" data-id="86e74dda-26a8-41de-99d1-63d0e8fec60e" data-utcoffset="7"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VN-DRL - Mức Liều Tham Chiếu Chẩn Đoán Quốc Gia</title>
@@ -97,7 +96,7 @@
     <div class="fixed top-[20%] right-[-5%] w-[30%] h-[30%] rounded-full bg-amber-400/10 blur-[100px] pointer-events-none"></div>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col items-center justify-center p-4 md:p-8 max-w-[1400px] mx-auto w-full mt-1 md:mt-8">
+    <main class="flex-1 flex flex-col items-center justify-center p-4 md:p-8 max-w-[1600px] mx-auto w-full mt-1 md:mt-8">
         
         <!-- SECTION 1: HEADER -->
         <header class="text-center w-full max-w-4xl mx-auto mb-10 animate-fade-in-up flex flex-col items-center">
@@ -575,7 +574,7 @@
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2 md:gap-3 flex-1">
-                                    <div class="flex flex-col bg-slate-50/80 rounded-xl md:rounded-2xl p-3 md:p-4 border border-slate-100/80 relative group/col">
+                                    <div class="flex flex-col bg-slate-50/80 rounded-xl md:rounded-2xl p-3 md:p-4 xl:p-3 2xl:p-4 border border-slate-100/80 relative group/col">
                                         <div class="flex items-center justify-between mb-3 md:mb-4"><h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">CTDIvol</h4><span class="text-[8px] md:text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy</span></div>
                                         
                                         <div class="mb-3 md:mb-4">
@@ -583,16 +582,16 @@
                                                 <div class="text-[10px] md:text-[11px] font-black ${t.text} leading-tight uppercase tracking-wide">Liều đạt được (P50)</div>
                                                 <div class="text-[7.5px] md:text-[8.5px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Achievable Dose</div>
                                             </div>
-                                            <div class="text-xl md:text-2xl font-black ${t.text} tracking-tight leading-none px-1">${statCTDI.median.toFixed(2)}</div>
+                                            <div class="text-xl md:text-2xl xl:text-xl 2xl:text-2xl font-black ${t.text} tracking-tight leading-none px-1">${statCTDI.median.toFixed(2)}</div>
                                         </div>
                                         
-                                        <div class="mb-3 md:mb-4 bg-white rounded-lg md:rounded-xl p-2.5 md:p-3 border-2 border-red-100 shadow-md relative overflow-hidden transition-all group-hover/col:border-red-200 group-hover/col:shadow-red-100/50">
+                                        <div class="mb-3 md:mb-4 bg-white rounded-lg md:rounded-xl p-2.5 md:p-3 xl:p-2 2xl:p-3 border-2 border-red-100 shadow-md relative overflow-hidden transition-all group-hover/col:border-red-200 group-hover/col:shadow-red-100/50">
                                             <div class="absolute -right-2 -top-2 w-12 h-12 bg-red-50 rounded-full blur-xl"></div>
                                             <div class="flex justify-between items-center mb-1 md:mb-1.5 relative z-10">
                                                 <span class="text-[10px] md:text-xs font-black text-red-600 uppercase tracking-wider">DRL (P75)</span>
                                                 <i data-lucide="target" class="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500"></i>
                                             </div>
-                                            <div class="text-2xl md:text-3xl font-black text-slate-900 leading-none tracking-tighter relative z-10">${statCTDI.p75.toFixed(2)}</div>
+                                            <div class="text-2xl md:text-3xl xl:text-2xl 2xl:text-3xl font-black text-slate-900 leading-none tracking-tighter relative z-10">${statCTDI.p75.toFixed(2)}</div>
                                         </div>
                                         
                                         <div class="mt-auto pt-2 md:pt-3 border-t border-slate-200/60 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-1 xl:gap-0">
@@ -600,7 +599,7 @@
                                             <div class="text-[10px] md:text-xs font-bold text-slate-600 font-mono text-left xl:text-right">${statCTDI.mean.toFixed(2)} <span class="text-[9px] md:text-[10px] text-slate-400 font-medium">±${statCTDI.sd.toFixed(1)}</span></div>
                                         </div>
                                     </div>
-                                    <div class="flex flex-col bg-slate-50/80 rounded-xl md:rounded-2xl p-3 md:p-4 border border-slate-100/80 relative group/col">
+                                    <div class="flex flex-col bg-slate-50/80 rounded-xl md:rounded-2xl p-3 md:p-4 xl:p-3 2xl:p-4 border border-slate-100/80 relative group/col">
                                         <div class="flex items-center justify-between mb-3 md:mb-4"><h4 class="text-[10px] md:text-[11px] font-black uppercase text-slate-400 tracking-wider">DLP</h4><span class="text-[8px] md:text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy.cm</span></div>
                                         
                                         <div class="mb-3 md:mb-4">
@@ -608,16 +607,16 @@
                                                 <div class="text-[10px] md:text-[11px] font-black ${t.text} leading-tight uppercase tracking-wide">Liều đạt được (P50)</div>
                                                 <div class="text-[7.5px] md:text-[8.5px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Achievable Dose</div>
                                             </div>
-                                            <div class="text-xl md:text-2xl font-black ${t.text} tracking-tight leading-none px-1">${statDLP.median.toFixed(1)}</div>
+                                            <div class="text-xl md:text-2xl xl:text-xl 2xl:text-2xl font-black ${t.text} tracking-tight leading-none px-1">${statDLP.median.toFixed(1)}</div>
                                         </div>
                                         
-                                        <div class="mb-3 md:mb-4 bg-white rounded-lg md:rounded-xl p-2.5 md:p-3 border-2 border-red-100 shadow-md relative overflow-hidden transition-all group-hover/col:border-red-200 group-hover/col:shadow-red-100/50">
+                                        <div class="mb-3 md:mb-4 bg-white rounded-lg md:rounded-xl p-2.5 md:p-3 xl:p-2 2xl:p-3 border-2 border-red-100 shadow-md relative overflow-hidden transition-all group-hover/col:border-red-200 group-hover/col:shadow-red-100/50">
                                             <div class="absolute -right-2 -top-2 w-12 h-12 bg-red-50 rounded-full blur-xl"></div>
                                             <div class="flex justify-between items-center mb-1 md:mb-1.5 relative z-10">
                                                 <span class="text-[10px] md:text-xs font-black text-red-600 uppercase tracking-wider">DRL (P75)</span>
                                                 <i data-lucide="target" class="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500"></i>
                                             </div>
-                                            <div class="text-2xl md:text-3xl font-black text-slate-900 leading-none tracking-tighter relative z-10">${statDLP.p75.toFixed(1)}</div>
+                                            <div class="text-2xl md:text-3xl xl:text-2xl 2xl:text-3xl font-black text-slate-900 leading-none tracking-tighter relative z-10">${statDLP.p75.toFixed(1)}</div>
                                         </div>
                                         
                                         <div class="mt-auto pt-2 md:pt-3 border-t border-slate-200/60 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-1 xl:gap-0">
