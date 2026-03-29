@@ -128,10 +128,10 @@
                 </div>
             </h1>
             
-            <p class="text-base md:text-lg text-slate-400 font-semibold uppercase tracking-[0.25em] flex items-center justify-center gap-4 mt-6">
-                Diagnostic Reference Level 
-                <span class="w-1.5 h-1.5 rounded-full bg-slate-200"></span> 
-                <span class="text-brand-500 opacity-80">VN-DRL</span>
+            <p class="text-[10px] sm:text-sm md:text-lg text-slate-400 font-semibold uppercase tracking-wider sm:tracking-[0.15em] md:tracking-[0.25em] flex flex-row items-center justify-center gap-1.5 sm:gap-2 md:gap-4 mt-6 px-2 text-center whitespace-nowrap w-full">
+                <span class="truncate">Diagnostic Reference Level</span>
+                <span class="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-slate-300 shrink-0"></span> 
+                <span class="text-brand-500 opacity-80 shrink-0">VN-DRL</span>
             </p>
         </header>
 
@@ -172,6 +172,21 @@
                 </div>
             </div>
 
+        </div>
+
+        <!-- PHÂN HỆ: CHỤP CẮT LỚP VI TÍNH -->
+        <div id="ctSectionTitle" class="w-full max-w-5xl mx-auto mb-10 hidden opacity-0 transition-all duration-700 transform translate-y-4">
+            <div class="flex items-center justify-center gap-4 md:gap-8">
+                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300 to-slate-300"></div>
+                <div class="flex flex-col items-center px-2 text-center">
+                    <h2 class="font-black text-xl md:text-2xl text-slate-800 tracking-tight uppercase flex items-center gap-2">
+                        <i data-lucide="disc" class="w-6 h-6 text-brand-600"></i>
+                        CHỤP CẮT LỚP VI TÍNH
+                    </h2>
+                    <span class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Computed Tomography</span>
+                </div>
+                <div class="h-px flex-1 bg-gradient-to-l from-transparent via-slate-300 to-slate-300"></div>
+            </div>
         </div>
 
         <!-- SECTION 2: STATS BOXES -->
@@ -540,54 +555,74 @@
                     const cardHTML = `
                         <div class="relative group h-full" style="animation: fadeInUp 0.6s ease-out ${index * 0.15}s forwards; opacity: 0; transform: translateY(20px);">
                             <div class="absolute -inset-0.5 bg-gradient-to-br ${t.gradient} rounded-[2rem] blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
-                            <div class="relative flex flex-col h-full glass-panel border border-white/80 rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 transition-transform duration-300 group-hover:-translate-y-1 overflow-hidden">
+                            <div class="relative flex flex-col h-full glass-panel border border-white/80 rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/40 transition-transform duration-300 group-hover:-translate-y-1 overflow-hidden">
                                 <div class="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br ${t.gradient} opacity-10 rounded-full blur-2xl"></div>
-                                <div class="flex items-center gap-5 mb-8 relative z-10">
-                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white shadow-lg ${t.shadow} flex-shrink-0">
-                                        <i data-lucide="${g.icon}" class="w-7 h-7"></i>
+                                <div class="flex items-center gap-3 md:gap-5 mb-5 md:mb-8 relative z-10">
+                                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white shadow-lg ${t.shadow} flex-shrink-0">
+                                        <i data-lucide="${g.icon}" class="w-6 h-6 md:w-7 md:h-7"></i>
                                     </div>
                                     <div>
-                                        <h3 class="font-black text-xl text-slate-800 tracking-tight leading-tight">${g.name}</h3>
-                                        <div class="text-[13px] font-semibold text-slate-400 mb-2">${g.subname}</div>
+                                        <h3 class="font-black text-lg md:text-xl text-slate-800 tracking-tight leading-tight">${g.name}</h3>
+                                        <div class="text-[12px] md:text-[13px] font-semibold text-slate-400 mb-1.5 md:mb-2">${g.subname}</div>
                                         <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 uppercase tracking-wide">
-                                                <i data-lucide="building" class="w-3 h-3"></i> ${g.hospitals.size} Viện
+                                            <span class="inline-flex items-center gap-1 text-[9px] md:text-[10px] font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 uppercase tracking-wide">
+                                                <i data-lucide="building" class="w-2.5 h-2.5 md:w-3 md:h-3"></i> ${g.hospitals.size} Viện
                                             </span>
-                                            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full ${t.badgeBg} ${t.badgeText} uppercase tracking-wide cursor-help" title="Lọc chuẩn bệnh nhân 50-70kg">
-                                                <i data-lucide="user-check" class="w-3 h-3"></i> ${g.count} Ca
+                                            <span class="inline-flex items-center gap-1 text-[9px] md:text-[10px] font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded-full ${t.badgeBg} ${t.badgeText} uppercase tracking-wide cursor-help" title="Lọc chuẩn bệnh nhân 50-70kg">
+                                                <i data-lucide="user-check" class="w-2.5 h-2.5 md:w-3 md:h-3"></i> ${g.count} Ca
                                             </span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-3 flex-1">
-                                    <div class="flex flex-col bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 relative group/col">
-                                        <div class="flex items-center justify-between mb-4"><h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">CTDIvol</h4><span class="text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy</span></div>
-                                        <div class="mb-4">
-                                            <div class="text-[10px] font-bold text-slate-500 mb-1">Trung vị (P50)</div>
-                                            <div class="text-3xl font-black ${t.text} tracking-tighter leading-none">${statCTDI.median.toFixed(2)}</div>
+                                <div class="grid grid-cols-2 gap-2 md:gap-3 flex-1">
+                                    <div class="flex flex-col bg-slate-50/80 rounded-xl md:rounded-2xl p-3 md:p-4 border border-slate-100/80 relative group/col">
+                                        <div class="flex items-center justify-between mb-3 md:mb-4"><h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">CTDIvol</h4><span class="text-[8px] md:text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy</span></div>
+                                        
+                                        <div class="mb-3 md:mb-4">
+                                            <div class="inline-flex flex-col bg-white border border-slate-200 shadow-sm rounded-lg px-2.5 py-1.5 mb-2">
+                                                <div class="text-[10px] md:text-[11px] font-black ${t.text} leading-tight uppercase tracking-wide">Liều đạt được (P50)</div>
+                                                <div class="text-[7.5px] md:text-[8.5px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Achievable Dose</div>
+                                            </div>
+                                            <div class="text-xl md:text-2xl font-black ${t.text} tracking-tight leading-none px-1">${statCTDI.median.toFixed(2)}</div>
                                         </div>
-                                        <div class="mb-4 bg-white rounded-xl p-3 border border-slate-200/60 shadow-sm transition-colors group-hover/col:border-red-200">
-                                            <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-700">P75 (DRL)</span><i data-lucide="target" class="w-3.5 h-3.5 text-red-500"></i></div>
-                                            <div class="text-xl font-black text-slate-900 leading-none">${statCTDI.p75.toFixed(2)}</div>
+                                        
+                                        <div class="mb-3 md:mb-4 bg-white rounded-lg md:rounded-xl p-2.5 md:p-3 border-2 border-red-100 shadow-md relative overflow-hidden transition-all group-hover/col:border-red-200 group-hover/col:shadow-red-100/50">
+                                            <div class="absolute -right-2 -top-2 w-12 h-12 bg-red-50 rounded-full blur-xl"></div>
+                                            <div class="flex justify-between items-center mb-1 md:mb-1.5 relative z-10">
+                                                <span class="text-[10px] md:text-xs font-black text-red-600 uppercase tracking-wider">DRL (P75)</span>
+                                                <i data-lucide="target" class="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500"></i>
+                                            </div>
+                                            <div class="text-2xl md:text-3xl font-black text-slate-900 leading-none tracking-tighter relative z-10">${statCTDI.p75.toFixed(2)}</div>
                                         </div>
-                                        <div class="mt-auto pt-3 border-t border-slate-200/60 flex justify-between items-center">
-                                            <div class="text-[10px] font-bold text-slate-400 uppercase">Trung bình</div>
-                                            <div class="text-xs font-bold text-slate-600 font-mono text-right">${statCTDI.mean.toFixed(2)} <span class="text-[10px] text-slate-400 font-medium">±${statCTDI.sd.toFixed(1)}</span></div>
+                                        
+                                        <div class="mt-auto pt-2 md:pt-3 border-t border-slate-200/60 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-1 xl:gap-0">
+                                            <div class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase">Trung bình</div>
+                                            <div class="text-[10px] md:text-xs font-bold text-slate-600 font-mono text-left xl:text-right">${statCTDI.mean.toFixed(2)} <span class="text-[9px] md:text-[10px] text-slate-400 font-medium">±${statCTDI.sd.toFixed(1)}</span></div>
                                         </div>
                                     </div>
-                                    <div class="flex flex-col bg-slate-50/80 rounded-2xl p-4 border border-slate-100/80 relative group/col">
-                                        <div class="flex items-center justify-between mb-4"><h4 class="text-[11px] font-black uppercase text-slate-400 tracking-wider">DLP</h4><span class="text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy.cm</span></div>
-                                        <div class="mb-4">
-                                            <div class="text-[10px] font-bold text-slate-500 mb-1">Trung vị (P50)</div>
-                                            <div class="text-3xl font-black ${t.text} tracking-tighter leading-none">${statDLP.median.toFixed(1)}</div>
+                                    <div class="flex flex-col bg-slate-50/80 rounded-xl md:rounded-2xl p-3 md:p-4 border border-slate-100/80 relative group/col">
+                                        <div class="flex items-center justify-between mb-3 md:mb-4"><h4 class="text-[10px] md:text-[11px] font-black uppercase text-slate-400 tracking-wider">DLP</h4><span class="text-[8px] md:text-[9px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-100">mGy.cm</span></div>
+                                        
+                                        <div class="mb-3 md:mb-4">
+                                            <div class="inline-flex flex-col bg-white border border-slate-200 shadow-sm rounded-lg px-2.5 py-1.5 mb-2">
+                                                <div class="text-[10px] md:text-[11px] font-black ${t.text} leading-tight uppercase tracking-wide">Liều đạt được (P50)</div>
+                                                <div class="text-[7.5px] md:text-[8.5px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Achievable Dose</div>
+                                            </div>
+                                            <div class="text-xl md:text-2xl font-black ${t.text} tracking-tight leading-none px-1">${statDLP.median.toFixed(1)}</div>
                                         </div>
-                                        <div class="mb-4 bg-white rounded-xl p-3 border border-slate-200/60 shadow-sm transition-colors group-hover/col:border-red-200">
-                                            <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-700">P75 (DRL)</span><i data-lucide="target" class="w-3.5 h-3.5 text-red-500"></i></div>
-                                            <div class="text-xl font-black text-slate-900 leading-none">${statDLP.p75.toFixed(1)}</div>
+                                        
+                                        <div class="mb-3 md:mb-4 bg-white rounded-lg md:rounded-xl p-2.5 md:p-3 border-2 border-red-100 shadow-md relative overflow-hidden transition-all group-hover/col:border-red-200 group-hover/col:shadow-red-100/50">
+                                            <div class="absolute -right-2 -top-2 w-12 h-12 bg-red-50 rounded-full blur-xl"></div>
+                                            <div class="flex justify-between items-center mb-1 md:mb-1.5 relative z-10">
+                                                <span class="text-[10px] md:text-xs font-black text-red-600 uppercase tracking-wider">DRL (P75)</span>
+                                                <i data-lucide="target" class="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500"></i>
+                                            </div>
+                                            <div class="text-2xl md:text-3xl font-black text-slate-900 leading-none tracking-tighter relative z-10">${statDLP.p75.toFixed(1)}</div>
                                         </div>
-                                        <div class="mt-auto pt-3 border-t border-slate-200/60 flex justify-between items-center">
-                                            <div class="text-[10px] font-bold text-slate-400 uppercase">Trung bình</div>
-                                            <div class="text-xs font-bold text-slate-600 font-mono text-right">${statDLP.mean.toFixed(1)} <span class="text-[10px] text-slate-400 font-medium">±${statDLP.sd.toFixed(1)}</span></div>
+                                        
+                                        <div class="mt-auto pt-2 md:pt-3 border-t border-slate-200/60 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-1 xl:gap-0">
+                                            <div class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase">Trung bình</div>
+                                            <div class="text-[10px] md:text-xs font-bold text-slate-600 font-mono text-left xl:text-right">${statDLP.mean.toFixed(1)} <span class="text-[9px] md:text-[10px] text-slate-400 font-medium">±${statDLP.sd.toFixed(1)}</span></div>
                                         </div>
                                     </div>
                                 </div>
@@ -596,13 +631,19 @@
                     `;
                     container.innerHTML += cardHTML;
                 });
+                
                 document.getElementById('loadingState').style.display = 'none';
                 container.classList.remove('hidden');
                 document.getElementById('ctaContainer').classList.remove('hidden');
+                document.getElementById('ctSectionTitle').classList.remove('hidden');
+                
                 setTimeout(() => {
                     container.classList.remove('opacity-0');
                     document.getElementById('ctaContainer').classList.remove('opacity-0');
+                    document.getElementById('ctSectionTitle').classList.remove('opacity-0');
+                    document.getElementById('ctSectionTitle').classList.remove('translate-y-4');
                 }, 50);
+                
                 lucide.createIcons();
             } catch (error) {
                 console.error(error);
