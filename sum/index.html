@@ -1,1 +1,1023 @@
 
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Cơ sở & Thiết bị CT - VN-DRL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Thêm thư viện xuất Excel SheetJS -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #334155; }
+        .glass-card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border: 1px solid #e2e8f0; }
+        .stat-card { background: white; border-radius: 1rem; padding: 1.5rem; position: relative; overflow: hidden; }
+        .table-header th { background: #1e293b; color: white; font-weight: 600; letter-spacing: 0.05em; font-size: 0.75rem; text-transform: uppercase; padding: 1rem; text-align: left; }
+        tr.hover-row:hover td { background-color: #f1f5f9; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #4f46e5; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .chart-container { position: relative; height: 250px; width: 100%; }
+        .chart-container-sm { position: relative; height: 180px; width: 100%; }
+        
+        /* Hiệu ứng chuyển động cho nền đăng nhập */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Màn hình Đăng nhập (Glassmorphism & Mesh Gradient) -->
+    <div id="loginScreen" class="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden px-4">
+        <!-- Nền Gradient -->
+        <div class="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900"></div>
+        
+        <!-- Các khối màu chuyển động (Blobs) tạo hiệu ứng hiện đại -->
+        <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob"></div>
+        <div class="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob animation-delay-4000"></div>
+
+        <!-- Khung kính mờ (Glass Card) -->
+        <div class="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] w-full max-w-sm overflow-hidden transform transition-all">
+            <div class="p-8 text-center border-b border-white/10">
+                <div class="w-16 h-16 bg-white/20 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-inner">
+                    <i data-lucide="lock" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-2xl font-black text-white tracking-tight drop-shadow-sm">VN-DRL System</h2>
+                <p class="text-indigo-100/80 text-sm font-medium mt-1">Quản lý Thiết bị Bệnh viện</p>
+            </div>
+            <div class="p-8 space-y-6">
+                <div>
+                    <label class="block text-[11px] font-black text-indigo-200 uppercase mb-2 tracking-widest">Mật khẩu truy cập</label>
+                    <input type="password" id="passwordInput" class="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 focus:ring-2 focus:ring-white/20 transition-all shadow-inner backdrop-blur-sm" placeholder="Nhập mật khẩu..." onkeypress="if(event.key === 'Enter') checkPassword()">
+                </div>
+                <p id="loginError" class="text-pink-300 text-xs font-bold hidden flex items-center gap-1.5 bg-pink-500/10 p-2.5 rounded-xl border border-pink-500/20"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Mật khẩu không chính xác!</p>
+                <button onclick="checkPassword()" class="w-full py-3.5 bg-white text-indigo-900 font-black rounded-xl text-sm shadow-[0_4px_14px_0_rgba(255,255,255,0.39)] hover:bg-indigo-50 hover:shadow-[0_6px_20px_rgba(255,255,255,0.23)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                    Đăng nhập <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ứng dụng chính (Bị ẩn cho đến khi đăng nhập) -->
+    <div id="appContainer" class="p-4 md:p-8 max-w-7xl mx-auto space-y-6 hidden">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-t-4 border-t-indigo-600">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                    <i data-lucide="server" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-slate-800 uppercase tracking-tight">Quản lý Bệnh viện & Thiết bị</h1>
+                    <p class="text-xs font-medium text-slate-500">Thống kê máy CT, ca chụp, năm sản xuất và phân loại số lát cắt</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <div id="syncStatus" class="px-3 py-2 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold flex items-center gap-2">
+                    <div class="loader hidden" id="spinner"></div>
+                    <span id="statusText">Đang tải...</span>
+                </div>
+                <button onclick="exportToExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-emerald-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Xuất Excel
+                </button>
+                <button onclick="openModal('add')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Thêm Máy CT
+                </button>
+            </div>
+        </div>
+
+        <!-- Hàng 1: Thống kê Tổng số ca chụp & Số ca theo Protocol -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="stat-card border-l-4 border-l-purple-500 shadow-sm !p-4 flex flex-col justify-center">
+                <span class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Tổng số mẫu</span>
+                <div class="text-2xl font-black text-purple-700" id="statTotalCases">0</div>
+            </div>
+            <div class="stat-card border-l-4 border-l-indigo-500 shadow-sm !p-4 flex flex-col justify-center">
+                <span class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Sọ não</span>
+                <div class="text-2xl font-black text-indigo-600" id="statHead">0</div>
+            </div>
+            <div class="stat-card border-l-4 border-l-blue-500 shadow-sm !p-4 flex flex-col justify-center">
+                <span class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Ngực</span>
+                <div class="text-2xl font-black text-blue-600" id="statChest">0</div>
+            </div>
+            <div class="stat-card border-l-4 border-l-orange-500 shadow-sm !p-4 flex flex-col justify-center">
+                <span class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Bụng</span>
+                <div class="text-2xl font-black text-orange-600" id="statAbd">0</div>
+            </div>
+            <div class="stat-card border-l-4 border-l-teal-500 shadow-sm !p-4 flex flex-col justify-center">
+                <span class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Phổi LDCT</span>
+                <div class="text-2xl font-black text-teal-600" id="statLdct">0</div>
+            </div>
+        </div>
+
+        <!-- Hàng 2: Thống kê Cơ sở & Thiết bị -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="stat-card border-l-4 border-l-emerald-500 shadow-sm flex-1">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase">Cơ sở tham gia</span>
+                    <i data-lucide="building-2" class="w-5 h-5 text-emerald-500"></i>
+                </div>
+                <div class="text-3xl font-black text-slate-800" id="statHospitals">0</div>
+            </div>
+            
+            <div class="stat-card border-l-4 border-l-cyan-500 shadow-sm flex-1">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase">Tổng số Máy CT</span>
+                    <i data-lucide="monitor" class="w-5 h-5 text-cyan-500"></i>
+                </div>
+                <div class="text-3xl font-black text-slate-800" id="statMachines">0</div>
+            </div>
+
+            <div class="stat-card border-l-4 border-l-amber-500 shadow-sm flex-1">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase">Cần cập nhật thông tin</span>
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-amber-500"></i>
+                </div>
+                <div class="text-3xl font-black text-slate-800" id="statPending">0</div>
+            </div>
+        </div>
+
+        <!-- Main Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-card p-6 flex flex-col items-center justify-center border-t-4 border-t-emerald-500">
+                <h3 class="w-full text-center text-sm font-black text-slate-700 uppercase tracking-wide mb-4">Tỷ lệ Số Máy theo Hãng</h3>
+                <div class="chart-container">
+                    <canvas id="machinesChart"></canvas>
+                </div>
+            </div>
+            <div class="glass-card p-6 flex flex-col items-center justify-center border-t-4 border-t-blue-500">
+                <h3 class="w-full text-center text-sm font-black text-slate-700 uppercase tracking-wide mb-4">Tỷ lệ Số Ca Chụp theo Hãng</h3>
+                <div class="chart-container">
+                    <canvas id="casesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Protocol Charts Row -->
+        <div class="space-y-4">
+            <h2 class="font-bold text-sm text-slate-700 flex items-center gap-2 px-2">
+                <i data-lucide="pie-chart" class="w-4 h-4"></i> Phân bổ Hãng máy theo 4 Nhóm Protocol Chính
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="protocolChartsContainer">
+                <!-- Các biểu đồ protocol sẽ được chèn vào đây -->
+            </div>
+            
+            <!-- Global Legend cho các Hãng máy -->
+            <div class="glass-card p-4 flex flex-wrap gap-2 justify-center items-center" id="globalLegend">
+                <!-- Sẽ được chèn bằng JS -->
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="glass-card overflow-hidden mt-6">
+            <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap justify-between items-center gap-4">
+                <h2 class="font-bold text-sm text-slate-700 flex items-center gap-2">
+                    <i data-lucide="list" class="w-4 h-4"></i> Danh sách Thiết bị & Số ca
+                </h2>
+                <div class="flex gap-2 flex-wrap">
+                    <select id="regionFilter" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 font-medium text-slate-600" onchange="renderTable()">
+                        <option value="all">Tất cả khu vực</option>
+                        <option value="Miền Bắc">Miền Bắc</option>
+                        <option value="Miền Trung">Miền Trung</option>
+                        <option value="Miền Nam">Miền Nam</option>
+                        <option value="Chưa phân loại">Chưa phân loại</option>
+                    </select>
+                    <!-- Bộ lọc mới cho Số lát cắt -->
+                    <select id="sliceFilter" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 font-medium text-slate-600" onchange="renderTable()">
+                        <option value="all">Tất cả số lát cắt</option>
+                        <option value="16 - 32 lát">16 - 32 lát</option>
+                        <option value="64 - 128 lát">64 - 128 lát</option>
+                        <option value="256 - 512 lát">256 - 512 lát</option>
+                        <option value="Máy 2 bóng (Dual Source)">Máy 2 bóng (Dual Source)</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="Tìm tên viện, hãng..." class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 w-64" onkeyup="renderTable()">
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="table-header">
+                        <tr>
+                            <th class="w-12 text-center" rowspan="2">STT</th>
+                            <th class="w-1/4 border-r border-slate-700" rowspan="2">Bệnh viện</th>
+                            <th rowspan="2">Hãng máy / Thiết bị</th>
+                            <th class="text-center bg-indigo-900 border-b border-indigo-700" colspan="5">Chi tiết số ca chụp</th>
+                            <th class="text-center" rowspan="2">Số lát cắt</th>
+                            <th class="text-center" rowspan="2">Năm SX</th>
+                            <th class="text-center" rowspan="2">Năm Lắp đặt</th>
+                            <th class="text-center" rowspan="2">Trạng thái</th>
+                            <th class="text-right" rowspan="2">Thao tác</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center bg-indigo-800 text-[10px]">Tổng</th>
+                            <th class="text-center bg-indigo-800 text-[10px]">Sọ</th>
+                            <th class="text-center bg-indigo-800 text-[10px]">Ngực</th>
+                            <th class="text-center bg-indigo-800 text-[10px]">Bụng</th>
+                            <th class="text-center bg-indigo-800 text-[10px]">LDCT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="bg-white">
+                        <!-- Content injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div> <!-- Kết thúc appContainer -->
+
+    <!-- Modal Form (Add/Edit) -->
+    <div id="machineModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0" id="modalContent">
+            <div class="bg-indigo-600 px-6 py-4 text-white flex justify-between items-center">
+                <h3 class="font-black uppercase tracking-wide flex items-center gap-2" id="modalTitle"><i data-lucide="edit" class="w-4 h-4"></i> Cập nhật thông tin máy</h3>
+                <button onclick="closeModal()" class="text-indigo-200 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="mId">
+                <input type="hidden" id="mIsAutoGenerated">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Khu vực</label>
+                    <select id="mRegion" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+                        <option value="auto">Tự động nhận diện</option>
+                        <option value="Miền Bắc">Miền Bắc</option>
+                        <option value="Miền Trung">Miền Trung</option>
+                        <option value="Miền Nam">Miền Nam</option>
+                        <option value="Chưa phân loại">Chưa phân loại</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bệnh viện (*)</label>
+                    <input type="text" id="mHosp" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:border-indigo-500" placeholder="VD: BV Chợ Rẫy">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hãng Máy (*)</label>
+                    <input type="text" id="mManu" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:border-indigo-500" placeholder="VD: Siemens, GE...">
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số lát cắt</label>
+                        <select id="mSlices" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 bg-white">
+                            <option value="">-- Chưa rõ --</option>
+                            <option value="16 - 32 lát">16 - 32 lát</option>
+                            <option value="64 - 128 lát">64 - 128 lát</option>
+                            <option value="256 - 512 lát">256 - 512 lát</option>
+                            <option value="Máy 2 bóng (Dual Source)">Máy 2 bóng (Dual Source)</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Năm sản xuất</label>
+                        <input type="number" id="mYearManuf" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500" placeholder="YYYY">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Năm lắp đặt</label>
+                        <input type="number" id="mYearInstall" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500" placeholder="YYYY">
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+                <button onclick="closeModal()" class="px-4 py-2 text-slate-600 font-bold rounded-lg text-sm hover:bg-slate-200">Hủy</button>
+                <button onclick="saveMachineData()" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700 shadow-md">Lưu thông tin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Configuration & Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAtQdmDbA1BgOrvwevrG6gwuFzlUmBTbfY", authDomain: "wb-idr.firebaseapp.com", projectId: "wb-idr", appId: "1:716649486328:web:340d7ae8dd0bafa1e0680d" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = 'wb-idr';
+
+        let allMachines = [];
+        let dbMachines = [];
+        let drlEntries = [];
+        
+        // Chart instances
+        let pieChartInstance = null;
+        let machinesChartInstance = null;
+        let protocolChartInstances = [];
+        
+        let topProtocolsData = []; // Lưu trữ dữ liệu top 4 protocols
+        window.currentFilteredMachines = []; // Lưu trữ danh sách máy đang hiển thị để xuất Excel
+
+        let globalColorMap = {};
+        const COLOR_PALETTE = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1', '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#64748b'];
+
+        // Logic Đăng nhập
+        window.checkPassword = () => {
+            const pwd = document.getElementById('passwordInput').value;
+            if (pwd === "gm@191223") {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+                init(); // Bắt đầu tải dữ liệu sau khi đăng nhập thành công
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        };
+
+        // Hàm phân loại Số lát cắt
+        function categorizeSlices(value) {
+            if (value === null || value === undefined || value === '') return null;
+            const strVal = String(value).toLowerCase();
+
+            // Nếu đã là chuỗi được format chuẩn thì trả về luôn
+            if (strVal.includes('16 - 32')) return "16 - 32 lát";
+            if (strVal.includes('64 - 128')) return "64 - 128 lát";
+            if (strVal.includes('256 - 512')) return "256 - 512 lát";
+            if (strVal.includes('2 bóng') || strVal.includes('dual')) return "Máy 2 bóng (Dual Source)";
+            if (strVal === 'khác') return "Khác";
+
+            // Nếu dữ liệu dạng số nguyên (từ hệ thống tự quét hoặc dữ liệu cũ)
+            const num = parseInt(value);
+            if (!isNaN(num)) {
+                if (num >= 16 && num <= 32) return "16 - 32 lát";
+                if (num >= 64 && num <= 128) return "64 - 128 lát";
+                if (num >= 256 && num <= 512) return "256 - 512 lát";
+            }
+            
+            // Trường hợp có ghi nhận dữ liệu nhưng không khớp khoảng nào ở trên
+            return "Khác"; 
+        }
+
+        // Hàm định dạng hiển thị Số lát cắt thành các Badge màu sắc
+        function formatSliceCountBadge(sliceCategory) {
+            if (!sliceCategory || sliceCategory === '--') return '<span class="text-slate-300 font-medium">--</span>';
+
+            let bg = 'bg-slate-50', text = 'text-slate-500', border = 'border-slate-200';
+            
+            if (sliceCategory.includes('16 - 32')) { 
+                bg = 'bg-slate-100'; text = 'text-slate-600'; border = 'border-slate-200'; 
+            } else if (sliceCategory.includes('64 - 128')) { 
+                bg = 'bg-sky-100'; text = 'text-sky-700'; border = 'border-sky-200'; 
+            } else if (sliceCategory.includes('256 - 512')) { 
+                bg = 'bg-violet-100'; text = 'text-violet-700'; border = 'border-violet-200'; 
+            } else if (sliceCategory.includes('2 bóng') || sliceCategory.includes('Dual')) { 
+                bg = 'bg-amber-100'; text = 'text-amber-700'; border = 'border-amber-300'; 
+            }
+
+            return `<span class="px-2.5 py-1 text-[11px] font-black uppercase tracking-tight rounded-md border ${bg} ${text} ${border} whitespace-nowrap inline-block shadow-sm transition-all hover:scale-105">${sliceCategory}</span>`;
+        }
+
+        // Hàm render Global Legend (Chú thích chung)
+        function renderGlobalLegend() {
+            const legendContainer = document.getElementById('globalLegend');
+            if (!legendContainer) return;
+            legendContainer.innerHTML = '<span class="text-sm font-bold text-slate-600 mr-2"><i data-lucide="palette" class="w-4 h-4 inline pb-0.5"></i> Chú thích Hãng:</span>';
+            
+            Object.entries(globalColorMap).sort((a,b) => a[0].localeCompare(b[0])).forEach(([manu, color]) => {
+                legendContainer.innerHTML += `
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-lg border border-slate-200 shadow-sm">
+                        <span class="w-3 h-3 rounded-full shadow-sm" style="background-color: ${color}"></span>
+                        <span class="text-xs font-bold text-slate-700">${manu}</span>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        // Hàm phân loại Protocol dựa vào nguyên tắc ưu tiên tuần tự (If-Else)
+        function getProtocolGroup(protocolStr) {
+            if (!protocolStr) return null;
+            const p = protocolStr.toLowerCase().trim();
+            
+            // Ưu tiên 1: Phổi liều thấp (LDCT)
+            if (p.includes('low dose') || p.includes('ldct') || p.includes('liều thấp')) {
+                return "Phổi liều thấp";
+            }
+            
+            // Ưu tiên 2: Sọ não
+            if (p.includes('head') || p.includes('brain') || p.includes('sọ') || p.includes('não')) {
+                return "Sọ không cản quang";
+            }
+            
+            // Ưu tiên 3: Ngực
+            if (p.includes('chest') || p.includes('thorax') || p.includes('ngực') || p.includes('phổi')) {
+                return "Ngực không cản quang";
+            }
+            
+            // Ưu tiên 4: Bụng
+            if (p.includes('abdomen') || p.includes('abd') || p.includes('bụng')) {
+                return "Bụng không cản quang";
+            }
+
+            return null; 
+        }
+
+        // Hàm phân loại khu vực
+        function getRegion(machine) {
+            if (machine && machine.regionOverride) return machine.regionOverride;
+            
+            const hospitalName = machine ? machine.hospitalName : '';
+            if (!hospitalName) return 'Chưa phân loại';
+            const name = hospitalName.toLowerCase();
+            
+            const north = ['hà nội', 'bạch mai', 'việt đức', '108', '103', 'k', 'thái nguyên', 'hải phòng', 'quảng ninh', 'bắc giang', 'bắc ninh', 'phú thọ', 'vĩnh phúc', 'hưng yên', 'hải dương', 'thái bình', 'nam định', 'ninh bình', 'hà nam', 'hòa bình', 'sơn la', 'điện biên', 'lai châu', 'lào cai', 'yên bái', 'hà giang', 'tuyên quang', 'bắc kạn', 'lạng sơn', 'cao bằng', 'huyết học', 'nhi tw', 'phụ sản tw', 'e'];
+            const central = ['huế', 'đà nẵng', 'quảng nam', 'nghệ an', 'hà tĩnh', 'thanh hóa', 'quảng bình', 'quảng trị', 'quảng ngãi', 'bình định', 'phú yên', 'khánh hòa', 'ninh thuận', 'bình thuận', 'kon tum', 'gia lai', 'đắk lắk', 'đắk nông', 'lâm đồng', 'tây nguyên'];
+            const south = ['hcm', 'hồ chí minh', 'chợ rẫy', 'thống nhất', 'cần thơ', 'đồng nai', 'bình dương', 'bình phước', 'tây ninh', 'bà rịa', 'vũng tàu', 'long an', 'tiền giang', 'bến tre', 'trà vinh', 'vĩnh long', 'đồng tháp', 'an giang', 'kiên giang', 'hậu giang', 'sóc trăng', 'bạc liêu', 'cà mau', 'từ dũ', 'hùng vương', 'nhi đồng', 'thủ đức', '115'];
+
+            if (north.some(k => name.includes(k))) return 'Miền Bắc';
+            if (central.some(k => name.includes(k))) return 'Miền Trung';
+            if (south.some(k => name.includes(k))) return 'Miền Nam';
+            return 'Chưa phân loại';
+        }
+
+        async function init() {
+            setLoading(true, "Đang kết nối...");
+            try {
+                await signInAnonymously(auth);
+                
+                setLoading(true, "Đang tải DB Thiết bị...");
+                const machSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'machines'));
+                dbMachines = machSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                setLoading(true, "Đang quét dữ liệu ca chụp...");
+                const drlSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'drl_entries'));
+                drlEntries = drlSnap.docs.map(d => d.data());
+
+                mergeData();
+
+            } catch (error) {
+                console.error("Lỗi:", error);
+                alert("Lỗi tải dữ liệu: " + error.message);
+            } finally {
+                setLoading(false);
+                lucide.createIcons();
+            }
+        }
+
+        function mergeData() {
+            const machineStats = {}; 
+            const protManuCounts = {};
+            const protTotalCounts = {};
+
+            drlEntries.forEach(e => {
+                if (!e.isDeleted && e.hospitalName && e.hospitalName !== "Chưa chọn") {
+                    const h = e.hospitalName.trim();
+                    const m = (e.manufacturer && e.manufacturer !== "--" && e.manufacturer !== "Chưa chọn") ? e.manufacturer.trim() : "Chưa xác định";
+                    const key = `${h}_|_${m}`;
+                    
+                    if (!machineStats[key]) {
+                        machineStats[key] = { total: 0, head: 0, chest: 0, abd: 0, ldct: 0, detectedSlices: null };
+                    }
+                    
+                    machineStats[key].total++;
+
+                    // Tự động quét số lát cắt và phân loại ngay
+                    const rawSlices = e.sliceCount || e.numberOfSlices || e.slices || e.detectorRows;
+                    if (rawSlices && !machineStats[key].detectedSlices) {
+                        machineStats[key].detectedSlices = rawSlices;
+                    }
+
+                    const rawProtocol = e.protocol || e.studyName || e.procedureName || e.examType || '';
+                    const protocolGroup = getProtocolGroup(rawProtocol);
+                    
+                    if (protocolGroup === "Sọ không cản quang") machineStats[key].head++;
+                    else if (protocolGroup === "Ngực không cản quang") machineStats[key].chest++;
+                    else if (protocolGroup === "Bụng không cản quang") machineStats[key].abd++;
+                    else if (protocolGroup === "Phổi liều thấp") machineStats[key].ldct++;
+
+                    if (protocolGroup) {
+                        protTotalCounts[protocolGroup] = (protTotalCounts[protocolGroup] || 0) + 1;
+                        if (!protManuCounts[protocolGroup]) protManuCounts[protocolGroup] = {};
+                        protManuCounts[protocolGroup][m] = (protManuCounts[protocolGroup][m] || 0) + 1;
+                    }
+                }
+            });
+
+            const targetProtocols = [
+                "Sọ không cản quang",
+                "Ngực không cản quang",
+                "Bụng không cản quang",
+                "Phổi liều thấp"
+            ];
+
+            topProtocolsData = targetProtocols.map(p => ({
+                protocol: p,
+                data: protManuCounts[p] || {}
+            }));
+
+            const finalMachines = [];
+            const usedKeys = new Set();
+
+            dbMachines.forEach(m => {
+                const key = `${m.hospitalName}_|_${m.manufacturer}`;
+                const stats = machineStats[key] || { total: 0, head: 0, chest: 0, abd: 0, ldct: 0, detectedSlices: null };
+                m.caseCount = stats.total;
+                m.protocolBreakdown = stats;
+                
+                // Chuẩn hóa số lát cắt sang định dạng hiển thị text
+                m.sliceCount = categorizeSlices(m.sliceCount || stats.detectedSlices);
+                
+                m.isAutoGenerated = false;
+                finalMachines.push(m);
+                usedKeys.add(key);
+            });
+
+            for (const [key, stats] of Object.entries(machineStats)) {
+                if (!usedKeys.has(key)) {
+                    const [h, m] = key.split('_|_');
+                    finalMachines.push({ 
+                        hospitalName: h, 
+                        manufacturer: m, 
+                        caseCount: stats.total, 
+                        protocolBreakdown: stats,
+                        sliceCount: categorizeSlices(stats.detectedSlices), 
+                        isAutoGenerated: true 
+                    });
+                }
+            }
+
+            allMachines = finalMachines;
+            allMachines.sort((a, b) => a.hospitalName.localeCompare(b.hospitalName));
+
+            updateStats();
+            renderChart();
+            renderTable();
+        }
+
+        function updateStats() {
+            let totalRawCases = 0;
+            const uniqueFacilities = new Set();
+            
+            const protocolCounts = {
+                "Sọ không cản quang": 0,
+                "Ngực không cản quang": 0,
+                "Bụng không cản quang": 0,
+                "Phổi liều thấp": 0
+            };
+
+            drlEntries.forEach(e => {
+                if (!e.isDeleted) {
+                    totalRawCases++; 
+                    
+                    if (e.hospitalName && e.hospitalName !== "Chưa chọn") {
+                        uniqueFacilities.add(e.hospitalName.trim());
+                    }
+
+                    const rawProtocol = e.protocol || e.studyName || e.procedureName || e.examType || '';
+                    const pGroup = getProtocolGroup(rawProtocol);
+                    if (pGroup && protocolCounts[pGroup] !== undefined) {
+                        protocolCounts[pGroup]++;
+                    }
+                }
+            });
+
+            document.getElementById('statHospitals').innerText = uniqueFacilities.size;
+            document.getElementById('statMachines').innerText = allMachines.length;
+            
+            document.getElementById('statTotalCases').innerText = totalRawCases.toLocaleString('vi-VN');
+            document.getElementById('statHead').innerText = protocolCounts["Sọ không cản quang"].toLocaleString('vi-VN');
+            document.getElementById('statChest').innerText = protocolCounts["Ngực không cản quang"].toLocaleString('vi-VN');
+            document.getElementById('statAbd').innerText = protocolCounts["Bụng không cản quang"].toLocaleString('vi-VN');
+            document.getElementById('statLdct').innerText = protocolCounts["Phổi liều thấp"].toLocaleString('vi-VN');
+
+            const pending = allMachines.filter(m => !m.manufactureYear && !m.installYear && !m.sliceCount).length;
+            document.getElementById('statPending').innerText = pending;
+        }
+
+        function renderChart() {
+            const ctxCases = document.getElementById('casesChart').getContext('2d');
+            const ctxMachines = document.getElementById('machinesChart').getContext('2d');
+            
+            if (pieChartInstance) pieChartInstance.destroy();
+            if (machinesChartInstance) machinesChartInstance.destroy();
+
+            const manuCasesMap = {};
+            const manuCountMap = {};
+            const allManus = new Set();
+
+            allMachines.forEach(m => {
+                const manu = m.manufacturer === "Chưa xác định" ? "Khác" : m.manufacturer;
+                allManus.add(manu);
+                manuCasesMap[manu] = (manuCasesMap[manu] || 0) + (m.caseCount || 0);
+                manuCountMap[manu] = (manuCountMap[manu] || 0) + 1;
+            });
+
+            Array.from(allManus).sort().forEach((manu, index) => {
+                if (!globalColorMap[manu]) {
+                    globalColorMap[manu] = COLOR_PALETTE[index % COLOR_PALETTE.length];
+                }
+            });
+
+            const labelsCases = [];
+            const dataCases = [];
+            const colorsCases = [];
+            Object.entries(manuCasesMap).sort((a, b) => b[1] - a[1]).forEach(([manu, count]) => {
+                if(count > 0) { labelsCases.push(manu); dataCases.push(count); colorsCases.push(globalColorMap[manu]); }
+            });
+
+            const labelsMachines = [];
+            const dataMachines = [];
+            const colorsMachines = [];
+            Object.entries(manuCountMap).sort((a, b) => b[1] - a[1]).forEach(([manu, count]) => {
+                if(count > 0) { labelsMachines.push(manu); dataMachines.push(count); colorsMachines.push(globalColorMap[manu]); }
+            });
+
+            pieChartInstance = new Chart(ctxCases, {
+                type: 'doughnut',
+                data: {
+                    labels: labelsCases,
+                    datasets: [{ data: dataCases, backgroundColor: colorsCases, borderWidth: 2, borderColor: '#ffffff', hoverOffset: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { family: 'Inter' } } } }, cutout: '65%' }
+            });
+
+            machinesChartInstance = new Chart(ctxMachines, {
+                type: 'pie',
+                data: {
+                    labels: labelsMachines,
+                    datasets: [{ data: dataMachines, backgroundColor: colorsMachines, borderWidth: 2, borderColor: '#ffffff', hoverOffset: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { family: 'Inter' } } } } }
+            });
+
+            renderGlobalLegend();
+            renderProtocolCharts();
+        }
+
+        function renderProtocolCharts() {
+            protocolChartInstances.forEach(inst => inst.destroy());
+            protocolChartInstances = [];
+
+            const container = document.getElementById('protocolChartsContainer');
+            container.innerHTML = '';
+
+            topProtocolsData.forEach((item, index) => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'glass-card p-4 flex flex-col items-center border-t-2 border-t-indigo-400 bg-white/50';
+                
+                cardDiv.innerHTML = `
+                    <h4 class="w-full text-center text-xs font-bold text-slate-800 uppercase tracking-tight mb-3 truncate px-2" title="${item.protocol}">
+                        ${item.protocol}
+                    </h4>
+                    <div class="chart-container-sm">
+                        <canvas id="protChart_${index}"></canvas>
+                    </div>
+                `;
+                container.appendChild(cardDiv);
+
+                const ctx = document.getElementById(`protChart_${index}`).getContext('2d');
+                const labels = [];
+                const data = [];
+                const colors = [];
+
+                if (Object.keys(item.data).length === 0) {
+                    labels.push("Chưa có dữ liệu");
+                    data.push(1);
+                    colors.push("#e2e8f0");
+                } else {
+                    Object.entries(item.data).sort((a, b) => b[1] - a[1]).forEach(([manu, count]) => {
+                        const safeManu = manu === "Chưa xác định" ? "Khác" : manu;
+                        labels.push(safeManu);
+                        data.push(count);
+                        colors.push(globalColorMap[safeManu] || '#cbd5e1'); 
+                    });
+                }
+
+                const chart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{ data: data, backgroundColor: colors, borderWidth: 1, borderColor: '#ffffff' }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { 
+                                callbacks: { 
+                                    label: function(c) { 
+                                        if(c.label === "Chưa có dữ liệu") return "0 ca";
+                                        return c.label + ': ' + c.parsed + ' ca'; 
+                                    } 
+                                } 
+                            }
+                        },
+                        cutout: '55%'
+                    }
+                });
+                protocolChartInstances.push(chart);
+            });
+        }
+
+        window.renderTable = () => {
+            const tbody = document.getElementById('tableBody');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filterRegion = document.getElementById('regionFilter').value;
+            const filterSlice = document.getElementById('sliceFilter').value;
+            tbody.innerHTML = '';
+
+            const filteredMachines = allMachines.filter(m => {
+                const str = `${m.hospitalName} ${m.manufacturer} ${m.manufactureYear || ''} ${m.installYear || ''}`.toLowerCase();
+                const mRegion = getRegion(m);
+                const mSliceCategory = m.sliceCount || "Chưa phân loại";
+
+                const matchSearch = !search || str.includes(search);
+                const matchRegion = filterRegion === 'all' || mRegion === filterRegion;
+                const matchSlice = filterSlice === 'all' || mSliceCategory === filterSlice;
+
+                return matchSearch && matchRegion && matchSlice;
+            });
+
+            window.currentFilteredMachines = filteredMachines;
+
+            const grouped = {};
+            filteredMachines.forEach(m => {
+                const region = getRegion(m);
+                if (!grouped[region]) grouped[region] = {};
+                if (!grouped[region][m.hospitalName]) grouped[region][m.hospitalName] = [];
+                grouped[region][m.hospitalName].push(m);
+            });
+
+            const regionOrder = ['Miền Bắc', 'Miền Trung', 'Miền Nam', 'Chưa phân loại'];
+            let html = '';
+            let stt = 1;
+
+            regionOrder.forEach(region => {
+                const hospitalsInRegion = grouped[region];
+                if (!hospitalsInRegion || Object.keys(hospitalsInRegion).length === 0) return;
+
+                const hospitalCount = Object.keys(hospitalsInRegion).length;
+
+                html += `
+                    <tr class="bg-blue-600 border-b-2 border-blue-700 shadow-sm">
+                        <td colspan="13" class="p-3 font-black text-white uppercase tracking-wider text-xs">
+                            <div class="flex items-center gap-2 pl-2">
+                                <i data-lucide="map" class="w-4 h-4"></i> KHU VỰC ${region.toUpperCase()}
+                                <span class="ml-2 px-2.5 py-0.5 bg-blue-800 text-blue-50 rounded-full text-[10px] font-bold border border-blue-500/50 shadow-inner normal-case">
+                                    ${hospitalCount} cơ sở
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                const hospTotalCases = {};
+                for (const hosp in hospitalsInRegion) {
+                    hospTotalCases[hosp] = hospitalsInRegion[hosp].reduce((sum, m) => sum + (m.caseCount || 0), 0);
+                }
+
+                const sortedHospitals = Object.keys(hospitalsInRegion).sort((a, b) => {
+                    const diff = hospTotalCases[b] - hospTotalCases[a];
+                    if (diff === 0) return a.localeCompare(b); 
+                    return diff;
+                });
+
+                for (const hosp of sortedHospitals) {
+                    const machines = hospitalsInRegion[hosp];
+
+                    machines.forEach((m, idx) => {
+                        const hasData = m.manufactureYear || m.installYear || m.sliceCount;
+                        const statusHtml = hasData 
+                            ? `<span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">Đã cập nhật</span>`
+                            : `<span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full border border-amber-200">Thiếu thông tin</span>`;
+                        
+                        const mJson = encodeURIComponent(JSON.stringify(m));
+                        const brk = m.protocolBreakdown || { total: 0, head: 0, chest: 0, abd: 0, ldct: 0 };
+
+                        html += `<tr class="hover-row border-b border-slate-200 transition-colors">`;
+                        
+                        if (idx === 0) {
+                            html += `
+                                <td class="p-4 text-center font-bold text-blue-600 align-middle border-r border-slate-100 border-l-4 border-l-blue-600 bg-blue-50/20" rowspan="${machines.length}">${stt++}</td>
+                                <td class="p-4 font-bold text-blue-800 align-middle border-r border-slate-100 bg-blue-50/40" rowspan="${machines.length}">${m.hospitalName}</td>
+                            `;
+                        }
+                        
+                        const manuColor = globalColorMap[m.manufacturer === "Chưa xác định" ? "Khác" : m.manufacturer] || '#475569';
+
+                        html += `
+                            <td class="p-4 font-bold" style="color: ${manuColor}">${m.manufacturer}</td>
+                            
+                            <!-- Bắt đầu Cột Chi tiết Ca chụp -->
+                            <td class="p-3 text-center font-black text-emerald-700 bg-emerald-50/40 border-l border-slate-200">${brk.total}</td>
+                            <td class="p-2 text-center font-medium text-slate-500 text-xs ${brk.head ? 'bg-indigo-50/40 font-bold text-indigo-700' : ''}">${brk.head || '-'}</td>
+                            <td class="p-2 text-center font-medium text-slate-500 text-xs ${brk.chest ? 'bg-blue-50/40 font-bold text-blue-700' : ''}">${brk.chest || '-'}</td>
+                            <td class="p-2 text-center font-medium text-slate-500 text-xs ${brk.abd ? 'bg-orange-50/40 font-bold text-orange-700' : ''}">${brk.abd || '-'}</td>
+                            <td class="p-2 text-center font-medium text-slate-500 text-xs border-r border-slate-200 ${brk.ldct ? 'bg-teal-50/40 font-bold text-teal-700' : ''}">${brk.ldct || '-'}</td>
+                            <!-- Kết thúc Cột Chi tiết Ca chụp -->
+
+                            <td class="p-3 text-center align-middle">${formatSliceCountBadge(m.sliceCount)}</td>
+                            <td class="p-4 text-center font-mono font-bold text-slate-500">${m.manufactureYear || '--'}</td>
+                            <td class="p-3 text-center align-middle">
+                                <span class="inline-block px-3 py-1.5 font-serif font-black tracking-widest text-rose-700 bg-rose-50 border border-rose-200 rounded-lg shadow-sm">
+                                    ${m.installYear || '--'}
+                                </span>
+                            </td>
+                            <td class="p-4 text-center">${statusHtml}</td>
+                            <td class="p-4 text-right">
+                                <button onclick="openModal('edit', '${mJson}')" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 rounded-lg text-xs font-bold transition-colors shadow-sm">
+                                    Sửa
+                                </button>
+                                ${!m.isAutoGenerated ? `
+                                <button onclick="deleteMachine('${m.id}')" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors ml-1 shadow-sm">
+                                    Xóa
+                                </button>` : ''}
+                            </td>
+                        </tr>`;
+                    });
+                }
+            });
+
+            tbody.innerHTML = html;
+            lucide.createIcons();
+        };
+
+        window.exportToExcel = () => {
+            const dataToExport = window.currentFilteredMachines;
+            if (!dataToExport || dataToExport.length === 0) {
+                return alert("Không có dữ liệu nào trên bảng để xuất!");
+            }
+
+            const hospTotalCases = {};
+            dataToExport.forEach(m => {
+                hospTotalCases[m.hospitalName] = (hospTotalCases[m.hospitalName] || 0) + (m.caseCount || 0);
+            });
+
+            const regionOrderMap = { 'Miền Bắc': 1, 'Miền Trung': 2, 'Miền Nam': 3, 'Chưa phân loại': 4 };
+
+            const sortedData = [...dataToExport].sort((a, b) => {
+                const rA = getRegion(a);
+                const rB = getRegion(b);
+                if (rA !== rB) return (regionOrderMap[rA] || 99) - (regionOrderMap[rB] || 99);
+                
+                const diff = hospTotalCases[b.hospitalName] - hospTotalCases[a.hospitalName];
+                if (diff === 0) return a.hospitalName.localeCompare(b.hospitalName);
+                return diff;
+            });
+
+            const excelRows = [];
+            let stt = 1;
+
+            sortedData.forEach(m => {
+                const brk = m.protocolBreakdown || { total: 0, head: 0, chest: 0, abd: 0, ldct: 0 };
+                excelRows.push({
+                    "STT": stt++,
+                    "Khu vực": getRegion(m),
+                    "Bệnh viện": m.hospitalName,
+                    "Hãng máy": m.manufacturer,
+                    "Tổng số ca": brk.total,
+                    "Ca Sọ não": brk.head,
+                    "Ca Ngực": brk.chest,
+                    "Ca Bụng": brk.abd,
+                    "Ca LDCT": brk.ldct,
+                    "Số lát cắt": m.sliceCount || "",
+                    "Năm Sản xuất": m.manufactureYear || "",
+                    "Năm Lắp đặt": m.installYear || "",
+                    "Trạng thái": (m.manufactureYear || m.installYear || m.sliceCount) ? "Đã cập nhật" : "Thiếu thông tin"
+                });
+            });
+
+            const ws = XLSX.utils.json_to_sheet(excelRows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Danh_Sach_May_CT");
+
+            const date = new Date();
+            const dateString = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
+            const filename = `VN_DRL_ThongKeThietBi_${dateString}.xlsx`;
+
+            XLSX.writeFile(wb, filename);
+        };
+
+        window.openModal = (mode, encodedData = null) => {
+            document.getElementById('machineModal').classList.remove('hidden');
+            document.getElementById('machineModal').classList.add('flex');
+            setTimeout(() => {
+                document.getElementById('modalContent').classList.remove('scale-95', 'opacity-0');
+                document.getElementById('modalContent').classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            if (mode === 'add') {
+                document.getElementById('modalTitle').innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Thêm Thiết bị mới';
+                document.getElementById('mId').value = '';
+                document.getElementById('mIsAutoGenerated').value = 'false';
+                document.getElementById('mRegion').value = 'auto';
+                document.getElementById('mHosp').value = '';
+                document.getElementById('mManu').value = '';
+                document.getElementById('mSlices').value = '';
+                document.getElementById('mHosp').disabled = false;
+                document.getElementById('mManu').disabled = false;
+                document.getElementById('mYearManuf').value = '';
+                document.getElementById('mYearInstall').value = '';
+            } else if (mode === 'edit' && encodedData) {
+                document.getElementById('modalTitle').innerHTML = '<i data-lucide="edit" class="w-4 h-4"></i> Cập nhật thông tin máy';
+                const data = JSON.parse(decodeURIComponent(encodedData));
+                
+                document.getElementById('mId').value = data.id || '';
+                document.getElementById('mIsAutoGenerated').value = data.isAutoGenerated || false;
+                document.getElementById('mRegion').value = data.regionOverride || 'auto';
+                document.getElementById('mHosp').value = data.hospitalName;
+                document.getElementById('mManu').value = data.manufacturer;
+                
+                document.getElementById('mHosp').disabled = data.isAutoGenerated;
+                document.getElementById('mManu').disabled = data.isAutoGenerated;
+
+                document.getElementById('mSlices').value = categorizeSlices(data.sliceCount) || '';
+                document.getElementById('mYearManuf').value = data.manufactureYear || '';
+                document.getElementById('mYearInstall').value = data.installYear || '';
+            }
+            lucide.createIcons();
+        };
+
+        window.closeModal = () => {
+            document.getElementById('modalContent').classList.remove('scale-100', 'opacity-100');
+            document.getElementById('modalContent').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                document.getElementById('machineModal').classList.add('hidden');
+                document.getElementById('machineModal').classList.remove('flex');
+            }, 200);
+        };
+
+        window.saveMachineData = async () => {
+            if (!auth.currentUser) return alert("Không có quyền ghi dữ liệu. Vui lòng thử lại!");
+
+            const id = document.getElementById('mId').value;
+            const isAuto = document.getElementById('mIsAutoGenerated').value === 'true';
+            
+            const regionVal = document.getElementById('mRegion').value;
+            const hosp = document.getElementById('mHosp').value.trim();
+            const manu = document.getElementById('mManu').value.trim();
+            const slicesVal = document.getElementById('mSlices').value;
+            const yM = document.getElementById('mYearManuf').value;
+            const yI = document.getElementById('mYearInstall').value;
+
+            if (!hosp || !manu) return alert("Vui lòng nhập Tên Bệnh viện và Hãng máy!");
+
+            const dataToSave = {
+                hospitalName: hosp,
+                manufacturer: manu,
+                regionOverride: regionVal === 'auto' ? null : regionVal,
+                sliceCount: slicesVal ? slicesVal : null, // Lưu trực tiếp chuỗi định dạng (vd: 64 - 128 lát)
+                manufactureYear: yM ? parseInt(yM) : null,
+                installYear: yI ? parseInt(yI) : null,
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                if (id && !isAuto) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'machines', id), dataToSave, { merge: true });
+                } else {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'machines'), dataToSave);
+                }
+                
+                closeModal();
+                init(); 
+                
+            } catch (err) {
+                alert("Lỗi lưu dữ liệu: " + err.message);
+            }
+        };
+
+        window.deleteMachine = async (id) => {
+            if (!id) return;
+            if (!confirm("Bạn có chắc chắn muốn xóa thông tin máy này? (Dữ liệu ca chụp gốc sẽ KHÔNG bị ảnh hưởng)")) return;
+
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'machines', id));
+                init();
+            } catch (err) {
+                alert("Lỗi xóa: " + err.message);
+            }
+        };
+
+        function setLoading(isLoading, text = "") {
+            const spinner = document.getElementById('spinner');
+            const stext = document.getElementById('statusText');
+            
+            if (isLoading) {
+                spinner.classList.remove('hidden');
+                stext.innerText = text;
+                stext.classList.remove('text-emerald-600');
+                stext.classList.add('text-indigo-600');
+            } else {
+                spinner.classList.add('hidden');
+                stext.innerText = "Dữ liệu đã đồng bộ";
+                stext.classList.remove('text-indigo-600');
+                stext.classList.add('text-emerald-600');
+            }
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
