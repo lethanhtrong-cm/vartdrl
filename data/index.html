@@ -310,6 +310,7 @@
                             <select id="fQuality" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 text-slate-600 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">
                                 <option value="all" class="text-slate-700 dark:text-slate-200">Tất cả</option>
                                 <option value="any_issue" class="text-red-500">⚠ Có bất thường</option>
+                                <option value="abnormal_dose" class="text-purple-500 font-bold">⚠ Sai lệch Protocol (Nhầm liều)</option>
                                 <option value="swapped_hw" class="text-orange-500">⚠ Nghi ngờ nhầm Cân/Cao</option>
                                 <option value="missing_id">Thiếu ID bệnh nhân</option>
                                 <option value="missing_account">Thiếu tài khoản</option>
@@ -1020,7 +1021,7 @@
 
         window.toggleAdminForm = () => {
             el('normalLoginForm').classList.toggle('hidden');
-            el('adminKeyForm').classList.toggle('hidden');
+            if(el('adminKeyForm')) el('adminKeyForm').classList.toggle('hidden');
         };
 
         window.doEmailLogin = async () => {
@@ -1043,11 +1044,6 @@
             } catch (error) {
                 window.showAlert("Lỗi Google Login", error.message, 'error');
             }
-        };
-
-        window.toggleAdminForm = () => {
-            el('normalLoginForm').classList.toggle('hidden');
-            if(el('adminKeyForm')) el('adminKeyForm').classList.toggle('hidden');
         };
 
         window.doAdminKeyLogin = async () => {
@@ -1164,6 +1160,28 @@
             if (lower.includes('low') || lower.includes('thấp') || lower.includes('ldct')) return 'Phổi liều thấp (LDCT)';
             if (lower.includes('spine') || lower.includes('cột sống')) return 'Spine';
             return p;
+        };
+
+        // --- HÀM GỢI Ý TỰ ĐỘNG ---
+        const getProtocolSuggestion = (protocol, ctdi) => {
+            const protGroup = getProtocolGroup(protocol);
+            const c = parseFloat(ctdi);
+            if (isNaN(c) || c === 0) return { isAbnormal: false };
+
+            if (protGroup === 'Phổi liều thấp (LDCT)' && c > 6) {
+                return { isAbnormal: true, suggestedLabel: 'Ngực (Chest)', suggestedValue: 'Chest Routine', reason: 'CTDI > 6 mGy: Quá cao cho phổi liều thấp' };
+            }
+            if (protGroup === 'Ngực (Chest Routine)' && c < 3) {
+                return { isAbnormal: true, suggestedLabel: 'Phổi liều thấp', suggestedValue: 'Low Dose Lung', reason: 'CTDI < 3 mGy: Quá thấp cho ngực thường quy' };
+            }
+            if (protGroup === 'Sọ não (Head Routine)' && c < 25) {
+                if (c < 6) return { isAbnormal: true, suggestedLabel: 'Phổi liều thấp', suggestedValue: 'Low Dose Lung', reason: 'CTDI quá thấp cho Sọ não. Trùng dải liều LDCT' };
+                return { isAbnormal: true, suggestedLabel: 'Ngực (Chest)', suggestedValue: 'Chest Routine', reason: 'CTDI quá thấp cho Sọ não. Trùng dải liều Ngực/Bụng' };
+            }
+            if (protGroup === 'Sọ não (Head Routine)' && c > 100) {
+                return { isAbnormal: true, suggestedLabel: '', suggestedValue: '', reason: 'CTDI > 100 mGy: Vượt ngưỡng thông thường' };
+            }
+            return { isAbnormal: false };
         };
 
         const getProtocolClass = (p) => {
@@ -2019,8 +2037,11 @@
                     const w = parseFloat(e.weight);
                     const h = parseFloat(e.height);
                     const isSwapped = (!isNaN(w) && !isNaN(h) && w > h && h > 0) || (!isNaN(w) && w > 130);
+                    
+                    const isAbnormalDose = getProtocolSuggestion(e.protocol, e.ctdi).isAbnormal;
 
-                    if (fQ === 'any_issue' && !(isMissingId || isMissingAcc || isMissingProt || isMissingDose || isSwapped)) return false;
+                    if (fQ === 'any_issue' && !(isMissingId || isMissingAcc || isMissingProt || isMissingDose || isSwapped || isAbnormalDose)) return false;
+                    else if (fQ === 'abnormal_dose' && !isAbnormalDose) return false;
                     else if (fQ === 'swapped_hw' && !isSwapped) return false;
                     else if (fQ === 'missing_id' && !isMissingId) return false;
                     else if (fQ === 'missing_account' && !isMissingAcc) return false;
@@ -2120,6 +2141,26 @@
                     const canSeeEmail = isOwner || isSuperAdmin || isViewerRole;
                     const displayEmail = canSeeEmail ? (e.userEmail || 'Unknown') : 'Thành viên khác';
                     const displayInitial = canSeeEmail ? (e.userEmail || '?').charAt(0).toUpperCase() : '?';
+
+                    // Xử lý huy hiệu Sai lệch Protocol & Gợi ý sửa lỗi tự động
+                    const suggestion = getProtocolSuggestion(e.protocol, e.ctdi);
+                    let abnormalBadge = '';
+                    
+                    if (suggestion.isAbnormal) {
+                        let fixBtnHtml = '';
+                        if (suggestion.suggestedValue && canEdit) {
+                            fixBtnHtml = `<button onclick="window.autoFixProtocol('${e.id}', '${suggestion.suggestedValue}')" class="mt-1 bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded text-[9px] font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95"><i data-lucide="wand-2" class="w-3 h-3"></i> Đổi thành ${suggestion.suggestedLabel}</button>`;
+                        }
+                        
+                        abnormalBadge = `
+                            <div class="mt-2 flex flex-col items-start">
+                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-black bg-purple-100 text-purple-700 border border-purple-200 shadow-sm" title="${suggestion.reason}">
+                                    <i data-lucide="alert-triangle" class="w-3 h-3"></i> Nhầm Protocol?
+                                </span>
+                                ${fixBtnHtml}
+                            </div>
+                        `;
+                    }
 
                     let actionButtons = '';
                     if (canEdit) {
@@ -2230,6 +2271,7 @@
                         <td class="p-3 md:p-4">
                             <span class="badge-base ${protocolClass} block md:inline max-w-[120px] truncate">${getDisplayProtocol(e.protocol) || '--'}</span>
                             ${modBadge ? `<div class="mt-1">${modBadge}</div>` : ''}
+                            ${abnormalBadge}
                         </td>
                         <td class="p-3 md:p-4 text-[10px]">
                             <div class="flex items-center gap-1.5" title="${canSeeEmail ? e.userEmail : 'Ẩn danh'}">
@@ -2418,6 +2460,37 @@
                  } else {
                     window.showAlert("Lỗi xóa vĩnh viễn", "Hệ thống từ chối lệnh xóa: " + err.message, "error");
                  }
+            }
+        };
+
+        // --- NEW: Tính năng Auto-Fix Protocol (Sửa nhầm 1 chạm) ---
+        window.autoFixProtocol = async (id, newProtocol) => {
+            try {
+                // 1. Cập nhật trên Firebase
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'drl_entries', id), { 
+                    protocol: newProtocol, 
+                    updatedAt: new Date().toISOString() 
+                });
+                
+                // 2. Cập nhật mảng local & UI lập tức
+                const idx = entries.findIndex(e => e.id === id);
+                if (idx > -1) {
+                    entries[idx].protocol = newProtocol;
+                }
+                
+                window.showToast(`Đã tự động đổi sang ${newProtocol}!`);
+                renderTable(); // Tải lại bảng để mất cảnh báo
+                
+            } catch (err) {
+                if (err.code === 'resource-exhausted') {
+                    // Nếu rớt mạng hoặc hết Quota thì đẩy vào hàng chờ
+                    addToQueue('update', id, { protocol: newProtocol, updatedAt: new Date().toISOString() });
+                    const idx = entries.findIndex(e => e.id === id);
+                    if (idx > -1) entries[idx].protocol = newProtocol;
+                    renderTable();
+                } else {
+                    window.showAlert("Lỗi sửa Protocol", "Hệ thống từ chối cập nhật: " + err.message, "error");
+                }
             }
         };
 
