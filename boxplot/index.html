@@ -94,16 +94,24 @@
                     <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     Tùy chỉnh Văn bản Báo cáo
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div class="input-group">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                    <div class="input-group md:col-span-6">
                         <label>Tiêu đề biểu đồ CTDIvol</label>
                         <input type="text" id="title-ctdi" value="PHÂN BỐ MỨC LIỀU CTDIvol THEO BỘ PHẬN CHỤP">
                     </div>
-                    <div class="input-group">
+                    <div class="input-group md:col-span-6">
                         <label>Tiêu đề biểu đồ DLP</label>
                         <input type="text" id="title-dlp" value="PHÂN BỐ MỨC LIỀU DLP THEO BỘ PHẬN CHỤP">
                     </div>
-                    <div class="input-group md:col-span-2">
+                    <div class="input-group md:col-span-3">
+                        <label>Kích thước chữ (px)</label>
+                        <div class="flex items-stretch shadow-sm">
+                            <button type="button" onclick="adjustFontSize(-1)" class="w-10 flex-shrink-0 bg-gray-100 border border-gray-200 border-r-0 rounded-l-lg hover:bg-gray-200 text-gray-600 font-bold transition flex items-center justify-center">-</button>
+                            <input type="number" id="base-font-size" value="11" min="8" max="30" class="flex-1 text-center font-bold text-gray-700 m-0 !rounded-none focus:!ring-0" style="border-radius: 0; box-shadow: none;" onchange="drawCharts()">
+                            <button type="button" onclick="adjustFontSize(1)" class="w-10 flex-shrink-0 bg-gray-100 border border-gray-200 border-l-0 rounded-r-lg hover:bg-gray-200 text-gray-600 font-bold transition flex items-center justify-center">+</button>
+                        </div>
+                    </div>
+                    <div class="input-group md:col-span-9">
                         <label>Chú thích dưới biểu đồ (Footer)</label>
                         <input type="text" id="chart-caption" value="* Ghi chú: Số liệu bên cạnh hộp biểu diễn lần lượt: Min, Q1, Median, Q3, Max. Các điểm rời rạc là giá trị ngoại lai.">
                     </div>
@@ -284,6 +292,18 @@
             return valStr.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
         }
 
+        function adjustFontSize(delta) {
+            const input = document.getElementById('base-font-size');
+            let current = parseInt(input.value);
+            if (!isNaN(current)) {
+                let newVal = current + delta;
+                if (newVal >= 8 && newVal <= 30) {
+                    input.value = newVal;
+                    drawCharts();
+                }
+            }
+        }
+
         function initDefaultData() {
             addPart('SỌ NÃO', 
                 {min: 35.2, q1: 45.0, med: 52.5, q3: 60.0, max: 70.1, fli: '75.0, 82.5'}, 
@@ -303,7 +323,7 @@
         }
 
         // Tạo mảng Annotations cho 5 thông số
-        function createAnnotations(name, min, q1, med, q3, max, fliers) {
+        function createAnnotations(name, min, q1, med, q3, max, fliers, baseSize = 11) {
             let annos = [];
             const shiftX = 55; // Tăng khoảng cách đẩy chữ ra ngoài (bên phải) so với tâm hộp
             
@@ -314,7 +334,7 @@
                     x: name, y: val, xref: 'x', yref: 'y', 
                     text: isBold ? `<b>${label}: ${val}</b>` : `${label}: ${val}`,
                     showarrow: false, xanchor: 'left', xshift: shiftX, 
-                    font: {size: isBold ? 12 : 11, color: isBold ? '#111827' : '#4B5563'},
+                    font: {size: isBold ? baseSize + 1 : baseSize, color: isBold ? '#111827' : '#4B5563'},
                     bgcolor: 'rgba(255,255,255,0.7)',
                     borderpad: 2
                 };
@@ -335,7 +355,7 @@
                 annos.push({
                     x: name, y: f, xref: 'x', yref: 'y', text: `${f}`,
                     showarrow: false, xanchor: 'left', xshift: 20, 
-                    font: {size: 11, color: '#6B7280'},
+                    font: {size: baseSize, color: '#6B7280'},
                     bgcolor: 'rgba(255,255,255,0.7)'
                 });
             });
@@ -358,6 +378,8 @@
             let dataDLP = [];
             let cAnnos = [];
             let dAnnos = [];
+
+            const baseFontSize = parseInt(document.getElementById('base-font-size').value) || 11;
 
             cards.forEach((card, index) => {
                 let name = card.querySelector('.part-name').value.trim() || `Bộ phận ${index + 1}`;
@@ -394,7 +416,7 @@
                         });
                     }
                     // Thêm chữ chú thích CTDI
-                    cAnnos.push(...createAnnotations(name, cmin, cq1, cmed, cq3, cmax, cfliers));
+                    cAnnos.push(...createAnnotations(name, cmin, cq1, cmed, cq3, cmax, cfliers, baseFontSize));
                 }
 
                 // --- Dữ liệu DLP ---
@@ -426,7 +448,7 @@
                         });
                     }
                     // Thêm chữ chú thích DLP
-                    dAnnos.push(...createAnnotations(name, dmin, dq1, dmed, dq3, dmax, dfliers));
+                    dAnnos.push(...createAnnotations(name, dmin, dq1, dmed, dq3, dmax, dfliers, baseFontSize));
                 }
             });
 
@@ -435,7 +457,7 @@
             const captionConfig = captionText ? [{
                 text: captionText, xref: 'paper', yref: 'paper',
                 x: 0.5, y: -0.15, xanchor: 'center', yanchor: 'top',
-                showarrow: false, font: { size: 12, color: '#6B7280', style: 'italic' }
+                showarrow: false, font: { size: baseFontSize + 1, color: '#6B7280', style: 'italic' }
             }] : [];
 
             // ------------- LAYOUT COMMON CONFIG -------------
@@ -446,7 +468,7 @@
                 paper_bgcolor: 'transparent',
                 font: { family: 'Inter, sans-serif' },
                 xaxis: { 
-                    tickfont: { size: 13, weight: 'bold', color: '#374151' }, 
+                    tickfont: { size: baseFontSize + 2, weight: 'bold', color: '#374151' }, 
                     tickangle: 0,
                     showgrid: false,
                     zeroline: false
@@ -456,9 +478,9 @@
             // ------------- LAYOUT CTDIvol -------------
             let layoutCTDI = {
                 ...commonLayout,
-                title: { text: document.getElementById('title-ctdi').value, font: { size: 20, color: '#111827', weight: 'bold' } },
+                title: { text: document.getElementById('title-ctdi').value, font: { size: baseFontSize + 9, color: '#111827', weight: 'bold' } },
                 yaxis: { 
-                    title: 'CTDIvol (mGy)', titlefont: {size: 14, weight:'bold', color: '#374151'}, 
+                    title: 'CTDIvol (mGy)', titlefont: {size: baseFontSize + 3, weight:'bold', color: '#374151'}, 
                     gridcolor: '#F3F4F6', zerolinecolor: '#E5E7EB', zerolinewidth: 2
                 },
                 annotations: [...cAnnos, ...captionConfig]
@@ -467,9 +489,9 @@
             // ------------- LAYOUT DLP -------------
             let layoutDLP = {
                 ...commonLayout,
-                title: { text: document.getElementById('title-dlp').value, font: { size: 20, color: '#111827', weight: 'bold' } },
+                title: { text: document.getElementById('title-dlp').value, font: { size: baseFontSize + 9, color: '#111827', weight: 'bold' } },
                 yaxis: { 
-                    title: 'DLP (mGy.cm)', titlefont: {size: 14, weight:'bold', color: '#374151'}, 
+                    title: 'DLP (mGy.cm)', titlefont: {size: baseFontSize + 3, weight:'bold', color: '#374151'}, 
                     gridcolor: '#F3F4F6', zerolinecolor: '#E5E7EB', zerolinewidth: 2
                 },
                 annotations: [...dAnnos, ...captionConfig]
