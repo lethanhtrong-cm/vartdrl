@@ -11,6 +11,9 @@
     <!-- Tích hợp Plotly.js -->
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
     
+    <!-- Tích hợp SheetJS để đọc/ghi file Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -124,10 +127,26 @@
                         <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
                         Dữ Liệu Các Bộ Phận Chụp
                     </h2>
-                    <button onclick="addPart()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-2.5 px-5 rounded-lg inline-flex items-center transition border border-indigo-200 shadow-sm w-full sm:w-auto justify-center">
-                        <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Thêm bộ phận
-                    </button>
+                    <div class="flex flex-wrap gap-3 w-full sm:w-auto justify-end">
+                        <!-- Nút Tải File Mẫu -->
+                        <button onclick="downloadExcelTemplate()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold py-2 px-4 rounded-lg inline-flex items-center transition border border-emerald-200 shadow-sm text-sm">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            Tải File Mẫu
+                        </button>
+                        
+                        <!-- Nút Nhập Excel (ẩn input thật đi, dùng label) -->
+                        <label for="excel-upload" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-2 px-4 rounded-lg inline-flex items-center transition border border-blue-200 shadow-sm cursor-pointer text-sm mb-0">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Nhập Excel
+                        </label>
+                        <input type="file" id="excel-upload" class="hidden" accept=".xlsx, .xls" onchange="handleExcelUpload(event)">
+
+                        <!-- Nút Thêm Thủ Công (gốc) -->
+                        <button onclick="addPart()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-2 px-4 rounded-lg inline-flex items-center transition border border-indigo-200 shadow-sm text-sm">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Thêm thủ công
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Nơi chứa các card dữ liệu -->
@@ -303,6 +322,109 @@
                 }
             }
         }
+
+        // --- CÁC HÀM XỬ LÝ EXCEL ---
+        function downloadExcelTemplate() {
+            try {
+                // 1. Định nghĩa cấu trúc file mẫu
+                const data = [
+                    ["Bộ_phận", "CTDI_Min", "CTDI_Q1", "CTDI_Med", "CTDI_Q3", "CTDI_Max", "CTDI_Ngoại_lai", "DLP_Min", "DLP_Q1", "DLP_Med", "DLP_Q3", "DLP_Max", "DLP_Ngoại_lai"],
+                    ["SỌ NÃO", 19.8, 33.23, 45.59, 49.29, 56.97, "", 600, 850, 1050, 1200, 1450, ""],
+                    ["LỒNG NGỰC", 3.6, 4.82, 5.33, 6.65, 8.0, "", 150, 280, 400, 550, 750, ""],
+                    ["Ổ BỤNG", 4.02, 5.6, 6.82, 9.32, 11.7, "32", 300, 450, 650, 850, 1100, "1300"]
+                ];
+                
+                // 2. Tạo worksheet từ mảng dữ liệu
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                
+                // 3. Tùy chỉnh độ rộng cột cho dễ nhìn khi mở bằng Excel
+                const wscols = [
+                    {wch: 20}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 18},
+                    {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 18}
+                ];
+                ws['!cols'] = wscols;
+
+                // 4. Tạo workbook và xuất file
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "DuLieu_DRL");
+                
+                XLSX.writeFile(wb, "DRL_Template_Mau.xlsx");
+                showToast("Đã tải File Excel mẫu thành công!");
+            } catch (error) {
+                console.error(error);
+                showToast("Lỗi khi tạo file mẫu!", "error");
+            }
+        }
+
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    // Lấy Sheet đầu tiên
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Chuyển đổi dữ liệu Sheet sang dạng JSON
+                    const json = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+
+                    if(json.length === 0) {
+                        showToast("File Excel trống hoặc không đúng định dạng!", "error");
+                        return;
+                    }
+
+                    // Xóa các card dữ liệu hiện tại trên màn hình
+                    document.getElementById('parts-container').innerHTML = '';
+                    partCount = 0;
+
+                    // Hàm phụ: chuyển giá trị sang số, nếu trống thì trả về chuỗi rỗng
+                    const parseVal = (v) => { const n = parseFloat(v); return isNaN(n) ? '' : n; };
+
+                    // Duyệt từng dòng trong Excel và tạo Card tương ứng
+                    json.forEach(row => {
+                        // Lấy tên bộ phận (hỗ trợ đọc cả cột ghi là Bộ_phận hoặc Bộ phận)
+                        const name = row["Bộ_phận"] || row["Bộ phận"] || "Không tên";
+                        
+                        const ctdi = {
+                            min: parseVal(row["CTDI_Min"]),
+                            q1: parseVal(row["CTDI_Q1"]),
+                            med: parseVal(row["CTDI_Med"]),
+                            q3: parseVal(row["CTDI_Q3"]),
+                            max: parseVal(row["CTDI_Max"]),
+                            fli: row["CTDI_Ngoại_lai"] ? String(row["CTDI_Ngoại_lai"]).trim() : ""
+                        };
+                        
+                        const dlp = {
+                            min: parseVal(row["DLP_Min"]),
+                            q1: parseVal(row["DLP_Q1"]),
+                            med: parseVal(row["DLP_Med"]),
+                            q3: parseVal(row["DLP_Q3"]),
+                            max: parseVal(row["DLP_Max"]),
+                            fli: row["DLP_Ngoại_lai"] ? String(row["DLP_Ngoại_lai"]).trim() : ""
+                        };
+                        
+                        addPart(name, ctdi, dlp);
+                    });
+
+                    // Cập nhật lại biểu đồ
+                    drawCharts();
+                    showToast(`Đã nhập thành công dữ liệu từ file: ${file.name}`);
+                } catch (error) {
+                    console.error("Lỗi đọc Excel:", error);
+                    showToast("Lỗi khi đọc file. Hãy đảm bảo dùng đúng File Mẫu.", "error");
+                } finally {
+                    // Reset thẻ input để người dùng có thể chọn lại chính file đó nếu cần
+                    event.target.value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        // --- KẾT THÚC CÁC HÀM EXCEL ---
 
         function initDefaultData() {
             addPart('SỌ NÃO', 
