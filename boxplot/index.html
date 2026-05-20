@@ -113,7 +113,7 @@
                     </div>
                     <div class="input-group md:col-span-9">
                         <label>Chú thích dưới biểu đồ (Footer)</label>
-                        <input type="text" id="chart-caption" value="* Ghi chú: Số liệu bên cạnh hộp biểu diễn lần lượt: Min, Q1, Median, Q3, Max. Các điểm rời rạc là giá trị ngoại lai.">
+                        <input type="text" id="chart-caption" value="* Ghi chú: Chữ chú thích nằm tại vạch và tự động thu nhỏ nếu hộp quá hẹp. Ngoại lai là điểm rời rạc.">
                     </div>
                 </div>
             </div>
@@ -322,39 +322,61 @@
             setTimeout(() => drawCharts(), 100);
         }
 
-        // Tạo mảng Annotations cho 5 thông số
-        function createAnnotations(name, min, q1, med, q3, max, fliers, baseSize = 11) {
+        // Tạo mảng Annotations với logic: Đủ rộng -> Tại vạch. Quá hẹp -> Xếp ngay ngắn bên cạnh
+        function createAnnotations(name, min, q1, med, q3, max, fliers, baseSize = 11, globalRange = 100) {
             let annos = [];
-            const shiftX = 55; // Tăng khoảng cách đẩy chữ ra ngoài (bên phải) so với tâm hộp
-            
-            // Hàm helper tạo annotation
-            const createAnno = (val, label, isBold = false) => {
-                if(isNaN(val)) return null;
-                return {
-                    x: name, y: val, xref: 'x', yref: 'y', 
-                    text: isBold ? `<b>${label}: ${val}</b>` : `${label}: ${val}`,
-                    showarrow: false, xanchor: 'left', xshift: shiftX, 
-                    font: {size: isBold ? baseSize + 1 : baseSize, color: isBold ? '#111827' : '#4B5563'},
-                    bgcolor: 'rgba(255,255,255,0.7)',
-                    borderpad: 2
-                };
-            };
+            const shiftX = 95; // Đẩy chữ ra xa hẳn bên ngoài để tách biệt hoàn toàn với hộp (Tăng từ 65 lên 95)
 
-            const labels = [
-                createAnno(min, 'Min'),
-                createAnno(q1, 'Q1'),
-                createAnno(med, 'Med', true),
-                createAnno(q3, 'Q3'),
-                createAnno(max, 'Max')
-            ];
+            // Ước tính chiều cao không gian vẽ (pixel)
+            const plotHeightPx = 500; 
+            const ppu = plotHeightPx / globalRange; // Chuyển đổi: Pixel trên mỗi đơn vị giá trị
+            const requiredGapPx = baseSize * 1.8; // Khoảng cách pixel tối thiểu để 2 dòng chữ không chạm nhau
+
+            const items = [
+                { key: 'Max', val: max, bold: false, spreadIndex: 2 },
+                { key: 'Q3', val: q3, bold: false, spreadIndex: 1 },
+                { key: 'Med', val: med, bold: true, spreadIndex: 0 },
+                { key: 'Q1', val: q1, bold: false, spreadIndex: -1 },
+                { key: 'Min', val: min, bold: false, spreadIndex: -2 }
+            ].filter(i => !isNaN(i.val));
+
+            // Kiểm tra: Có 2 vạch nào quá gần nhau (nguy cơ đè chữ) hay không?
+            let isTooNarrow = false;
+            for (let i = 0; i < items.length - 1; i++) {
+                const gapPx = Math.abs(items[i].val - items[i+1].val) * ppu;
+                if (gapPx < requiredGapPx) {
+                    isTooNarrow = true;
+                    break;
+                }
+            }
+
+            items.forEach(item => {
+                // Điều kiện 1 (Rộng): Đặt y đúng bằng giá trị thực tế, dịch dọc (yshift) = 0
+                // Điều kiện 2 (Hẹp): Đặt y tại vị trí Median, rồi dịch dọc lên/xuống tạo thành danh sách
+                let targetY = isTooNarrow ? med : item.val;
+                let finalYShift = isTooNarrow ? (item.spreadIndex * requiredGapPx) : 0;
+
+                annos.push({
+                    x: name, 
+                    y: targetY, 
+                    xref: 'x', yref: 'y', 
+                    text: item.bold ? `<b>${item.key}: ${item.val}</b>` : `${item.key}: ${item.val}`,
+                    showarrow: false,
+                    xshift: shiftX,
+                    yshift: finalYShift,
+                    xanchor: 'left',
+                    yanchor: 'middle',
+                    font: {size: item.bold ? baseSize + 1 : baseSize, color: item.bold ? '#111827' : '#4B5563'},
+                    bgcolor: 'rgba(255,255,255,0.85)',
+                    borderpad: 2
+                });
+            });
             
-            labels.forEach(l => { if(l) annos.push(l); });
-            
-            // Ghi chú cho ngoại lai (nằm ngay cạnh điểm đánh dấu)
+            // Ghi chú cho ngoại lai (nằm ngay cạnh điểm đánh dấu, đẩy ra xa tương ứng)
             fliers.forEach(f => {
                 annos.push({
                     x: name, y: f, xref: 'x', yref: 'y', text: `${f}`,
-                    showarrow: false, xanchor: 'left', xshift: 20, 
+                    showarrow: false, xanchor: 'left', xshift: 65, // Đẩy xa hơn cho ngoại lai
                     font: {size: baseSize, color: '#6B7280'},
                     bgcolor: 'rgba(255,255,255,0.7)'
                 });
@@ -380,6 +402,21 @@
             let dAnnos = [];
 
             const baseFontSize = parseInt(document.getElementById('base-font-size').value) || 11;
+
+            // Tính toán khoảng giá trị biểu đồ bao gồm cả điểm ngoại lai để tăng độ chính xác thuật toán
+            let allC = [], allD = [];
+            cards.forEach(card => {
+                allC.push(parseFloat(card.querySelector('.c-min').value), parseFloat(card.querySelector('.c-max').value));
+                allC.push(...parseFliers(card.querySelector('.c-fli').value));
+                
+                allD.push(parseFloat(card.querySelector('.d-min').value), parseFloat(card.querySelector('.d-max').value));
+                allD.push(...parseFliers(card.querySelector('.d-fli').value));
+            });
+            allC = allC.filter(n => !isNaN(n));
+            allD = allD.filter(n => !isNaN(n));
+            
+            let rangeCTDI = allC.length > 0 ? (Math.max(...allC) - Math.min(...allC)) || 100 : 100;
+            let rangeDLP = allD.length > 0 ? (Math.max(...allD) - Math.min(...allD)) || 1000 : 1000;
 
             cards.forEach((card, index) => {
                 let name = card.querySelector('.part-name').value.trim() || `Bộ phận ${index + 1}`;
@@ -415,8 +452,8 @@
                             hoverinfo: 'y'
                         });
                     }
-                    // Thêm chữ chú thích CTDI
-                    cAnnos.push(...createAnnotations(name, cmin, cq1, cmed, cq3, cmax, cfliers, baseFontSize));
+                    // Thêm chữ chú thích CTDI (Truyền thêm rangeCTDI vào)
+                    cAnnos.push(...createAnnotations(name, cmin, cq1, cmed, cq3, cmax, cfliers, baseFontSize, rangeCTDI));
                 }
 
                 // --- Dữ liệu DLP ---
@@ -447,8 +484,8 @@
                             hoverinfo: 'y'
                         });
                     }
-                    // Thêm chữ chú thích DLP
-                    dAnnos.push(...createAnnotations(name, dmin, dq1, dmed, dq3, dmax, dfliers, baseFontSize));
+                    // Thêm chữ chú thích DLP (Truyền thêm rangeDLP vào)
+                    dAnnos.push(...createAnnotations(name, dmin, dq1, dmed, dq3, dmax, dfliers, baseFontSize, rangeDLP));
                 }
             });
 
@@ -463,7 +500,7 @@
             // ------------- LAYOUT COMMON CONFIG -------------
             const commonLayout = {
                 showlegend: false,
-                margin: { l: 80, r: 150, t: 80, b: 120 }, // Tăng lề phải (r:150) cho label
+                margin: { l: 80, r: 180, t: 80, b: 120 }, // Tăng lề phải (r:180) để chữ không bị lẹm khi đẩy ra quá xa
                 plot_bgcolor: '#FFFFFF',
                 paper_bgcolor: 'transparent',
                 font: { family: 'Inter, sans-serif' },
