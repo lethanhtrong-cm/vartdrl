@@ -447,7 +447,7 @@
         // Tạo mảng Annotations với logic: Đủ rộng -> Tại vạch. Quá hẹp -> Xếp ngay ngắn bên cạnh
         function createAnnotations(name, min, q1, med, q3, max, fliers, baseSize = 11, globalRange = 100) {
             let annos = [];
-            const shiftX = 15; // Tăng xshift lên 15 theo yêu cầu
+            const shiftX = 20; // Tăng xshift lên 20 theo yêu cầu
 
             // Ước tính chiều cao không gian vẽ (pixel)
             const plotHeightPx = 500; 
@@ -498,7 +498,7 @@
             fliers.forEach(f => {
                 annos.push({
                     x: name, y: f, xref: 'x', yref: 'y', text: `${f}`,
-                    showarrow: false, xanchor: 'left', xshift: 15, // Đổi xshift của điểm ngoại lai thành 15
+                    showarrow: false, xanchor: 'left', xshift: 20, // Đổi xshift của điểm ngoại lai thành 20
                     font: {size: baseSize, color: '#6B7280'},
                     bgcolor: 'rgba(255,255,255,0.7)'
                 });
