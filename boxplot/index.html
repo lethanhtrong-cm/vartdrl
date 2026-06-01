@@ -172,14 +172,14 @@
         </div>
 
         <!-- Khung chứa Biểu đồ -->
-        <div class="space-y-8 mb-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             <!-- Biểu đồ CTDIvol -->
             <div class="border border-gray-200 rounded-2xl shadow-xl bg-white overflow-hidden flex flex-col">
                 <div class="bg-gradient-to-r from-red-50 to-white border-b border-gray-100 px-6 py-4 flex items-center">
                     <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold mr-3">1</div>
                     <h3 class="font-bold text-red-800 text-lg">Biểu đồ phân bố CTDIvol</h3>
                 </div>
-                <div id="chart-ctdi" class="w-full h-[650px] p-2"></div>
+                <div id="chart-ctdi" class="w-full h-[550px] p-2"></div>
             </div>
 
             <!-- Biểu đồ DLP -->
@@ -188,7 +188,7 @@
                     <div class="w-8 h-8 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center font-bold mr-3">2</div>
                     <h3 class="font-bold text-cyan-800 text-lg">Biểu đồ phân bố DLP</h3>
                 </div>
-                <div id="chart-dlp" class="w-full h-[650px] p-2"></div>
+                <div id="chart-dlp" class="w-full h-[550px] p-2"></div>
             </div>
         </div>
     </main>
@@ -447,7 +447,7 @@
         // Tạo mảng Annotations với logic: Đủ rộng -> Tại vạch. Quá hẹp -> Xếp ngay ngắn bên cạnh
         function createAnnotations(name, min, q1, med, q3, max, fliers, baseSize = 11, globalRange = 100) {
             let annos = [];
-            const shiftX = 95; // Đẩy chữ ra xa hẳn bên ngoài để tách biệt hoàn toàn với hộp (Tăng từ 65 lên 95)
+            const shiftX = 15; // Tăng xshift lên 15 theo yêu cầu
 
             // Ước tính chiều cao không gian vẽ (pixel)
             const plotHeightPx = 500; 
@@ -498,7 +498,7 @@
             fliers.forEach(f => {
                 annos.push({
                     x: name, y: f, xref: 'x', yref: 'y', text: `${f}`,
-                    showarrow: false, xanchor: 'left', xshift: 65, // Đẩy xa hơn cho ngoại lai
+                    showarrow: false, xanchor: 'left', xshift: 15, // Đổi xshift của điểm ngoại lai thành 15
                     font: {size: baseSize, color: '#6B7280'},
                     bgcolor: 'rgba(255,255,255,0.7)'
                 });
@@ -561,7 +561,7 @@
                         q1: [cq1], median: [cmed], q3: [cq3], lowerfence: [cmin], upperfence: [cmax],
                         marker: { color: color }, line: { color: color, width: 2 },
                         fillcolor: color + '33', // Thêm độ trong suốt cao hơn (hex 33 ~ 20%)
-                        width: 0.4, // Độ rộng hộp
+                        width: 0.28, // Làm hộp thon gọn lại (từ 0.4 xuống 0.28) để phù hợp tỷ lệ hẹp
                         hoverinfo: 'y+name'
                     });
 
@@ -593,7 +593,7 @@
                         q1: [dq1], median: [dmed], q3: [dq3], lowerfence: [dmin], upperfence: [dmax],
                         marker: { color: color }, line: { color: color, width: 2 },
                         fillcolor: color + '33',
-                        width: 0.4,
+                        width: 0.28, // Làm hộp thon gọn lại
                         hoverinfo: 'y+name'
                     });
 
@@ -622,7 +622,7 @@
             // ------------- LAYOUT COMMON CONFIG -------------
             const commonLayout = {
                 showlegend: false,
-                margin: { l: 80, r: 180, t: 80, b: 120 }, // Tăng lề phải (r:180) để chữ không bị lẹm khi đẩy ra quá xa
+                margin: { l: 60, r: 120, t: 60, b: 100 }, // Thu nhỏ lề trái/phải để chừa không gian vẽ tối đa
                 plot_bgcolor: '#FFFFFF',
                 paper_bgcolor: 'transparent',
                 font: { family: 'Inter, sans-serif' },
@@ -637,9 +637,9 @@
             // ------------- LAYOUT CTDIvol -------------
             let layoutCTDI = {
                 ...commonLayout,
-                title: { text: document.getElementById('title-ctdi').value, font: { size: baseFontSize + 9, color: '#111827', weight: 'bold' } },
+                title: { text: document.getElementById('title-ctdi').value, font: { size: baseFontSize + 4, color: '#111827', weight: 'bold' } },
                 yaxis: { 
-                    title: 'CTDIvol (mGy)', titlefont: {size: baseFontSize + 3, weight:'bold', color: '#374151'}, 
+                    title: 'CTDIvol (mGy)', titlefont: {size: baseFontSize + 2, weight:'bold', color: '#374151'}, 
                     gridcolor: '#F3F4F6', zerolinecolor: '#E5E7EB', zerolinewidth: 2
                 },
                 annotations: [...cAnnos, ...captionConfig]
@@ -648,9 +648,9 @@
             // ------------- LAYOUT DLP -------------
             let layoutDLP = {
                 ...commonLayout,
-                title: { text: document.getElementById('title-dlp').value, font: { size: baseFontSize + 9, color: '#111827', weight: 'bold' } },
+                title: { text: document.getElementById('title-dlp').value, font: { size: baseFontSize + 4, color: '#111827', weight: 'bold' } },
                 yaxis: { 
-                    title: 'DLP (mGy.cm)', titlefont: {size: baseFontSize + 3, weight:'bold', color: '#374151'}, 
+                    title: 'DLP (mGy.cm)', titlefont: {size: baseFontSize + 2, weight:'bold', color: '#374151'}, 
                     gridcolor: '#F3F4F6', zerolinecolor: '#E5E7EB', zerolinewidth: 2
                 },
                 annotations: [...dAnnos, ...captionConfig]
@@ -666,7 +666,8 @@
         function downloadChart(divId, filename) {
             var chartDiv = document.getElementById(divId);
             if(chartDiv && chartDiv.data && chartDiv.data.length > 0) {
-                Plotly.downloadImage(chartDiv, {format: 'png', width: 1400, height: 800, filename: filename})
+                // Tải ảnh với kích thước hẹp dọc (800x1000) phù hợp ghép cạnh nhau trong 1 trang A4
+                Plotly.downloadImage(chartDiv, {format: 'png', width: 800, height: 1000, filename: filename})
                     .then(() => showToast(`Đã tải hình ảnh: ${filename}.png`))
                     .catch(() => showToast('Lỗi khi tải ảnh!', 'error'));
             } else {
