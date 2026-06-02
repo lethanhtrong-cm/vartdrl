@@ -116,7 +116,7 @@
                     </div>
                     <div class="input-group md:col-span-9">
                         <label>Chú thích dưới biểu đồ (Footer)</label>
-                        <input type="text" id="chart-caption" value="* Ghi chú: Chữ chú thích nằm tại vạch và tự động thu nhỏ nếu hộp quá hẹp. Ngoại lai là điểm rời rạc.">
+                        <input type="text" id="chart-caption" value="* Ghi chú: Chỉ hiển thị chú thích cho giá trị Median (P50) và Q3. Ngoại lai là điểm rời rạc.">
                     </div>
                 </div>
             </div>
@@ -447,19 +447,17 @@
         // Tạo mảng Annotations với logic: Đủ rộng -> Tại vạch. Quá hẹp -> Xếp ngay ngắn bên cạnh
         function createAnnotations(name, min, q1, med, q3, max, fliers, baseSize = 11, globalRange = 100) {
             let annos = [];
-            const shiftX = 20; // Tăng xshift lên 20 theo yêu cầu
+            const shiftX = 45; // Tăng xshift lên 45 để tách hẳn chữ ra khỏi viền hộp
 
             // Ước tính chiều cao không gian vẽ (pixel)
             const plotHeightPx = 500; 
             const ppu = plotHeightPx / globalRange; // Chuyển đổi: Pixel trên mỗi đơn vị giá trị
             const requiredGapPx = baseSize * 1.8; // Khoảng cách pixel tối thiểu để 2 dòng chữ không chạm nhau
 
+            // Chỉ lấy 2 thông số là Q3 và Median (P50)
             const items = [
-                { key: 'Max', val: max, bold: false, spreadIndex: 2 },
                 { key: 'Q3', val: q3, bold: false, spreadIndex: 1 },
-                { key: 'Med', val: med, bold: true, spreadIndex: 0 },
-                { key: 'Q1', val: q1, bold: false, spreadIndex: -1 },
-                { key: 'Min', val: min, bold: false, spreadIndex: -2 }
+                { key: 'Med', val: med, bold: true, spreadIndex: 0 }
             ].filter(i => !isNaN(i.val));
 
             // Kiểm tra: Có 2 vạch nào quá gần nhau (nguy cơ đè chữ) hay không?
@@ -494,11 +492,13 @@
                 });
             });
             
-            // Ghi chú cho ngoại lai (nằm ngay cạnh điểm đánh dấu, đẩy ra xa tương ứng)
+            // Ghi chú cho ngoại lai (nằm bên TRÁI điểm đánh dấu)
             fliers.forEach(f => {
                 annos.push({
                     x: name, y: f, xref: 'x', yref: 'y', text: `${f}`,
-                    showarrow: false, xanchor: 'left', xshift: 20, // Đổi xshift của điểm ngoại lai thành 20
+                    showarrow: false, 
+                    xanchor: 'right', // Điểm neo bên phải để chữ hiển thị sang trái
+                    xshift: -35,      // Đẩy xa hơn về bên trái (-35px) để tách khỏi điểm ngoại lai
                     font: {size: baseSize, color: '#6B7280'},
                     bgcolor: 'rgba(255,255,255,0.7)'
                 });
@@ -622,7 +622,7 @@
             // ------------- LAYOUT COMMON CONFIG -------------
             const commonLayout = {
                 showlegend: false,
-                margin: { l: 60, r: 120, t: 60, b: 100 }, // Thu nhỏ lề trái/phải để chừa không gian vẽ tối đa
+                margin: { l: 90, r: 140, t: 60, b: 100 }, // Tăng lề 2 bên để chứa chữ đã đẩy ra xa
                 plot_bgcolor: '#FFFFFF',
                 paper_bgcolor: 'transparent',
                 font: { family: 'Inter, sans-serif' },
