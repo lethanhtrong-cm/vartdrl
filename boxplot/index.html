@@ -60,6 +60,16 @@
         }
         .toast-enter { animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
+
+        /* Switch Toggle Styles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #4F46E5;
+            background-color: #4F46E5;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #4F46E5;
+        }
     </style>
 </head>
 
@@ -95,7 +105,7 @@
             <div class="p-6 border-b border-gray-100 bg-gray-50/50">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                    Tùy chỉnh Văn bản Báo cáo
+                    Tùy chỉnh Văn bản & Chế độ Hiển thị
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
                     <div class="input-group md:col-span-6">
@@ -106,6 +116,8 @@
                         <label>Tiêu đề biểu đồ DLP</label>
                         <input type="text" id="title-dlp" value="PHÂN BỐ MỨC LIỀU DLP THEO BỘ PHẬN CHỤP">
                     </div>
+
+                    <!-- Kích thước chữ -->
                     <div class="input-group md:col-span-3">
                         <label>Kích thước chữ (px)</label>
                         <div class="flex items-stretch shadow-sm">
@@ -114,7 +126,26 @@
                             <button type="button" onclick="adjustFontSize(1)" class="w-10 flex-shrink-0 bg-gray-100 border border-gray-200 border-l-0 rounded-r-lg hover:bg-gray-200 text-gray-600 font-bold transition flex items-center justify-center">+</button>
                         </div>
                     </div>
-                    <div class="input-group md:col-span-9">
+
+                    <!-- Công cụ Bật/Tắt Chú thích chính -->
+                    <div class="md:col-span-4 flex items-center bg-gray-100/50 px-4 py-2 rounded-lg border border-gray-200/80">
+                        <div class="relative inline-block w-10 mr-3 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggleMain" id="toggle-main" checked onchange="drawCharts()" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer right-4 top-0 bottom-0 my-auto"/>
+                            <label for="toggle-main" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-700">Hiện chú thích Med & Q3 (Bên phải)</span>
+                    </div>
+
+                    <!-- Công cụ Bật/Tắt Chú thích ngoại lai -->
+                    <div class="md:col-span-5 flex items-center bg-gray-100/50 px-4 py-2 rounded-lg border border-gray-200/80">
+                        <div class="relative inline-block w-10 mr-3 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggleOutliers" id="toggle-outliers" checked onchange="drawCharts()" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer right-4 top-0 bottom-0 my-auto"/>
+                            <label for="toggle-outliers" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-700">Hiện giá trị ngoại lai (Bên trái)</span>
+                    </div>
+
+                    <div class="input-group md:col-span-12">
                         <label>Chú thích dưới biểu đồ (Footer)</label>
                         <input type="text" id="chart-caption" value="* Ghi chú: Chỉ hiển thị chú thích cho giá trị Median (P50) và Q3. Ngoại lai là điểm rời rạc.">
                     </div>
@@ -134,14 +165,14 @@
                             Tải File Mẫu
                         </button>
                         
-                        <!-- Nút Nhập Excel (ẩn input thật đi, dùng label) -->
+                        <!-- Nút Nhập Excel -->
                         <label for="excel-upload" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-2 px-4 rounded-lg inline-flex items-center transition border border-blue-200 shadow-sm cursor-pointer text-sm mb-0">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                             Nhập Excel
                         </label>
                         <input type="file" id="excel-upload" class="hidden" accept=".xlsx, .xls" onchange="handleExcelUpload(event)">
 
-                        <!-- Nút Thêm Thủ Công (gốc) -->
+                        <!-- Nút Thêm Thủ Công -->
                         <button onclick="addPart()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold py-2 px-4 rounded-lg inline-flex items-center transition border border-indigo-200 shadow-sm text-sm">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             Thêm thủ công
@@ -172,21 +203,27 @@
         </div>
 
         <!-- Khung chứa Biểu đồ -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
             <!-- Biểu đồ CTDIvol -->
             <div class="border border-gray-200 rounded-2xl shadow-xl bg-white overflow-hidden flex flex-col">
-                <div class="bg-gradient-to-r from-red-50 to-white border-b border-gray-100 px-6 py-4 flex items-center">
-                    <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold mr-3">1</div>
-                    <h3 class="font-bold text-red-800 text-lg">Biểu đồ phân bố CTDIvol</h3>
+                <div class="bg-gradient-to-r from-red-50 to-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold mr-3">1</div>
+                        <h3 class="font-bold text-red-800 text-lg">Biểu đồ phân bố CTDIvol</h3>
+                    </div>
+                    <span class="text-xs text-amber-600 font-semibold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 animate-pulse">💡 Kéo thả trực tiếp số để căn chỉnh</span>
                 </div>
                 <div id="chart-ctdi" class="w-full h-[550px] p-2"></div>
             </div>
 
             <!-- Biểu đồ DLP -->
             <div class="border border-gray-200 rounded-2xl shadow-xl bg-white overflow-hidden flex flex-col">
-                <div class="bg-gradient-to-r from-cyan-50 to-white border-b border-gray-100 px-6 py-4 flex items-center">
-                    <div class="w-8 h-8 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center font-bold mr-3">2</div>
-                    <h3 class="font-bold text-cyan-800 text-lg">Biểu đồ phân bố DLP</h3>
+                <div class="bg-gradient-to-r from-cyan-50 to-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center font-bold mr-3">2</div>
+                        <h3 class="font-bold text-cyan-800 text-lg">Biểu đồ phân bố DLP</h3>
+                    </div>
+                    <span class="text-xs text-amber-600 font-semibold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 animate-pulse">💡 Kéo thả trực tiếp số để căn chỉnh</span>
                 </div>
                 <div id="chart-dlp" class="w-full h-[550px] p-2"></div>
             </div>
@@ -201,7 +238,11 @@
     <script>
         let partCount = 0;
         
-        // Bảng màu phân biệt các bộ phận - Sử dụng dải màu nhẹ nhàng, khoa học
+        // Bảng lưu trữ tọa độ kéo thả tùy chỉnh của người dùng để không bị mất khi redraw
+        // Cấu trúc key: `${chartId}-${partName}-${label}` -> { x, y, xshift, yshift, ax, ay }
+        let customPositions = {};
+
+        // Bảng màu phân biệt các bộ phận
         const colorPalette = [
             '#EF4444', // Red
             '#0EA5E9', // Sky/Cyan
@@ -299,7 +340,6 @@
         function removePart(id) {
             const el = document.getElementById(`part-${id}`);
             if(el) {
-                // Add fade out effect
                 el.style.opacity = '0';
                 el.style.transform = 'scale(0.98)';
                 setTimeout(() => el.remove(), 200);
@@ -326,7 +366,6 @@
         // --- CÁC HÀM XỬ LÝ EXCEL ---
         function downloadExcelTemplate() {
             try {
-                // 1. Định nghĩa cấu trúc file mẫu
                 const data = [
                     ["Bộ_phận", "CTDI_Min", "CTDI_Q1", "CTDI_Med", "CTDI_Q3", "CTDI_Max", "CTDI_Ngoại_lai", "DLP_Min", "DLP_Q1", "DLP_Med", "DLP_Q3", "DLP_Max", "DLP_Ngoại_lai"],
                     ["SỌ NÃO", 19.8, 33.23, 45.59, 49.29, 56.97, "", 600, 850, 1050, 1200, 1450, ""],
@@ -334,17 +373,13 @@
                     ["Ổ BỤNG", 4.02, 5.6, 6.82, 9.32, 11.7, "32", 300, 450, 650, 850, 1100, "1300"]
                 ];
                 
-                // 2. Tạo worksheet từ mảng dữ liệu
                 const ws = XLSX.utils.aoa_to_sheet(data);
-                
-                // 3. Tùy chỉnh độ rộng cột cho dễ nhìn khi mở bằng Excel
                 const wscols = [
                     {wch: 20}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 18},
                     {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 18}
                 ];
                 ws['!cols'] = wscols;
 
-                // 4. Tạo workbook và xuất file
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "DuLieu_DRL");
                 
@@ -366,11 +401,8 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
                     
-                    // Lấy Sheet đầu tiên
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    // Chuyển đổi dữ liệu Sheet sang dạng JSON
                     const json = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
 
                     if(json.length === 0) {
@@ -378,16 +410,12 @@
                         return;
                     }
 
-                    // Xóa các card dữ liệu hiện tại trên màn hình
                     document.getElementById('parts-container').innerHTML = '';
                     partCount = 0;
 
-                    // Hàm phụ: chuyển giá trị sang số, nếu trống thì trả về chuỗi rỗng
                     const parseVal = (v) => { const n = parseFloat(v); return isNaN(n) ? '' : n; };
 
-                    // Duyệt từng dòng trong Excel và tạo Card tương ứng
                     json.forEach(row => {
-                        // Lấy tên bộ phận (hỗ trợ đọc cả cột ghi là Bộ_phận hoặc Bộ phận)
                         const name = row["Bộ_phận"] || row["Bộ phận"] || "Không tên";
                         
                         const ctdi = {
@@ -411,20 +439,20 @@
                         addPart(name, ctdi, dlp);
                     });
 
-                    // Cập nhật lại biểu đồ
+                    // Reset các vị trí tùy chỉnh khi đổi bộ dữ liệu hoàn toàn mới
+                    customPositions = {};
+                    
                     drawCharts();
                     showToast(`Đã nhập thành công dữ liệu từ file: ${file.name}`);
                 } catch (error) {
                     console.error("Lỗi đọc Excel:", error);
                     showToast("Lỗi khi đọc file. Hãy đảm bảo dùng đúng File Mẫu.", "error");
                 } finally {
-                    // Reset thẻ input để người dùng có thể chọn lại chính file đó nếu cần
                     event.target.value = '';
                 }
             };
             reader.readAsArrayBuffer(file);
         }
-        // --- KẾT THÚC CÁC HÀM EXCEL ---
 
         function initDefaultData() {
             addPart('SỌ NÃO', 
@@ -440,69 +468,112 @@
                 {min: 300, q1: 450, med: 650, q3: 850, max: 1100, fli: '1300'}
             );
             
-            // Vẽ đồ thị ban đầu
             setTimeout(() => drawCharts(), 100);
         }
 
-        // Tạo mảng Annotations với logic: Đủ rộng -> Tại vạch. Quá hẹp -> Xếp ngay ngắn bên cạnh
-        function createAnnotations(name, min, q1, med, q3, max, fliers, baseSize = 11, globalRange = 100) {
-            let annos = [];
-            const shiftX = 45; // Tăng xshift lên 45 để tách hẳn chữ ra khỏi viền hộp
-
-            // Ước tính chiều cao không gian vẽ (pixel)
-            const plotHeightPx = 500; 
-            const ppu = plotHeightPx / globalRange; // Chuyển đổi: Pixel trên mỗi đơn vị giá trị
-            const requiredGapPx = baseSize * 1.8; // Khoảng cách pixel tối thiểu để 2 dòng chữ không chạm nhau
-
-            // Chỉ lấy 2 thông số là Q3 và Median (P50)
-            const items = [
-                { key: 'Q3', val: q3, bold: false, spreadIndex: 1 },
-                { key: 'Med', val: med, bold: true, spreadIndex: 0 }
-            ].filter(i => !isNaN(i.val));
-
-            // Kiểm tra: Có 2 vạch nào quá gần nhau (nguy cơ đè chữ) hay không?
-            let isTooNarrow = false;
-            for (let i = 0; i < items.length - 1; i++) {
-                const gapPx = Math.abs(items[i].val - items[i+1].val) * ppu;
-                if (gapPx < requiredGapPx) {
-                    isTooNarrow = true;
-                    break;
-                }
+        // Đọc dữ liệu chú thích đã được kéo thả và lưu lại vào customPositions
+        function saveCustomPositions(chartId) {
+            const chartDiv = document.getElementById(chartId);
+            if (chartDiv && chartDiv.layout && chartDiv.layout.annotations) {
+                chartDiv.layout.annotations.forEach(ann => {
+                    if (ann.customId) {
+                        customPositions[ann.customId] = {
+                            x: ann.x,
+                            y: ann.y,
+                            ax: ann.ax,
+                            ay: ann.ay,
+                            xshift: ann.xshift,
+                            yshift: ann.yshift
+                        };
+                    }
+                });
             }
+        }
 
-            items.forEach(item => {
-                // Điều kiện 1 (Rộng): Đặt y đúng bằng giá trị thực tế, dịch dọc (yshift) = 0
-                // Điều kiện 2 (Hẹp): Đặt y tại vị trí Median, rồi dịch dọc lên/xuống tạo thành danh sách
-                let targetY = isTooNarrow ? med : item.val;
-                let finalYShift = isTooNarrow ? (item.spreadIndex * requiredGapPx) : 0;
-
-                annos.push({
-                    x: name, 
-                    y: targetY, 
-                    xref: 'x', yref: 'y', 
-                    text: item.bold ? `<b>${item.key}: ${item.val}</b>` : `${item.key}: ${item.val}`,
-                    showarrow: false,
-                    xshift: shiftX,
-                    yshift: finalYShift,
-                    xanchor: 'left',
-                    yanchor: 'middle',
-                    font: {size: item.bold ? baseSize + 1 : baseSize, color: item.bold ? '#111827' : '#4B5563'},
-                    bgcolor: 'rgba(255,255,255,0.85)',
-                    borderpad: 2
-                });
-            });
+        // Tạo mảng Chú thích hỗ trợ Bật/Tắt và Kéo thả thông minh
+        function createAnnotations(chartId, name, min, q1, med, q3, max, fliers, baseSize = 11, globalRange = 100) {
+            let annos = [];
             
-            // Ghi chú cho ngoại lai (nằm bên TRÁI điểm đánh dấu)
-            fliers.forEach(f => {
-                annos.push({
-                    x: name, y: f, xref: 'x', yref: 'y', text: `${f}`,
-                    showarrow: false, 
-                    xanchor: 'right', // Điểm neo bên phải để chữ hiển thị sang trái
-                    xshift: -35,      // Đẩy xa hơn về bên trái (-35px) để tách khỏi điểm ngoại lai
-                    font: {size: baseSize, color: '#6B7280'},
-                    bgcolor: 'rgba(255,255,255,0.7)'
+            // Các tùy chọn bật tắt từ UI
+            const showMain = document.getElementById('toggle-main').checked;
+            const showOutliers = document.getElementById('toggle-outliers').checked;
+
+            const shiftX = 45; // Khoảng cách đẩy ngang mặc định
+            const plotHeightPx = 500; 
+            const ppu = plotHeightPx / globalRange; 
+            const requiredGapPx = baseSize * 1.8; 
+
+            // 1. Chú thích các giá trị chính (bên PHẢI hộp)
+            if (showMain) {
+                const items = [
+                    { key: 'Q3', val: q3, bold: false, spreadIndex: 1 },
+                    { key: 'Med', val: med, bold: true, spreadIndex: 0 }
+                ].filter(i => !isNaN(i.val));
+
+                let isTooNarrow = false;
+                for (let i = 0; i < items.length - 1; i++) {
+                    const gapPx = Math.abs(items[i].val - items[i+1].val) * ppu;
+                    if (gapPx < requiredGapPx) {
+                        isTooNarrow = true;
+                        break;
+                    }
+                }
+
+                items.forEach(item => {
+                    let targetY = isTooNarrow ? med : item.val;
+                    let finalYShift = isTooNarrow ? (item.spreadIndex * requiredGapPx) : 0;
+                    
+                    const customId = `${chartId}-${name}-${item.key}`;
+
+                    let annObj = {
+                        customId: customId,
+                        x: name, 
+                        y: targetY, 
+                        xref: 'x', yref: 'y', 
+                        text: item.bold ? `<b>${item.key}: ${item.val}</b>` : `${item.key}: ${item.val}`,
+                        showarrow: false,
+                        xshift: shiftX,
+                        yshift: finalYShift,
+                        xanchor: 'left',
+                        yanchor: 'middle',
+                        font: {size: item.bold ? baseSize + 1 : baseSize, color: item.bold ? '#111827' : '#4B5563'},
+                        bgcolor: 'rgba(255,255,255,0.85)',
+                        borderpad: 2
+                    };
+
+                    // Nếu có vị trí đã được kéo thả từ trước, áp dụng đè lên
+                    if (customPositions[customId]) {
+                        Object.assign(annObj, customPositions[customId]);
+                    }
+
+                    annos.push(annObj);
                 });
-            });
+            }
+            
+            // 2. Chú thích các giá trị ngoại lai (bên TRÁI hộp)
+            if (showOutliers) {
+                fliers.forEach((f, idx) => {
+                    const customId = `${chartId}-${name}-flier-${idx}`;
+
+                    let annObj = {
+                        customId: customId,
+                        x: name, y: f, xref: 'x', yref: 'y', text: `${f}`,
+                        showarrow: false, 
+                        xanchor: 'right', 
+                        xshift: -35,      
+                        font: {size: baseSize, color: '#6B7280'},
+                        bgcolor: 'rgba(255,255,255,0.7)',
+                        borderpad: 2
+                    };
+
+                    // Nếu có vị trí đã được kéo thả từ trước, áp dụng đè lên
+                    if (customPositions[customId]) {
+                        Object.assign(annObj, customPositions[customId]);
+                    }
+
+                    annos.push(annObj);
+                });
+            }
 
             return annos;
         }
@@ -525,7 +596,6 @@
 
             const baseFontSize = parseInt(document.getElementById('base-font-size').value) || 11;
 
-            // Tính toán khoảng giá trị biểu đồ bao gồm cả điểm ngoại lai để tăng độ chính xác thuật toán
             let allC = [], allD = [];
             cards.forEach(card => {
                 allC.push(parseFloat(card.querySelector('.c-min').value), parseFloat(card.querySelector('.c-max').value));
@@ -542,8 +612,6 @@
 
             cards.forEach((card, index) => {
                 let name = card.querySelector('.part-name').value.trim() || `Bộ phận ${index + 1}`;
-                
-                // Chọn màu luân phiên cho từng bộ phận
                 let color = colorPalette[index % colorPalette.length];
 
                 // --- Dữ liệu CTDI ---
@@ -554,18 +622,16 @@
                 let cmax = parseFloat(card.querySelector('.c-max').value);
                 let cfliers = parseFliers(card.querySelector('.c-fli').value);
                 
-                // Trace Boxplot (CTDI)
                 if(!isNaN(cmin) && !isNaN(cmax)) {
                     dataCTDI.push({
                         type: 'box', name: name, x: [name],
                         q1: [cq1], median: [cmed], q3: [cq3], lowerfence: [cmin], upperfence: [cmax],
                         marker: { color: color }, line: { color: color, width: 2 },
-                        fillcolor: color + '33', // Thêm độ trong suốt cao hơn (hex 33 ~ 20%)
-                        width: 0.28, // Làm hộp thon gọn lại (từ 0.4 xuống 0.28) để phù hợp tỷ lệ hẹp
+                        fillcolor: color + '33',
+                        width: 0.28,
                         hoverinfo: 'y+name'
                     });
 
-                    // Trace Ngoại lai (CTDI)
                     if(cfliers.length > 0) {
                         dataCTDI.push({
                             type: 'scatter', x: Array(cfliers.length).fill(name), y: cfliers, mode: 'markers', name: name + ' Ngoại lai',
@@ -574,8 +640,7 @@
                             hoverinfo: 'y'
                         });
                     }
-                    // Thêm chữ chú thích CTDI (Truyền thêm rangeCTDI vào)
-                    cAnnos.push(...createAnnotations(name, cmin, cq1, cmed, cq3, cmax, cfliers, baseFontSize, rangeCTDI));
+                    cAnnos.push(...createAnnotations('chart-ctdi', name, cmin, cq1, cmed, cq3, cmax, cfliers, baseFontSize, rangeCTDI));
                 }
 
                 // --- Dữ liệu DLP ---
@@ -586,18 +651,16 @@
                 let dmax = parseFloat(card.querySelector('.d-max').value);
                 let dfliers = parseFliers(card.querySelector('.d-fli').value);
 
-                // Trace Boxplot (DLP)
                 if(!isNaN(dmin) && !isNaN(dmax)) {
                     dataDLP.push({
                         type: 'box', name: name, x: [name],
                         q1: [dq1], median: [dmed], q3: [dq3], lowerfence: [dmin], upperfence: [dmax],
                         marker: { color: color }, line: { color: color, width: 2 },
                         fillcolor: color + '33',
-                        width: 0.28, // Làm hộp thon gọn lại
+                        width: 0.28,
                         hoverinfo: 'y+name'
                     });
 
-                    // Trace Ngoại lai (DLP)
                     if(dfliers.length > 0) {
                         dataDLP.push({
                             type: 'scatter', x: Array(dfliers.length).fill(name), y: dfliers, mode: 'markers', name: name + ' Ngoại lai',
@@ -606,12 +669,10 @@
                             hoverinfo: 'y'
                         });
                     }
-                    // Thêm chữ chú thích DLP (Truyền thêm rangeDLP vào)
-                    dAnnos.push(...createAnnotations(name, dmin, dq1, dmed, dq3, dmax, dfliers, baseFontSize, rangeDLP));
+                    dAnnos.push(...createAnnotations('chart-dlp', name, dmin, dq1, dmed, dq3, dmax, dfliers, baseFontSize, rangeDLP));
                 }
             });
 
-            // Footer / Caption Text
             const captionText = document.getElementById('chart-caption').value;
             const captionConfig = captionText ? [{
                 text: captionText, xref: 'paper', yref: 'paper',
@@ -622,7 +683,7 @@
             // ------------- LAYOUT COMMON CONFIG -------------
             const commonLayout = {
                 showlegend: false,
-                margin: { l: 90, r: 140, t: 60, b: 100 }, // Tăng lề 2 bên để chứa chữ đã đẩy ra xa
+                margin: { l: 90, r: 140, t: 60, b: 100 },
                 plot_bgcolor: '#FFFFFF',
                 paper_bgcolor: 'transparent',
                 font: { family: 'Inter, sans-serif' },
@@ -656,9 +717,36 @@
                 annotations: [...dAnnos, ...captionConfig]
             };
 
-            // Vẽ biểu đồ
-            Plotly.newPlot('chart-ctdi', dataCTDI, layoutCTDI, {responsive: true, displayModeBar: true, displaylogo: false});
-            Plotly.newPlot('chart-dlp', dataDLP, layoutDLP, {responsive: true, displayModeBar: true, displaylogo: false});
+            // Vẽ biểu đồ với tùy chọn editable: true để người dùng thoải mái kéo thả chữ
+            const configObj = {
+                responsive: true, 
+                displayModeBar: true, 
+                displaylogo: false, 
+                editable: true // Kích hoạt khả năng chỉnh sửa kéo thả trực quan
+            };
+
+            // Sử dụng Promise để đảm bảo các phần tử được khởi tạo và trang trí đầy đủ trước khi gắn sự kiện
+            Plotly.newPlot('chart-ctdi', dataCTDI, layoutCTDI, configObj).then(function(gd) {
+                if (gd && typeof gd.off === 'function') {
+                    gd.off('plotly_relayout'); // Hủy listener cũ một cách an toàn
+                }
+                if (gd && typeof gd.on === 'function') {
+                    gd.on('plotly_relayout', function() {
+                        saveCustomPositions('chart-ctdi');
+                    });
+                }
+            });
+
+            Plotly.newPlot('chart-dlp', dataDLP, layoutDLP, configObj).then(function(gd) {
+                if (gd && typeof gd.off === 'function') {
+                    gd.off('plotly_relayout'); // Hủy listener cũ một cách an toàn
+                }
+                if (gd && typeof gd.on === 'function') {
+                    gd.on('plotly_relayout', function() {
+                        saveCustomPositions('chart-dlp');
+                    });
+                }
+            });
             
             showToast('Biểu đồ đã được cập nhật thành công!');
         }
@@ -666,7 +754,6 @@
         function downloadChart(divId, filename) {
             var chartDiv = document.getElementById(divId);
             if(chartDiv && chartDiv.data && chartDiv.data.length > 0) {
-                // Tải ảnh với kích thước hẹp dọc (800x1000) phù hợp ghép cạnh nhau trong 1 trang A4
                 Plotly.downloadImage(chartDiv, {format: 'png', width: 800, height: 1000, filename: filename})
                     .then(() => showToast(`Đã tải hình ảnh: ${filename}.png`))
                     .catch(() => showToast('Lỗi khi tải ảnh!', 'error'));
@@ -675,7 +762,6 @@
             }
         }
 
-        // Khởi chạy khi tải trang
         window.onload = initDefaultData;
     </script>
 </body>
