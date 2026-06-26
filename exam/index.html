@@ -3,81 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phòng Thi Trắc Nghiệm</title>
+    <title>Hệ thống Thi Trắc Nghiệm - Đăng nhập</title>
 
+    <!-- PHẦN 1: CSS GIAO DIỆN -->
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f3f4f6; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
-        .quiz-header { background-color: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); position: sticky; top: 0; z-index: 100; }
-        .quiz-title { font-size: 20px; font-weight: bold; color: #1f2937; }
-        .timer-container { display: flex; align-items: center; gap: 10px; background-color: #fee2e2; color: #ef4444; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; }
-        .btn-logout { padding: 8px 16px; background-color: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
-        .btn-logout:hover { background-color: #e5e7eb; color: #1f2937; }
-        .quiz-body { display: flex; flex: 1; max-width: 1200px; margin: 30px auto; width: 100%; gap: 25px; padding: 0 20px; }
-        .left-panel { flex: 3; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); display: flex; flex-direction: column; overflow: hidden; }
-        .question-content { padding: 40px; flex: 1; }
-        .question-number-badge { display: inline-block; background-color: #e0e7ff; color: #4f46e5; padding: 5px 12px; border-radius: 6px; font-weight: bold; margin-bottom: 15px; font-size: 14px; }
-        .question-text { font-size: 20px; line-height: 1.6; margin-bottom: 30px; color: #111827; }
-        .options-list { display: flex; flex-direction: column; gap: 15px; }
-        .option-item { display: flex; align-items: center; padding: 15px 20px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s; background-color: #ffffff; font-size: 16px; }
-        .option-item:hover:not(.disabled) { border-color: #c7d2fe; background-color: #f8fafc; }
-        .option-item.selected { border-color: #3b82f6; background-color: #eff6ff; }
-        .option-item.disabled { cursor: not-allowed; opacity: 0.7; }
-        .option-label { font-weight: bold; margin-right: 15px; background-color: #f3f4f6; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; color: #4b5563; }
-        .option-item.selected .option-label { background-color: #3b82f6; color: white; }
-        .quiz-footer { padding: 20px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-        .nav-buttons { display: flex; gap: 15px; }
-        .btn-nav { padding: 10px 20px; border: 1px solid #d1d5db; background-color: white; border-radius: 6px; cursor: pointer; font-weight: 600; color: #374151; transition: all 0.2s; }
-        .btn-nav:hover { background-color: #f3f4f6; }
-        .btn-submit { padding: 12px 30px; background-color: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: all 0.2s; }
-        .btn-submit:hover:not(:disabled) { background-color: #059669; }
-        .btn-submit:disabled { background-color: #9ca3af; cursor: not-allowed; opacity: 0.8; }
-        .right-panel { flex: 1; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); padding: 25px; height: fit-content; }
-        .panel-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #1f2937; text-align: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px; }
-        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        .palette-btn { aspect-ratio: 1; border: 1px solid #d1d5db; background-color: white; border-radius: 6px; font-weight: bold; color: #4b5563; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-        .palette-btn.current { border: 2px solid #3b82f6; }
-        .palette-btn.answered { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+        /* Reset CSS cơ bản để giao diện đồng nhất trên mọi trình duyệt */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Thiết lập nền cho toàn bộ trang web */
+        body {
+            background-color: #f3f4f6; /* Màu xám nhạt hiện đại */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Chiều cao bằng 100% màn hình */
+        }
+
+        /* Hộp chứa form đăng nhập/đăng ký (Card) */
+        .auth-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            border-radius: 12px; /* Bo góc mềm mại */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Hiệu ứng đổ bóng nổi bật */
+        }
+
+        /* Tiêu đề của form */
+        .auth-container h2 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        /* Nhóm các ô nhập liệu */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4b5563;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Hiệu ứng khi bấm vào ô nhập liệu */
+        .form-group input:focus {
+            border-color: #3b82f6; /* Đổi viền sang màu xanh */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Nút xác nhận chung (Đăng nhập / Đăng ký) */
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #3b82f6; /* Xanh dương đậm */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: #2563eb; /* Tối màu lại khi di chuột vào */
+        }
+
+        /* Nút đăng nhập Google */
+        .btn-google {
+            width: 100%;
+            padding: 12px;
+            background-color: #ffffff;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px; /* Khoảng cách giữa logo và chữ */
+        }
+
+        .btn-google:hover {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+        }
+
+        /* Dòng chữ "HOẶC" có 2 gạch ngang */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .divider::before {
+            margin-right: 10px;
+        }
+
+        .divider::after {
+            margin-left: 10px;
+        }
+
+        /* Phần chuyển đổi giữa Đăng nhập và Đăng ký */
+        .toggle-form {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .toggle-form span {
+            color: #3b82f6;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .toggle-form span:hover {
+            text-decoration: underline;
+        }
+
+        /* Lớp CSS dùng để ẩn form (Khi muốn ẩn Form Đăng ký đi) */
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <header class="quiz-header">
-        <div class="quiz-title">Bài thi: Kiến thức Tổng hợp</div>
-        <div class="timer-container"><span id="countdown">15:00</span></div>
-        <button id="btn-logout" class="btn-logout">Đăng xuất</button>
-    </header>
-
-    <main class="quiz-body">
-        <section class="left-panel">
-            <div class="question-content">
-                <span class="question-number-badge" id="question-badge">Câu hỏi</span>
-                <h2 class="question-text" id="question-text">Đang chuẩn bị dữ liệu...</h2>
-                <div class="options-list" id="options-container"></div>
+    <!-- PHẦN 2: CẤU TRÚC HTML GIAO DIỆN -->
+    <div class="auth-container">
+        
+        <!-- === FORM ĐĂNG NHẬP === -->
+        <div id="login-form">
+            <h2>Đăng Nhập Hệ Thống</h2>
+            
+            <div class="form-group">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="Nhập địa chỉ email của bạn" required>
             </div>
-            <footer class="quiz-footer">
-                <div class="nav-buttons">
-                    <button id="btn-prev" class="btn-nav">Câu trước</button>
-                    <button id="btn-next" class="btn-nav">Câu sau</button>
-                </div>
-                <button id="btn-submit-exam" class="btn-submit">Nộp bài ngay</button>
-            </footer>
-        </section>
+            
+            <div class="form-group">
+                <label for="login-password">Mật khẩu</label>
+                <input type="password" id="login-password" placeholder="Nhập mật khẩu" required>
+            </div>
+            
+            <button id="btn-login" class="btn-submit">Đăng Nhập</button>
+            
+            <!-- Phần Đăng nhập bằng Google MỚI THÊM -->
+            <div class="divider">HOẶC</div>
+            
+            <button id="btn-google" class="btn-google">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+                Đăng nhập bằng Google
+            </button>
 
-        <aside class="right-panel">
-            <h3 class="panel-title">Danh sách câu hỏi</h3>
-            <div class="palette-grid" id="palette-container"></div>
-        </aside>
-    </main>
+            <div class="toggle-form">
+                Chưa có tài khoản? <span id="go-to-register">Đăng ký ngay</span>
+            </div>
+        </div>
 
+        <!-- === FORM ĐĂNG KÝ (Mặc định được ẩn đi bởi class "hidden") === -->
+        <div id="register-form" class="hidden">
+            <h2>Tạo Tài Khoản Mới</h2>
+            
+            <div class="form-group">
+                <label for="register-email">Email</label>
+                <input type="email" id="register-email" placeholder="Nhập địa chỉ email hợp lệ" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="register-password">Mật khẩu</label>
+                <input type="password" id="register-password" placeholder="Tạo mật khẩu (Ít nhất 6 ký tự)" required>
+            </div>
+            
+            <button id="btn-register" class="btn-submit">Đăng Ký</button>
+            
+            <div class="toggle-form">
+                Đã có tài khoản? <span id="go-to-login">Quay lại đăng nhập</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PHẦN 3: LOGIC CHUYỂN ĐỔI GIAO DIỆN (UI ONLY) -->
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const goToRegisterBtn = document.getElementById('go-to-register');
+        const goToLoginBtn = document.getElementById('go-to-login');
+
+        goToRegisterBtn.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        });
+
+        goToLoginBtn.addEventListener('click', () => {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        });
+    </script>
+
+    <!-- PHẦN 4: LOGIC FIREBASE AUTHENTICATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
-        // Cấu hình Firebase
-        const firebaseConfig = {
+        // Import thêm GoogleAuthProvider và signInWithPopup
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword,
+            GoogleAuthProvider,
+            signInWithPopup
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // CẤU HÌNH FIREBASE CỦA BẠN (ĐÃ ĐIỀN)
+        let firebaseConfig = {
             apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
             authDomain: "rt-examination.firebaseapp.com",
             projectId: "rt-examination",
@@ -87,191 +266,117 @@
             measurementId: "G-8N7RTTREQM"
         };
 
-        const mockQuestions = [
-            { id: 1, text: "[Giả lập] Trong bảng tuần hoàn hóa học, nguyên tố nào có ký hiệu là 'O'?", options: ["Vàng", "Oxy", "Sắt", "Bạc"], correctAnswer: 1 },
-            { id: 2, text: "[Giả lập] Ai là người đầu tiên đặt chân lên Mặt Trăng?", options: ["Yuri Gagarin", "Neil Armstrong", "Buzz Aldrin", "Michael Collins"], correctAnswer: 1 },
-            { id: 3, text: "[Giả lập] Đại dương nào có diện tích lớn nhất trên Trái Đất?", options: ["Thái Bình Dương", "Đại Tây Dương", "Ấn Độ Dương", "Bắc Băng Dương"], correctAnswer: 0 }
-        ];
-
-        let questions = [];
-        let auth, db;
-        let currentIndex = 0;
-        let userAnswers = {};
-        let isSubmitted = false;
-
-        // Khởi tạo Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app); 
-        auth = getAuth(app);
-        db = getFirestore(app); 
-
-        // Hàm chuyển hướng an toàn (tránh lỗi SyntaxError trên môi trường Preview)
-        function redirectToLogin() {
+        // (Đoạn mã hỗ trợ chạy thử nghiệm - Preview ngay trên hệ thống AI)
+        if (typeof __firebase_config !== 'undefined') {
             try {
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.warn("Môi trường Preview chặn chuyển hướng:", error);
-                document.body.innerHTML = "<h2 style='text-align:center; padding: 50px;'>Phiên bản tĩnh (Preview). Vui lòng chạy trên môi trường thực tế (GitHub Pages) để chuyển hướng bình thường.</h2>";
+                firebaseConfig = JSON.parse(__firebase_config);
+            } catch (e) {
+                console.warn("Lỗi đọc cấu hình môi trường giả lập.");
             }
         }
 
-        // Kiểm tra xác thực (Bảo vệ Route)
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                // Nếu chưa đăng nhập, đá về trang đăng nhập
-                redirectToLogin();
-            } else {
-                // Đã đăng nhập hợp lệ, tiến hành tải đề thi
-                fetchQuestionsFromFirestore();
-            }
-        });
+        let app, auth;
 
-        async function fetchQuestionsFromFirestore() {
-            document.getElementById('question-text').innerText = "Đang tải đề thi từ hệ thống...";
-            document.getElementById('options-container').innerHTML = ''; 
-
-            try {
-                const querySnapshot = await getDocs(collection(db, "questions"));
-                const fetched = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return { id: doc.id, ...data };
-                });
-                
-                if (fetched.length > 0) {
-                    questions = fetched;
-                } else {
-                    throw new Error("Collection 'questions' hiện đang trống.");
-                }
-            } catch (error) {
-                console.error("Lỗi khi tải dữ liệu từ Firestore. Chuyển sang dữ liệu giả lập.", error);
-                questions = mockQuestions;
-            }
-
-            currentIndex = 0;
-            userAnswers = {};
-            isSubmitted = false;
-            renderAll();
+        // Chỉ khởi tạo Firebase và Authentication khi biến apiKey đã có dữ liệu
+        if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "") {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
         }
 
-        // ================= LOGIC NỘP BÀI VÀ CHẤM ĐIỂM =================
-        async function submitExam() {
-            if (isSubmitted) return;
-
-            const total = questions.length;
-            const answeredCount = Object.keys(userAnswers).length;
-            
-            if (!confirm(`Bạn đã làm ${answeredCount}/${total} câu. Bạn có chắc chắn muốn nộp bài?`)) {
+        // -- XỬ LÝ ĐĂNG KÝ TÀI KHOẢN (BẰNG EMAIL) --
+        const btnRegister = document.getElementById('btn-register');
+        btnRegister.addEventListener('click', () => {
+            if (!auth) {
+                alert("Bạn chưa cấu hình Firebase!");
                 return;
             }
 
-            let correctCount = 0;
-            questions.forEach((question, idx) => {
-                if (userAnswers[idx] === question.correctAnswer) {
-                    correctCount++;
-                }
-            });
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
 
-            let score = (correctCount / total) * 10;
-            score = Math.round(score * 100) / 100; 
-
-            isSubmitted = true;
-            renderAll(); 
-            
-            const btnSubmit = document.getElementById('btn-submit-exam');
-            btnSubmit.disabled = true; 
-            btnSubmit.innerText = "Đã nộp bài"; 
-
-            const userEmail = auth?.currentUser?.email || "Unknown User";
-
-            try {
-                await addDoc(collection(db, "results"), {
-                    email: userEmail,
-                    score: score,
-                    correctCount: correctCount,
-                    totalQuestions: total,
-                    timestamp: new Date().toISOString() 
-                });
-            } catch (error) {
-                console.error("Không thể lưu kết quả lên Firebase:", error);
+            if(!email || !password) {
+                alert("Vui lòng nhập đầy đủ Email và Mật khẩu!");
+                return;
             }
 
-            alert(`Bạn đã làm đúng ${correctCount}/${total} câu.\nTổng điểm: ${score}/10`);
-        }
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Đăng ký thành công! Mời bạn đăng nhập.");
+                    document.getElementById('go-to-login').click();
+                    document.getElementById('register-email').value = "";
+                    document.getElementById('register-password').value = "";
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    if (errorCode === 'auth/email-already-in-use') {
+                        alert("Lỗi: Email này đã được đăng ký từ trước!");
+                    } else if (errorCode === 'auth/weak-password') {
+                        alert("Lỗi: Mật khẩu quá ngắn, vui lòng nhập ít nhất 6 ký tự!");
+                    } else if (errorCode === 'auth/invalid-email') {
+                        alert("Lỗi: Định dạng email không hợp lệ!");
+                    } else {
+                        alert("Lỗi hệ thống: " + error.message);
+                    }
+                });
+        });
 
-        document.getElementById('btn-submit-exam').onclick = submitExam;
+        // -- XỬ LÝ ĐĂNG NHẬP (BẰNG EMAIL) --
+        const btnLogin = document.getElementById('btn-login');
+        btnLogin.addEventListener('click', () => {
+            if (!auth) {
+                alert("Bạn chưa cấu hình Firebase!");
+                return;
+            }
 
-        // ================= LOGIC GIAO DIỆN (UI) =================
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
 
-        function renderAll() {
-            if (questions.length === 0) return;
-            renderQuestion();
-            renderPalette();
-        }
+            if(!email || !password) {
+                alert("Vui lòng nhập đầy đủ Email và Mật khẩu!");
+                return;
+            }
 
-        function renderQuestion() {
-            const questionData = questions[currentIndex];
-            
-            const questionText = questionData.text || "Câu hỏi không có nội dung";
-            const options = questionData.options || [];
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Đăng nhập thành công! Đang chuyển hướng vào phòng thi...");
+                    window.location.href = 'quiz.html';
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password') {
+                        alert("Lỗi: Sai email hoặc mật khẩu. Vui lòng kiểm tra lại!");
+                    } else {
+                        alert("Lỗi đăng nhập: " + error.message);
+                    }
+                });
+        });
 
-            document.getElementById('question-badge').innerText = `Câu ${currentIndex + 1}`;
-            document.getElementById('question-text').innerText = questionText;
-            
-            const container = document.getElementById('options-container');
-            container.innerHTML = ''; 
+        // -- XỬ LÝ ĐĂNG NHẬP BẰNG GOOGLE (MỚI THÊM) --
+        const btnGoogle = document.getElementById('btn-google');
+        btnGoogle.addEventListener('click', () => {
+            if (!auth) {
+                alert("Bạn chưa cấu hình Firebase!");
+                return;
+            }
 
-            options.forEach((opt, idx) => {
-                const div = document.createElement('div');
-                div.className = 'option-item ' + 
-                              (userAnswers[currentIndex] === idx ? 'selected' : '') + 
-                              (isSubmitted ? ' disabled' : '');
-                
-                div.innerHTML = `<div class="option-label">${['A','B','C','D'][idx]}</div><div>${opt}</div>`;
-                
-                div.onclick = () => { 
-                    if (isSubmitted) return; 
+            // Khởi tạo Provider của Google
+            const provider = new GoogleAuthProvider();
 
-                    userAnswers[currentIndex] = idx; 
-                    renderQuestion(); 
-                    renderPalette();  
-                };
-                container.appendChild(div);
-            });
-        }
-
-        function renderPalette() {
-            const container = document.getElementById('palette-container');
-            container.innerHTML = '';
-            
-            questions.forEach((_, idx) => {
-                const btn = document.createElement('button');
-                btn.className = `palette-btn ${idx === currentIndex ? 'current' : ''} ${userAnswers[idx] !== undefined ? 'answered' : ''}`;
-                btn.innerText = idx + 1;
-                
-                btn.onclick = () => { 
-                    currentIndex = idx; 
-                    renderAll(); 
-                };
-                container.appendChild(btn);
-            });
-        }
-
-        document.getElementById('btn-prev').onclick = () => { 
-            if(currentIndex > 0) { currentIndex--; renderAll(); } 
-        };
-        document.getElementById('btn-next').onclick = () => { 
-            if(currentIndex < questions.length - 1) { currentIndex++; renderAll(); } 
-        };
-
-        // Xử lý sự kiện Đăng xuất thực tế
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                // Đăng xuất thành công, chuyển hướng về trang index
-                redirectToLogin();
-            }).catch((error) => {
-                console.error("Lỗi đăng xuất:", error);
-                alert("Có lỗi xảy ra khi đăng xuất. Vui lòng thử lại.");
-            });
+            // Gọi Popup Đăng nhập
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    alert("Đăng nhập bằng Google thành công! Đang chuyển hướng vào phòng thi...");
+                    window.location.href = 'quiz.html';
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    // Bắt lỗi nếu người dùng bấm dấu X tắt cửa sổ Google đi
+                    if (errorCode === 'auth/popup-closed-by-user') {
+                        alert("Lỗi: Bạn đã đóng cửa sổ đăng nhập trước khi hoàn tất!");
+                    } else {
+                        alert("Lỗi đăng nhập Google: " + error.message);
+                    }
+                });
         });
     </script>
 </body>
