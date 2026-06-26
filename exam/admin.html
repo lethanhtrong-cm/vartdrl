@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Import Câu Hỏi Từ Excel</title>
+
+    <!-- Thư viện SheetJS để xử lý Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f3f4f6; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        .admin-header { background-color: #1e40af; color: white; padding: 20px 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .admin-title { font-size: 24px; font-weight: bold; }
+        .admin-subtitle { font-size: 14px; opacity: 0.8; margin-top: 5px; }
+
+        .main-container { max-width: 900px; margin: 40px auto; width: 100%; padding: 0 20px; display: flex; flex-direction: column; gap: 30px; }
+
+        /* Card Layout styles */
+        .card { background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); padding: 30px; border: 1px solid #e5e7eb; }
+        .card-title { font-size: 18px; font-weight: bold; color: #1f2937; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .card-description { color: #4b5563; margin-bottom: 25px; line-height: 1.6; }
+
+        /* Nút bấm */
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-template { background-color: #10b981; color: white; }
+        .btn-template:hover { background-color: #059669; }
+        .btn-import { background-color: #3b82f6; color: white; width: 100%; margin-top: 20px; font-size: 16px; padding: 14px; }
+        .btn-import:hover:not(:disabled) { background-color: #2563eb; }
+        .btn-import:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+        /* Khu vực upload file */
+        .file-upload-wrapper { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 40px 20px; text-align: center; background-color: #f8fafc; transition: all 0.2s; position: relative; }
+        .file-upload-wrapper:hover { border-color: #3b82f6; background-color: #eff6ff; }
+        .file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .file-label { font-size: 16px; color: #475569; pointer-events: none; }
+        .file-label span { color: #3b82f6; font-weight: 600; }
+        .selected-file-name { margin-top: 15px; font-weight: bold; color: #10b981; font-size: 14px; }
+
+        .note { font-size: 13px; color: #64748b; background: #f1f5f9; padding: 10px 15px; border-radius: 6px; border-left: 4px solid #f59e0b; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <header class="admin-header">
+        <h1 class="admin-title">Quản Trị Hệ Thống</h1>
+        <p class="admin-subtitle">Công cụ Nhập liệu câu hỏi hàng loạt vào Firestore</p>
+    </header>
+
+    <main class="main-container">
+        
+        <!-- KHU VỰC 1: Tải File Mẫu -->
+        <div class="card">
+            <h2 class="card-title">📦 Bước 1: Chuẩn bị Dữ liệu</h2>
+            <p class="card-description">
+                Để hệ thống đọc được dữ liệu, file Excel của bạn cần phải đúng định dạng cột quy định. 
+                Vui lòng tải file mẫu dưới đây về máy, điền câu hỏi của bạn vào và lưu lại.
+            </p>
+            <button id="btn-download-template" class="btn btn-template">
+                ⬇️ Tải File Excel Mẫu
+            </button>
+        </div>
+
+        <!-- KHU VỰC 2: Upload và Import -->
+        <div class="card">
+            <h2 class="card-title">🚀 Bước 2: Import Lên Hệ Thống</h2>
+            <p class="card-description">
+                Chọn file Excel (.xlsx, .xls) mà bạn đã điền đầy đủ câu hỏi để đẩy lên cơ sở dữ liệu Firebase.
+            </p>
+            
+            <div class="file-upload-wrapper">
+                <input type="file" id="excel-file" class="file-input" accept=".xlsx, .xls">
+                <div class="file-label">Kéo thả file vào đây hoặc <span>Nhấn để chọn file</span></div>
+                <div id="file-name-display" class="selected-file-name">Chưa có file nào được chọn</div>
+            </div>
+
+            <button id="btn-import" class="btn btn-import">
+                ⬆️ Bắt Đầu Import Lên Firebase
+            </button>
+
+            <div class="note">
+                <strong>Lưu ý:</strong> Quá trình import có thể mất vài giây tùy thuộc vào số lượng câu hỏi và tốc độ mạng. Vui lòng không đóng trình duyệt khi đang tải.
+            </div>
+        </div>
+
+    </main>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Cấu hình Firebase của bạn
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
+            authDomain: "rt-examination.firebaseapp.com",
+            projectId: "rt-examination",
+            storageBucket: "rt-examination.firebasestorage.app",
+            messagingSenderId: "920482699854",
+            appId: "1:920482699854:web:44f9b0d735bdc001c6c11f",
+            measurementId: "G-8N7RTTREQM"
+        };
+
+        // Khởi tạo Firebase
+        let db;
+        if (firebaseConfig.apiKey && firebaseConfig.apiKey.trim() !== "") {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+        } else {
+            console.warn("Vui lòng điền thông tin firebaseConfig để import dữ liệu lên server thực!");
+        }
+
+        // ==========================================
+        // LOGIC 1: TẠO VÀ TẢI FILE EXCEL MẪU
+        // ==========================================
+        document.getElementById('btn-download-template').addEventListener('click', () => {
+            // Dữ liệu mẫu cực chuẩn theo yêu cầu
+            const templateData = [
+                {
+                    "Mã Đề (examId)": "DE_001",
+                    "Nội Dung (text)": "Thủ đô của Việt Nam là gì?",
+                    "Đáp Án A": "Hồ Chí Minh",
+                    "Đáp Án B": "Hà Nội",
+                    "Đáp Án C": "Đà Nẵng",
+                    "Đáp Án D": "Hải Phòng",
+                    "Đáp Án Đúng (0=A, 1=B, 2=C, 3=D)": 1
+                }
+            ];
+
+            // Dùng SheetJS tạo worksheet từ JSON
+            const ws = XLSX.utils.json_to_sheet(templateData);
+            
+            // Set độ rộng cột cho đẹp
+            ws['!cols'] = [{wch: 15}, {wch: 40}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 30}];
+
+            // Tạo workbook và gắn sheet vào
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "DanhSachCauHoi");
+
+            // Tải xuống máy khách
+            XLSX.writeFile(wb, "Template_Import_Cau_Hoi.xlsx");
+        });
+
+        // ==========================================
+        // GIAO DIỆN: HIỂN THỊ TÊN FILE KHI CHỌN
+        // ==========================================
+        const fileInput = document.getElementById('excel-file');
+        const fileNameDisplay = document.getElementById('file-name-display');
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileNameDisplay.innerText = `Đã chọn: ${file.name}`;
+                fileNameDisplay.style.color = '#10b981'; // Đổi màu xanh
+            } else {
+                fileNameDisplay.innerText = "Chưa có file nào được chọn";
+                fileNameDisplay.style.color = '#ef4444'; // Đổi màu đỏ
+            }
+        });
+
+        // ==========================================
+        // LOGIC 2: ĐỌC EXCEL VÀ PUSH LÊN FIREBASE
+        // ==========================================
+        const importBtn = document.getElementById('btn-import');
+
+        importBtn.addEventListener('click', async () => {
+            if (!db) {
+                alert("Chưa cấu hình Firebase! Vui lòng điền firebaseConfig trong mã nguồn.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("❌ Vui lòng chọn một file Excel (.xlsx hoặc .xls) trước khi Import!");
+                return;
+            }
+
+            // Đổi giao diện nút để báo đang xử lý
+            importBtn.disabled = true;
+            importBtn.innerHTML = "⏳ Đang xử lý dữ liệu... Vui lòng đợi";
+
+            // Khởi tạo FileReader để đọc file
+            const reader = new FileReader();
+
+            reader.onload = async (e) => {
+                try {
+                    // Đọc data nhị phân
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Lấy Sheet đầu tiên
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Chuyển Sheet thành Mảng JSON
+                    const jsonArr = XLSX.utils.sheet_to_json(worksheet);
+
+                    // Bắt lỗi file rỗng
+                    if (jsonArr.length === 0) {
+                        throw new Error("File Excel không có dữ liệu!");
+                    }
+
+                    let successCount = 0;
+                    let errorCount = 0;
+
+                    // Duyệt mảng JSON và bóc tách dữ liệu
+                    for (let i = 0; i < jsonArr.length; i++) {
+                        const row = jsonArr[i];
+
+                        // Kiểm tra dữ liệu bắt buộc: Phải có Nội dung & Đáp án đúng
+                        if (!row["Nội Dung (text)"] || row["Đáp Án Đúng (0=A, 1=B, 2=C, 3=D)"] === undefined) {
+                            console.warn(`Dòng ${i + 2} bị thiếu Nội dung hoặc Đáp án đúng. Đã bỏ qua.`);
+                            errorCount++;
+                            continue; 
+                        }
+
+                        // Đóng gói thành Object chuẩn theo yêu cầu
+                        const questionData = {
+                            examId: String(row["Mã Đề (examId)"] || "DEFAULT_EXAM"),
+                            text: String(row["Nội Dung (text)"]).trim(),
+                            options: [
+                                String(row["Đáp Án A"] || "").trim(),
+                                String(row["Đáp Án B"] || "").trim(),
+                                String(row["Đáp Án C"] || "").trim(),
+                                String(row["Đáp Án D"] || "").trim()
+                            ],
+                            // Chuyển đổi an toàn sang số nguyên
+                            correctAnswer: parseInt(row["Đáp Án Đúng (0=A, 1=B, 2=C, 3=D)"])
+                        };
+
+                        // Đẩy lên Firestore
+                        await addDoc(collection(db, "questions"), questionData);
+                        successCount++;
+                    }
+
+                    // Hoàn tất
+                    alert(`✅ IMPORT HOÀN TẤT!\n- Thành công: ${successCount} câu.\n- Bỏ qua (lỗi thiếu cột): ${errorCount} câu.`);
+                    
+                    // Reset input
+                    fileInput.value = "";
+                    fileNameDisplay.innerText = "Chưa có file nào được chọn";
+                    fileNameDisplay.style.color = "";
+
+                } catch (error) {
+                    console.error("Lỗi khi import:", error);
+                    alert("❌ Đã xảy ra lỗi khi đọc file hoặc đẩy lên Firebase:\n" + error.message);
+                } finally {
+                    // Khôi phục nút
+                    importBtn.disabled = false;
+                    importBtn.innerHTML = "⬆️ Bắt Đầu Import Lên Firebase";
+                }
+            };
+
+            // Bắt lỗi không đọc được file
+            reader.onerror = () => {
+                alert("❌ Không thể đọc file. Vui lòng thử lại!");
+                importBtn.disabled = false;
+                importBtn.innerHTML = "⬆️ Bắt Đầu Import Lên Firebase";
+            };
+
+            // Thực thi đọc
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
