@@ -166,13 +166,22 @@
         .admin-table tr:hover { background-color: #f1f5f9; }
         .text-center { text-align: center !important; }
         
-        /* Badge số lượng câu hỏi */
-        .badge-count { background-color: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+        /* Badge số lượng câu hỏi & Trạng thái đề */
+        .badge-count { background-color: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+        .badge-free { background-color: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-left: 8px; }
+        .badge-vip-exam { background-color: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-left: 8px; }
         
-        /* Nút xóa màu đỏ */
+        /* Nút hành động trên bảng đề thi */
+        .action-buttons { display: flex; justify-content: center; gap: 8px; }
+        
         .btn-delete { background-color: #ef4444; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
         .btn-delete:hover { background-color: #dc2626; }
         .btn-delete:disabled { background-color: #fca5a5; cursor: not-allowed; }
+
+        .btn-exam-vip-on { background-color: #3b82f6; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        .btn-exam-vip-on:hover { background-color: #2563eb; }
+        .btn-exam-vip-off { background-color: #f97316; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        .btn-exam-vip-off:hover { background-color: #ea580c; }
         
         /* CSS cho Quản lý người dùng */
         .status-normal { color: #6b7280; font-weight: 500; }
@@ -216,19 +225,19 @@
 
         <div class="content-container">
             
-            <!-- SECTION 1: QUẢN LÝ ĐỀ THI (Khu vực 3 cũ) -->
+            <!-- SECTION 1: QUẢN LÝ ĐỀ THI -->
             <section id="section-exams" class="content-section active">
                 <div class="card">
                     <h2 class="card-title">📋 Danh Sách Đề Thi Trên Hệ Thống</h2>
-                    <p class="card-description">Thống kê các mã đề đang tồn tại trên Firestore. Bạn có thể xóa toàn bộ dữ liệu của một đề thi nếu có sai sót.</p>
+                    <p class="card-description">Thống kê các mã đề và trạng thái VIP hiện tại trên hệ thống. Bạn có thể Bật/Tắt chế độ VIP hoặc xóa toàn bộ dữ liệu của đề thi.</p>
                     
                     <div class="table-container">
                         <table class="admin-table">
                             <thead>
                                 <tr>
                                     <th class="text-center" width="10%">STT</th>
-                                    <th width="40%">Mã Đề Thi (examId)</th>
-                                    <th class="text-center" width="25%">Số Lượng Câu Hỏi</th>
+                                    <th width="35%">Mã Đề Thi (examId)</th>
+                                    <th class="text-center" width="30%">Thông tin & Trạng thái</th>
                                     <th class="text-center" width="25%">Hành Động</th>
                                 </tr>
                             </thead>
@@ -242,33 +251,7 @@
                 </div>
             </section>
 
-            <!-- SECTION 2: QUẢN LÝ NGƯỜI DÙNG (Khu vực 4 cũ) -->
-            <section id="section-users" class="content-section">
-                <div class="card">
-                    <h2 class="card-title">👥 Danh Sách Thành Viên & Cấp Quyền VIP</h2>
-                    <p class="card-description">Xem toàn bộ danh sách tài khoản học sinh đăng ký trên hệ thống. Bạn có thể cấp quyền hoặc hủy trạng thái kích hoạt VIP của từng cá nhân ngay tại đây.</p>
-                    
-                    <div class="table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th class="text-center" width="10%">STT</th>
-                                    <th width="50%">Email Người Dùng</th>
-                                    <th class="text-center" width="20%">Trạng Thái</th>
-                                    <th class="text-center" width="20%">Hành Động</th>
-                                </tr>
-                            </thead>
-                            <tbody id="user-list-body">
-                                <tr>
-                                    <td colspan="4" class="empty-message">Đang kết nối để tải danh sách thành viên...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- SECTION 3: IMPORT DỮ LIỆU (Khu vực 1 & 2 cũ gộp lại) -->
+            <!-- SECTION 2: IMPORT DỮ LIỆU -->
             <section id="section-import" class="content-section">
                 <!-- KHU VỰC 1: Tải File Mẫu -->
                 <div class="card">
@@ -305,6 +288,32 @@
                 </div>
             </section>
 
+            <!-- SECTION 3: QUẢN LÝ NGƯỜI DÙNG -->
+            <section id="section-users" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">👥 Danh Sách Thành Viên & Cấp Quyền VIP</h2>
+                    <p class="card-description">Xem toàn bộ danh sách tài khoản học sinh đăng ký trên hệ thống. Bạn có thể cấp quyền hoặc hủy trạng thái kích hoạt VIP của từng cá nhân ngay tại đây.</p>
+                    
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" width="10%">STT</th>
+                                    <th width="50%">Email Người Dùng</th>
+                                    <th class="text-center" width="20%">Trạng Thái</th>
+                                    <th class="text-center" width="20%">Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-list-body">
+                                <tr>
+                                    <td colspan="4" class="empty-message">Đang kết nối để tải danh sách thành viên...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
         </div>
     </main>
 
@@ -331,10 +340,11 @@
         });
     </script>
 
-    <!-- LOGIC FIREBASE & NGHIỆP VỤ (GIỮ NGUYÊN HOÀN TOÀN) -->
+    <!-- LOGIC FIREBASE & NGHIỆP VỤ -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Đã thêm setDoc vào import
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
@@ -350,17 +360,28 @@
         const db = getFirestore(app);
 
         // ==========================================
-        // QUẢN LÝ ĐỀ THI
+        // QUẢN LÝ ĐỀ THI & VIP ĐỀ THI
         // ==========================================
         async function loadExamList() {
             const tbody = document.getElementById('exam-list-body');
             tbody.innerHTML = '<tr><td colspan="4" class="empty-message">⏳ Đang tải dữ liệu từ Firestore...</td></tr>';
 
             try {
-                const querySnapshot = await getDocs(collection(db, "questions"));
-                const examGroups = {}; 
+                // Kéo cả dữ liệu câu hỏi (để đếm) và cấu hình đề thi (để lấy trạng thái VIP)
+                const [questionsSnapshot, examsSnapshot] = await Promise.all([
+                    getDocs(collection(db, "questions")),
+                    getDocs(collection(db, "exams"))
+                ]);
+                
+                // Gom nhóm trạng thái VIP của đề thi
+                const examStatusMap = {};
+                examsSnapshot.forEach(doc => {
+                    examStatusMap[doc.id] = doc.data().isVip || false;
+                });
 
-                querySnapshot.forEach((doc) => {
+                // Gom nhóm và đếm số lượng câu hỏi
+                const examGroups = {}; 
+                questionsSnapshot.forEach((doc) => {
                     const data = doc.data();
                     const examId = data.examId || "Chưa phân loại"; 
                     
@@ -378,21 +399,44 @@
                     return;
                 }
 
+                // Render danh sách đề thi ra bảng
                 for (const examId in examGroups) {
                     const count = examGroups[examId];
+                    // Nếu đề thi chưa có trong collection "exams", mặc định là false
+                    const isVip = examStatusMap[examId] || false; 
+
                     const tr = document.createElement('tr');
                     
                     tr.innerHTML = `
                         <td class="text-center">${stt++}</td>
                         <td><strong>${examId}</strong></td>
-                        <td class="text-center"><span class="badge-count">${count} câu</span></td>
                         <td class="text-center">
-                            <button class="btn-delete" data-examid="${examId}">🗑️ Xóa Đề</button>
+                            <span class="badge-count">${count} câu</span>
+                            ${isVip ? '<span class="badge-vip-exam">VIP 👑</span>' : '<span class="badge-free">Miễn Phí</span>'}
+                        </td>
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                ${isVip 
+                                    ? `<button class="btn-exam-vip-off btn-toggle-exam-vip" data-examid="${examId}" data-vip="true">Tắt VIP</button>`
+                                    : `<button class="btn-exam-vip-on btn-toggle-exam-vip" data-examid="${examId}" data-vip="false">Bật VIP</button>`
+                                }
+                                <button class="btn-delete" data-examid="${examId}">🗑️ Xóa Đề</button>
+                            </div>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 }
 
+                // Gắn sự kiện Bật/Tắt VIP Đề thi
+                document.querySelectorAll('.btn-toggle-exam-vip').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const targetExamId = this.getAttribute('data-examid');
+                        const currentVipState = this.getAttribute('data-vip') === "true";
+                        toggleExamVip(targetExamId, currentVipState);
+                    });
+                });
+
+                // Gắn sự kiện Xóa Đề thi
                 document.querySelectorAll('.btn-delete').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const targetExamId = this.getAttribute('data-examid');
@@ -406,6 +450,23 @@
             }
         }
 
+        // Hàm cập nhật trạng thái VIP của đề thi
+        async function toggleExamVip(examId, currentVipState) {
+            try {
+                // Dùng setDoc với tùy chọn { merge: true } để tạo document mới nếu chưa có, hoặc chỉ cập nhật trường isVip nếu đã có.
+                await setDoc(doc(db, "exams", examId), { 
+                    isVip: !currentVipState 
+                }, { merge: true });
+
+                alert(`✅ Đã cập nhật trạng thái VIP thành công cho đề "${examId}"!`);
+                loadExamList(); // Load lại giao diện
+            } catch (error) {
+                console.error("Lỗi cập nhật VIP đề thi:", error);
+                alert("❌ Không thể cập nhật trạng thái VIP đề thi: " + error.message);
+            }
+        }
+
+        // Hàm xóa toàn bộ câu hỏi của đề thi
         async function deleteExam(examId, buttonElement) {
             if (!confirm(`⚠️ CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ câu hỏi của đề "${examId}" này không?\nHành động này không thể hoàn tác!`)) {
                 return;
@@ -441,7 +502,7 @@
         }
 
         // ==========================================
-        // QUẢN LÝ NGƯỜI DÙNG & VIP
+        // QUẢN LÝ NGƯỜI DÙNG & VIP TÀI KHOẢN
         // ==========================================
         async function loadUserList() {
             const tbody = document.getElementById('user-list-body');
@@ -515,7 +576,7 @@
             }
         }
 
-        // Tải danh sách đề thi và người dùng ngầm ở phía sau khi mở trang
+        // Khởi động đồng bộ dữ liệu ngầm khi mở trang
         loadExamList();
         loadUserList();
 
