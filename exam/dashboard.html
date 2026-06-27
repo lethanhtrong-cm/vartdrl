@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng Chờ Thi Trắc Nghiệm</title>
+    <style>
+        /* =========================================
+           CSS GIAO DIỆN HIỆN ĐẠI (THUẦN CSS)
+           ========================================= */
+        :root {
+            --primary-color: #2563eb; /* Xanh dương đậm */
+            --primary-hover: #1d4ed8;
+            --danger-color: #ef4444; /* Đỏ */
+            --danger-hover: #dc2626;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Khu vực 1: Navbar / Thông tin tài khoản */
+        .navbar {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-email {
+            font-weight: 500;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 1fr 2fr; /* Chia cột: Danh sách đề 1 phần, Lịch sử 2 phần */
+            }
+        }
+
+        /* Card chung cho Khu vực 2 và 3 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--bg-color);
+        }
+
+        /* Trạng thái đang tải (Loading) */
+        .loading-text {
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        /* Bảng hiển thị (Table) */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background-color: #f9fafb;
+        }
+
+        /* Danh sách đề thi (Khu vực 2) */
+        .exam-list {
+            list-style: none;
+        }
+
+        .exam-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .exam-item:last-child {
+            border-bottom: none;
+        }
+
+        .exam-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Khu vực 1: Header / Thông tin tài khoản -->
+    <nav class="navbar">
+        <div class="brand-title">Hệ Thống Thi Trắc Nghiệm</div>
+        <div class="user-info">
+            <!-- Sẽ hiển thị email qua JS -->
+            <span id="userEmailDisplay" class="user-email">Đang tải...</span>
+            <button id="btnLogout" class="btn btn-logout">Đăng Xuất</button>
+        </div>
+    </nav>
+
+    <!-- Nội dung chính -->
+    <div class="container">
+        
+        <!-- Khu vực 2: Danh sách đề thi -->
+        <div class="card">
+            <div class="card-header">Danh Sách Đề Thi</div>
+            <!-- Nơi chứa dữ liệu render từ JS -->
+            <ul id="examListContainer" class="exam-list">
+                <li class="loading-text">Đang tải danh sách đề thi...</li>
+            </ul>
+        </div>
+
+        <!-- Khu vực 3: Lịch sử làm bài -->
+        <div class="card">
+            <div class="card-header">Lịch Sử Làm Bài Của Bạn</div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã Đề</th>
+                            <th>Số Câu Đúng</th>
+                            <th>Điểm Số</th>
+                            <th>Thời Gian Nộp</th>
+                        </tr>
+                    </thead>
+                    <!-- Nơi chứa dữ liệu render từ JS -->
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="5" class="loading-text">Đang tải lịch sử thi...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================================
+         JAVASCRIPT LOGIC (Firebase v11.6.1)
+         ========================================= -->
+    <script type="module">
+        // 1. Nhúng các module cần thiết từ CDN Firebase v11.6.1
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 2. Cấu hình Firebase thực tế của bạn
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
+            authDomain: "rt-examination.firebaseapp.com",
+            databaseURL: "https://rt-examination-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rt-examination",
+            storageBucket: "rt-examination.firebasestorage.app",
+            messagingSenderId: "920482699854",
+            appId: "1:920482699854:web:44f9b0d735bdc001c6c11f",
+            measurementId: "G-8N7RTTREQM"
+        };
+        
+        // Khởi tạo Firebase App, Auth và Firestore
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Các phần tử DOM cần thao tác
+        const userEmailDisplay = document.getElementById('userEmailDisplay');
+        const btnLogout = document.getElementById('btnLogout');
+        const examListContainer = document.getElementById('examListContainer');
+        const historyTableBody = document.getElementById('historyTableBody');
+
+        // Biến lưu trữ thông tin user hiện tại
+        let currentUser = null;
+
+        // Hàm chuyển hướng an toàn (Xử lý lỗi URL trong môi trường Preview Sandbox)
+        function safeRedirect(path) {
+            if (window.location.protocol === 'blob:') {
+                console.warn("Đang ở môi trường Preview, không thể chuyển hướng tới:", path);
+                document.body.innerHTML = `
+                    <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#f3f4f6; flex-direction:column;">
+                        <div style="background:white; padding:2rem; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-align:center;">
+                            <h2 style="color:#ef4444; margin-bottom:1rem;">Yêu cầu chuyển trang</h2>
+                            <p>Hệ thống muốn chuyển hướng đến: <b>${path}</b></p>
+                            <p style="color:#6b7280; font-size:0.9rem; margin-top:1rem;">(Tính năng chuyển trang tự động bị vô hiệu hóa trong môi trường xem trước)</p>
+                        </div>
+                    </div>`;
+            } else {
+                window.location.href = path;
+            }
+        }
+
+        // ==========================================
+        // LOGIC 1: BẢO VỆ ROUTE & QUẢN LÝ ĐĂNG NHẬP
+        // ==========================================
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Người dùng ĐÃ đăng nhập thành công
+                currentUser = user;
+                
+                // Hiển thị email lên Khu vực 1
+                userEmailDisplay.textContent = user.email || "Người dùng ẩn danh";
+                
+                // Sau khi xác định đã đăng nhập, tiến hành tải dữ liệu
+                loadExamList();
+                loadHistory(user);
+            } else {
+                // Nếu CHƯA đăng nhập hoặc phiên hết hạn -> Đuổi về trang login (index.html)
+                safeRedirect('index.html');
+            }
+        });
+
+        // Xử lý sự kiện nút Đăng xuất
+        btnLogout.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                // Đăng xuất thành công, onAuthStateChanged sẽ tự động đẩy về index.html
+                console.log("Đã đăng xuất");
+            }).catch((error) => {
+                console.error("Lỗi đăng xuất:", error);
+            });
+        });
+
+        // ==========================================
+        // LOGIC 2: TẢI DANH SÁCH MÃ ĐỀ (Khu vực 2)
+        // ==========================================
+        async function loadExamList() {
+            try {
+                // Truy vấn toàn bộ collection 'questions' từ thư mục gốc
+                const questionsRef = collection(db, "questions");
+                const querySnapshot = await getDocs(questionsRef);
+                
+                // Sử dụng Set để lọc ra các mã đề (examId) duy nhất
+                const uniqueExams = new Set();
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.examId) {
+                        uniqueExams.add(data.examId);
+                    }
+                });
+
+                // Chuyển Set thành Array để dễ xử lý
+                const examsArray = Array.from(uniqueExams);
+                
+                // Xóa chữ "Đang tải..."
+                examListContainer.innerHTML = ""; 
+
+                if (examsArray.length === 0) {
+                    examListContainer.innerHTML = '<li class="loading-text">Hiện tại chưa có đề thi nào.</li>';
+                    return;
+                }
+
+                // Render danh sách đề thi ra giao diện
+                examsArray.forEach((examId) => {
+                    const li = document.createElement('li');
+                    li.className = 'exam-item';
+                    
+                    li.innerHTML = `
+                        <span class="exam-name">Mã đề: ${examId}</span>
+                        <button class="btn btn-primary" onclick="goToQuiz('${examId}')">Vào Thi</button>
+                    `;
+                    examListContainer.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error("Lỗi khi tải danh sách đề thi:", error);
+                examListContainer.innerHTML = '<li class="loading-text" style="color:red;">Lỗi tải dữ liệu. Hãy kiểm tra quyền truy cập!</li>';
+            }
+        }
+
+        // Hàm chuyển hướng sang trang thi (Gắn vào window để gọi từ thuộc tính onclick trong HTML)
+        window.goToQuiz = function(examId) {
+            // Chuyển hướng kèm theo parameter examId
+            safeRedirect(`quiz.html?examId=${examId}`);
+        };
+
+        // ==========================================
+        // LOGIC 3: TẢI LỊCH SỬ LÀM BÀI (Khu vực 3)
+        // ==========================================
+        async function loadHistory(user) {
+            try {
+                // Truy vấn bảng 'results' gốc và lọc theo email của user hiện tại
+                const q = query(collection(db, "results"), where("email", "==", user.email));
+                const querySnapshot = await getDocs(q);
+                
+                let historyData = [];
+                querySnapshot.forEach((doc) => {
+                    historyData.push(doc.data());
+                });
+
+                // Sắp xếp lịch sử trên client-side (Javascript) để bài làm mới nhất lên đầu
+                historyData.sort((a, b) => {
+                    const timeA = new Date(a.submittedAt || 0).getTime();
+                    const timeB = new Date(b.submittedAt || 0).getTime();
+                    return timeB - timeA; // Sắp xếp giảm dần
+                });
+
+                // Xóa chữ "Đang tải..."
+                historyTableBody.innerHTML = "";
+
+                if (historyData.length === 0) {
+                    historyTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="loading-text">Bạn chưa thực hiện bài thi nào.</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Render dữ liệu lịch sử ra bảng
+                historyData.forEach((result, index) => {
+                    // Định dạng lại thời gian cho dễ nhìn (Ngày/Tháng/Năm Giờ:Phút)
+                    let formattedTime = "N/A";
+                    if (result.submittedAt) {
+                        const dateObj = new Date(result.submittedAt);
+                        formattedTime = dateObj.toLocaleString('vi-VN');
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td><strong>${result.examId || "N/A"}</strong></td>
+                        <td>${result.correctAnswers || 0} / ${result.totalQuestions || "?"}</td>
+                        <td style="color: var(--primary-color); font-weight: bold;">
+                            ${result.score || 0}
+                        </td>
+                        <td>${formattedTime}</td>
+                    `;
+                    historyTableBody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Lỗi khi tải lịch sử:", error);
+                historyTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="loading-text" style="color:red;">Lỗi tải lịch sử. Kiểm tra quyền truy cập Firebase hoặc cần tạo Index!</td>
+                    </tr>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
