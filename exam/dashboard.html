@@ -13,6 +13,9 @@
             --primary-hover: #1d4ed8;
             --danger-color: #ef4444; /* Đỏ */
             --danger-hover: #dc2626;
+            --locked-color: #9ca3af; /* Xám cho nút khóa */
+            --locked-hover: #6b7280;
+            --vip-color: #d97706; /* Vàng nghệ cho VIP */
             --bg-color: #f3f4f6;
             --card-bg: #ffffff;
             --text-main: #1f2937;
@@ -60,6 +63,19 @@
 
         .user-email {
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vip-badge {
+            background-color: #fef3c7;
+            color: var(--vip-color);
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            border: 1px solid #fde68a;
         }
 
         .btn {
@@ -90,6 +106,18 @@
 
         .btn-primary:hover {
             background-color: var(--primary-hover);
+        }
+
+        .btn-locked {
+            background-color: var(--locked-color);
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-locked:hover {
+            background-color: var(--locked-hover);
         }
 
         /* Layout Container */
@@ -180,6 +208,13 @@
         .exam-name {
             font-weight: 600;
             font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .exam-vip-text {
+            color: var(--vip-color);
         }
     </style>
 </head>
@@ -189,7 +224,6 @@
     <nav class="navbar">
         <div class="brand-title">Hệ Thống Thi Trắc Nghiệm</div>
         <div class="user-info">
-            <!-- Sẽ hiển thị email qua JS -->
             <span id="userEmailDisplay" class="user-email">Đang tải...</span>
             <button id="btnLogout" class="btn btn-logout">Đăng Xuất</button>
         </div>
@@ -201,7 +235,6 @@
         <!-- Khu vực 2: Danh sách đề thi -->
         <div class="card">
             <div class="card-header">Danh Sách Đề Thi</div>
-            <!-- Nơi chứa dữ liệu render từ JS -->
             <ul id="examListContainer" class="exam-list">
                 <li class="loading-text">Đang tải danh sách đề thi...</li>
             </ul>
@@ -221,7 +254,6 @@
                             <th>Thời Gian Nộp</th>
                         </tr>
                     </thead>
-                    <!-- Nơi chứa dữ liệu render từ JS -->
                     <tbody id="historyTableBody">
                         <tr>
                             <td colspan="5" class="loading-text">Đang tải lịch sử thi...</td>
@@ -240,7 +272,8 @@
         // 1. Nhúng các module cần thiết từ CDN Firebase v11.6.1
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Thêm getDoc và doc để lấy thông tin user từ Firestore
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 2. Cấu hình Firebase thực tế của bạn
         const firebaseConfig = {
@@ -265,10 +298,11 @@
         const examListContainer = document.getElementById('examListContainer');
         const historyTableBody = document.getElementById('historyTableBody');
 
-        // Biến lưu trữ thông tin user hiện tại
+        // Biến lưu trữ thông tin
         let currentUser = null;
+        let currentUserData = null; // Lưu trạng thái VIP, Banned của user
 
-        // Hàm chuyển hướng an toàn (Xử lý lỗi URL trong môi trường Preview Sandbox)
+        // Hàm chuyển hướng an toàn
         function safeRedirect(path) {
             if (window.location.protocol === 'blob:') {
                 console.warn("Đang ở môi trường Preview, không thể chuyển hướng tới:", path);
@@ -277,7 +311,6 @@
                         <div style="background:white; padding:2rem; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-align:center;">
                             <h2 style="color:#ef4444; margin-bottom:1rem;">Yêu cầu chuyển trang</h2>
                             <p>Hệ thống muốn chuyển hướng đến: <b>${path}</b></p>
-                            <p style="color:#6b7280; font-size:0.9rem; margin-top:1rem;">(Tính năng chuyển trang tự động bị vô hiệu hóa trong môi trường xem trước)</p>
                         </div>
                     </div>`;
             } else {
@@ -286,57 +319,79 @@
         }
 
         // ==========================================
-        // LOGIC 1: BẢO VỆ ROUTE & QUẢN LÝ ĐĂNG NHẬP
+        // LOGIC 1: BẢO VỆ ROUTE, QUẢN LÝ ĐĂNG NHẬP & LẤY QUYỀN USER
         // ==========================================
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Người dùng ĐÃ đăng nhập thành công
                 currentUser = user;
                 
-                // Hiển thị email lên Khu vực 1
-                userEmailDisplay.textContent = user.email || "Người dùng ẩn danh";
+                try {
+                    // Lấy thông tin chi tiết của user (isBanned, isVip) từ collection 'users'
+                    // Giả định collection user được lưu với ID là email của user
+                    const userDocRef = doc(db, "users", user.email);
+                    const userDocSnap = await getDoc(userDocRef);
+                    
+                    if (userDocSnap.exists()) {
+                        currentUserData = userDocSnap.data();
+                        
+                        // Kiểm tra tài khoản bị khóa
+                        if (currentUserData.isBanned === true) {
+                            alert("Tài khoản của bạn đã bị khóa hệ thống. Vui lòng liên hệ quản trị viên.");
+                            await signOut(auth);
+                            return; // Dừng thực thi
+                        }
+                    } else {
+                        currentUserData = { isVip: false, isBanned: false };
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi tải thông tin user:", error);
+                    currentUserData = { isVip: false, isBanned: false };
+                }
+
+                // Cập nhật UI Navbar
+                let emailHtml = user.email || "Người dùng ẩn danh";
+                if (currentUserData.isVip) {
+                    emailHtml += ` <span class="vip-badge">Tài Khoản VIP</span>`;
+                }
+                userEmailDisplay.innerHTML = emailHtml;
                 
-                // Sau khi xác định đã đăng nhập, tiến hành tải dữ liệu
+                // Sau khi xác định đã đăng nhập và lấy xong quyền, tiến hành tải dữ liệu
                 loadExamList();
                 loadHistory(user);
             } else {
-                // Nếu CHƯA đăng nhập hoặc phiên hết hạn -> Đuổi về trang login (index.html)
                 safeRedirect('index.html');
             }
         });
 
         // Xử lý sự kiện nút Đăng xuất
         btnLogout.addEventListener('click', () => {
-            signOut(auth).then(() => {
-                // Đăng xuất thành công, onAuthStateChanged sẽ tự động đẩy về index.html
-                console.log("Đã đăng xuất");
-            }).catch((error) => {
-                console.error("Lỗi đăng xuất:", error);
-            });
+            signOut(auth).catch((error) => console.error("Lỗi đăng xuất:", error));
         });
 
         // ==========================================
-        // LOGIC 2: TẢI DANH SÁCH MÃ ĐỀ (Khu vực 2)
+        // LOGIC 2: TẢI DANH SÁCH MÃ ĐỀ & TRẠNG THÁI VIP (Khu vực 2)
         // ==========================================
         async function loadExamList() {
             try {
-                // Truy vấn toàn bộ collection 'questions' từ thư mục gốc
+                // 2.1 Truy vấn bộ câu hỏi để lấy các mã đề duy nhất
                 const questionsRef = collection(db, "questions");
                 const querySnapshot = await getDocs(questionsRef);
-                
-                // Sử dụng Set để lọc ra các mã đề (examId) duy nhất
                 const uniqueExams = new Set();
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    if (data.examId) {
-                        uniqueExams.add(data.examId);
-                    }
+                    if (data.examId) uniqueExams.add(data.examId);
+                });
+                const examsArray = Array.from(uniqueExams);
+
+                // 2.2 Truy vấn collection 'exams' để lấy cấu hình VIP của từng đề
+                const examsConfigRef = collection(db, "exams");
+                const configSnapshot = await getDocs(examsConfigRef);
+                const examConfigs = {};
+                configSnapshot.forEach((doc) => {
+                    examConfigs[doc.id] = doc.data(); // Key là examId
                 });
 
-                // Chuyển Set thành Array để dễ xử lý
-                const examsArray = Array.from(uniqueExams);
-                
-                // Xóa chữ "Đang tải..."
+                // Clear UI
                 examListContainer.innerHTML = ""; 
 
                 if (examsArray.length === 0) {
@@ -344,28 +399,57 @@
                     return;
                 }
 
-                // Render danh sách đề thi ra giao diện
+                const isUserVip = currentUserData && currentUserData.isVip === true;
+
+                // 2.3 Render danh sách kết hợp trạng thái VIP
                 examsArray.forEach((examId) => {
                     const li = document.createElement('li');
                     li.className = 'exam-item';
                     
-                    li.innerHTML = `
-                        <span class="exam-name">Mã đề: ${examId}</span>
-                        <button class="btn btn-primary" onclick="goToQuiz('${examId}')">Vào Thi</button>
-                    `;
+                    const examConfig = examConfigs[examId] || {};
+                    const isExamVip = examConfig.isVip === true;
+
+                    let nameHtml = `<span class="exam-name">Mã đề: ${examId}</span>`;
+                    let buttonHtml = '';
+
+                    // Kiểm tra logic VIP
+                    if (isExamVip) {
+                        // Trang trí tên đề VIP
+                        nameHtml = `
+                            <span class="exam-name exam-vip-text">
+                                🌟 Mã đề: ${examId} 
+                                <span class="vip-badge">VIP</span>
+                            </span>`;
+
+                        if (!isUserVip) {
+                            // User chưa nâng cấp -> Hiện nút Xám khóa
+                            buttonHtml = `<button class="btn btn-locked" onclick="goToUpgrade()">🔒 Đề VIP - Nạp để mở</button>`;
+                        } else {
+                            // User đã VIP -> Vào thi bình thường
+                            buttonHtml = `<button class="btn btn-primary" onclick="goToQuiz('${examId}')">Vào Thi</button>`;
+                        }
+                    } else {
+                        // Đề thường -> Vào thi bình thường
+                        buttonHtml = `<button class="btn btn-primary" onclick="goToQuiz('${examId}')">Vào Thi</button>`;
+                    }
+                    
+                    li.innerHTML = `${nameHtml}${buttonHtml}`;
                     examListContainer.appendChild(li);
                 });
 
             } catch (error) {
                 console.error("Lỗi khi tải danh sách đề thi:", error);
-                examListContainer.innerHTML = '<li class="loading-text" style="color:red;">Lỗi tải dữ liệu. Hãy kiểm tra quyền truy cập!</li>';
+                examListContainer.innerHTML = '<li class="loading-text" style="color:red;">Lỗi tải dữ liệu đề thi!</li>';
             }
         }
 
-        // Hàm chuyển hướng sang trang thi (Gắn vào window để gọi từ thuộc tính onclick trong HTML)
+        // Hàm chuyển hướng
         window.goToQuiz = function(examId) {
-            // Chuyển hướng kèm theo parameter examId
             safeRedirect(`quiz.html?examId=${examId}`);
+        };
+
+        window.goToUpgrade = function() {
+            safeRedirect(`profile.html`);
         };
 
         // ==========================================
@@ -373,7 +457,6 @@
         // ==========================================
         async function loadHistory(user) {
             try {
-                // Truy vấn bảng 'results' gốc và lọc theo email của user hiện tại
                 const q = query(collection(db, "results"), where("email", "==", user.email));
                 const querySnapshot = await getDocs(q);
                 
@@ -382,14 +465,12 @@
                     historyData.push(doc.data());
                 });
 
-                // Sắp xếp lịch sử trên client-side (Javascript) để bài làm mới nhất lên đầu
                 historyData.sort((a, b) => {
                     const timeA = new Date(a.submittedAt || 0).getTime();
                     const timeB = new Date(b.submittedAt || 0).getTime();
-                    return timeB - timeA; // Sắp xếp giảm dần
+                    return timeB - timeA; 
                 });
 
-                // Xóa chữ "Đang tải..."
                 historyTableBody.innerHTML = "";
 
                 if (historyData.length === 0) {
@@ -401,9 +482,7 @@
                     return;
                 }
 
-                // Render dữ liệu lịch sử ra bảng
                 historyData.forEach((result, index) => {
-                    // Định dạng lại thời gian cho dễ nhìn (Ngày/Tháng/Năm Giờ:Phút)
                     let formattedTime = "N/A";
                     if (result.submittedAt) {
                         const dateObj = new Date(result.submittedAt);
@@ -427,7 +506,7 @@
                 console.error("Lỗi khi tải lịch sử:", error);
                 historyTableBody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="loading-text" style="color:red;">Lỗi tải lịch sử. Kiểm tra quyền truy cập Firebase hoặc cần tạo Index!</td>
+                        <td colspan="5" class="loading-text" style="color:red;">Lỗi tải lịch sử. Kiểm tra quyền truy cập Firebase!</td>
                     </tr>
                 `;
             }
