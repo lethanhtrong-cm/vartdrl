@@ -110,7 +110,7 @@
 
         .content-container {
             padding: 30px;
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             width: 100%;
         }
@@ -160,29 +160,35 @@
         /* ================= CSS CHO BẢNG ================= */
         .table-container { overflow-x: auto; margin-top: 15px; border: 1px solid #e2e8f0; border-radius: 8px; }
         .admin-table { width: 100%; border-collapse: collapse; font-size: 15px; background-color: white; }
-        .admin-table th, .admin-table td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .admin-table th, .admin-table td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
         .admin-table th { background-color: #f8fafc; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; }
         .admin-table tr:last-child td { border-bottom: none; }
         .admin-table tr:hover { background-color: #f1f5f9; }
         .text-center { text-align: center !important; }
         
         /* Badge số lượng câu hỏi & Trạng thái đề */
-        .badge-count { background-color: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; }
-        .badge-free { background-color: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-left: 8px; }
-        .badge-vip-exam { background-color: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-left: 8px; }
+        .badge-count { background-color: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; display: inline-block; margin-bottom: 5px; }
+        .badge-free { background-color: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; display: inline-block; }
+        .badge-vip-exam { background-color: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; display: inline-block; }
+        .config-text { font-size: 13px; color: #475569; margin: 3px 0; font-weight: 500; }
         
         /* Nút hành động trên bảng đề thi */
-        .action-buttons { display: flex; justify-content: center; gap: 8px; }
+        .action-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
         
-        .btn-delete { background-color: #ef4444; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        .btn-delete { background-color: #ef4444; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
         .btn-delete:hover { background-color: #dc2626; }
         .btn-delete:disabled { background-color: #fca5a5; cursor: not-allowed; }
 
-        .btn-exam-vip-on { background-color: #3b82f6; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        .btn-exam-vip-on { background-color: #3b82f6; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
         .btn-exam-vip-on:hover { background-color: #2563eb; }
-        .btn-exam-vip-off { background-color: #f97316; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        .btn-exam-vip-off { background-color: #f97316; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
         .btn-exam-vip-off:hover { background-color: #ea580c; }
         
+        .btn-edit-time { background-color: #4b5563; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        .btn-edit-time:hover { background-color: #374151; }
+        .btn-view-feedback { background-color: #eab308; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; transition: background 0.2s; }
+        .btn-view-feedback:hover { background-color: #ca8a04; }
+
         /* CSS cho Quản lý người dùng */
         .status-normal { color: #6b7280; font-weight: 500; }
         .status-vip { color: #d97706; font-weight: bold; }
@@ -193,6 +199,17 @@
 
         /* Dòng thông báo khi bảng trống */
         .empty-message { text-align: center; padding: 30px !important; color: #64748b; font-style: italic; }
+
+        /* ================= CSS CHO MODAL ================= */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background-color: rgba(0,0,0,0.5); animation: fadeIn 0.3s; }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 25px; border-radius: 12px; width: 85%; max-width: 900px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
+        .modal-header h2 { margin: 0; font-size: 20px; color: #1f2937; }
+        .close-modal { color: #9ca3af; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.2s; }
+        .close-modal:hover { color: #4b5563; }
+        .modal-body { overflow-y: auto; flex: 1; padding-right: 5px; }
+        
+        .rating-star { color: #f59e0b; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -229,21 +246,22 @@
             <section id="section-exams" class="content-section active">
                 <div class="card">
                     <h2 class="card-title">📋 Danh Sách Đề Thi Trên Hệ Thống</h2>
-                    <p class="card-description">Thống kê các mã đề và trạng thái VIP hiện tại trên hệ thống. Bạn có thể Bật/Tắt chế độ VIP hoặc xóa toàn bộ dữ liệu của đề thi.</p>
+                    <p class="card-description">Thống kê mã đề, trạng thái VIP và thiết lập thời gian làm bài. Bạn có thể Bật/Tắt chế độ VIP, thay đổi thời gian hoặc xem đánh giá của người dùng.</p>
                     
                     <div class="table-container">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th class="text-center" width="10%">STT</th>
-                                    <th width="35%">Mã Đề Thi (examId)</th>
-                                    <th class="text-center" width="30%">Thông tin & Trạng thái</th>
-                                    <th class="text-center" width="25%">Hành Động</th>
+                                    <th class="text-center" width="5%">STT</th>
+                                    <th width="20%">Mã Đề Thi</th>
+                                    <th class="text-center" width="20%">Trạng thái</th>
+                                    <th class="text-center" width="20%">Cấu hình</th>
+                                    <th class="text-center" width="35%">Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody id="exam-list-body">
                                 <tr>
-                                    <td colspan="4" class="empty-message">Đang kết nối để tải dữ liệu...</td>
+                                    <td colspan="5" class="empty-message">Đang kết nối để tải dữ liệu...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -317,6 +335,33 @@
         </div>
     </main>
 
+    <!-- MODAL XEM ĐÁNH GIÁ (FEEDBACK) -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⭐ Đánh Giá Đề Thi: <span id="modal-exam-id" style="color: #3b82f6;"></span></h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="table-container" style="margin-top: 0;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th width="25%">Email</th>
+                                <th class="text-center" width="15%">Số Sao</th>
+                                <th width="40%">Góp ý</th>
+                                <th class="text-center" width="20%">Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feedback-list-body">
+                            <!-- Dữ liệu đánh giá sẽ được đổ vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- LOGIC CHUYỂN MENU TAB GIAO DIỆN -->
     <script>
         document.querySelectorAll('.menu-item').forEach(button => {
@@ -338,12 +383,24 @@
                 document.getElementById(targetId).classList.add('active');
             });
         });
+
+        // Xử lý đóng Modal
+        const modal = document.getElementById("feedback-modal");
+        const closeModalBtn = document.querySelector(".close-modal");
+
+        closeModalBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
     </script>
 
     <!-- LOGIC FIREBASE & NGHIỆP VỤ -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // Đã thêm setDoc vào import
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -364,19 +421,24 @@
         // ==========================================
         async function loadExamList() {
             const tbody = document.getElementById('exam-list-body');
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-message">⏳ Đang tải dữ liệu từ Firestore...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-message">⏳ Đang tải dữ liệu từ Firestore...</td></tr>';
 
             try {
-                // Kéo cả dữ liệu câu hỏi (để đếm) và cấu hình đề thi (để lấy trạng thái VIP)
+                // Kéo cả dữ liệu câu hỏi (để đếm) và cấu hình đề thi (để lấy trạng thái VIP, timeLimit, attemptCount)
                 const [questionsSnapshot, examsSnapshot] = await Promise.all([
                     getDocs(collection(db, "questions")),
                     getDocs(collection(db, "exams"))
                 ]);
                 
-                // Gom nhóm trạng thái VIP của đề thi
-                const examStatusMap = {};
+                // Gom nhóm trạng thái cấu hình của đề thi
+                const examDataMap = {};
                 examsSnapshot.forEach(doc => {
-                    examStatusMap[doc.id] = doc.data().isVip || false;
+                    const data = doc.data();
+                    examDataMap[doc.id] = {
+                        isVip: data.isVip || false,
+                        timeLimit: data.timeLimit !== undefined ? data.timeLimit : 15,
+                        attemptCount: data.attemptCount || 0
+                    };
                 });
 
                 // Gom nhóm và đếm số lượng câu hỏi
@@ -395,15 +457,15 @@
                 let stt = 1;
                 
                 if (Object.keys(examGroups).length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="empty-message">Hệ thống chưa có câu hỏi nào. Hãy chuyển sang Tab Import để thêm dữ liệu!</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-message">Hệ thống chưa có câu hỏi nào. Hãy chuyển sang Tab Import để thêm dữ liệu!</td></tr>';
                     return;
                 }
 
                 // Render danh sách đề thi ra bảng
                 for (const examId in examGroups) {
                     const count = examGroups[examId];
-                    // Nếu đề thi chưa có trong collection "exams", mặc định là false
-                    const isVip = examStatusMap[examId] || false; 
+                    // Lấy cấu hình, nếu chưa có document trong 'exams', dùng mặc định
+                    const config = examDataMap[examId] || { isVip: false, timeLimit: 15, attemptCount: 0 };
 
                     const tr = document.createElement('tr');
                     
@@ -411,16 +473,22 @@
                         <td class="text-center">${stt++}</td>
                         <td><strong>${examId}</strong></td>
                         <td class="text-center">
-                            <span class="badge-count">${count} câu</span>
-                            ${isVip ? '<span class="badge-vip-exam">VIP 👑</span>' : '<span class="badge-free">Miễn Phí</span>'}
+                            <div style="margin-bottom: 5px;"><span class="badge-count">${count} câu</span></div>
+                            <div>${config.isVip ? '<span class="badge-vip-exam">VIP 👑</span>' : '<span class="badge-free">Miễn Phí</span>'}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="config-text">⏱️ Thời gian: <strong>${config.timeLimit}</strong> phút</div>
+                            <div class="config-text">🔄 Lượt thi: <strong>${config.attemptCount}</strong></div>
                         </td>
                         <td class="text-center">
                             <div class="action-buttons">
-                                ${isVip 
+                                <button class="btn-edit-time" data-examid="${examId}" data-time="${config.timeLimit}">⏱️ Sửa Thời Gian</button>
+                                <button class="btn-view-feedback" data-examid="${examId}">⭐ Xem Đánh Giá</button>
+                                ${config.isVip 
                                     ? `<button class="btn-exam-vip-off btn-toggle-exam-vip" data-examid="${examId}" data-vip="true">Tắt VIP</button>`
                                     : `<button class="btn-exam-vip-on btn-toggle-exam-vip" data-examid="${examId}" data-vip="false">Bật VIP</button>`
                                 }
-                                <button class="btn-delete" data-examid="${examId}">🗑️ Xóa Đề</button>
+                                <button class="btn-delete" data-examid="${examId}">🗑️ Xóa</button>
                             </div>
                         </td>
                     `;
@@ -444,16 +512,85 @@
                     });
                 });
 
+                // Gắn sự kiện Sửa thời gian
+                // ======================= EVENT DELEGATION BẢNG ĐỀ THI =======================
+        // Kỹ thuật này giúp các nút luôn hoạt động dù bảng có tải lại bao nhiêu lần
+        document.getElementById('exam-list-body').addEventListener('click', (e) => {
+            
+            // 1. Nút Sửa Thời Gian
+            const editBtn = e.target.closest('.btn-edit-time');
+            if (editBtn) {
+                const examId = editBtn.dataset.examid;
+                const currentTime = editBtn.dataset.time;
+                editExamTime(examId, currentTime);
+                return;
+            }
+
+            // 2. Nút Bật/Tắt VIP
+            const vipBtn = e.target.closest('.btn-toggle-exam-vip');
+            if (vipBtn) {
+                const examId = vipBtn.dataset.examid;
+                const currentVipState = vipBtn.dataset.vip === "true";
+                toggleExamVip(examId, currentVipState);
+                return;
+            }
+
+            // 3. Nút Xem Đánh Giá
+            const feedbackBtn = e.target.closest('.btn-view-feedback');
+            if (feedbackBtn) {
+                const examId = feedbackBtn.dataset.examid;
+                viewFeedback(examId);
+                return;
+            }
+
+            // 4. Nút Xóa Đề Thi
+            const deleteBtn = e.target.closest('.btn-delete');
+            if (deleteBtn) {
+                const examId = deleteBtn.dataset.examid;
+                deleteExam(examId, deleteBtn);
+                return;
+            }
+        });
+
+        // Nâng cấp hàm editExamTime an toàn hơn
+        async function editExamTime(examId, currentTime) {
+            const newTimeInput = prompt(`Nhập số phút làm bài cho đề "${examId}":`, currentTime);
+            if (newTimeInput === null || newTimeInput.trim() === "") return;
+
+            // Dùng parseInt để ép kiểu số nguyên an toàn
+            const newTime = parseInt(newTimeInput, 10);
+            if (isNaN(newTime) || newTime <= 0) {
+                alert("❌ Thời gian không hợp lệ. Vui lòng nhập một số lớn hơn 0.");
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, "exams", examId), { timeLimit: newTime }, { merge: true });
+                alert(`✅ Đã cập nhật thời gian làm bài đề "${examId}" thành ${newTime} phút!`);
+                loadExamList();
+            } catch (error) {
+                console.error("Lỗi cập nhật thời gian:", error);
+                alert("❌ Lỗi khi cập nhật thời gian: " + error.message);
+            }
+        }
+
+                // Gắn sự kiện Xem đánh giá
+                document.querySelectorAll('.btn-view-feedback').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const targetExamId = this.getAttribute('data-examid');
+                        viewFeedback(targetExamId);
+                    });
+                });
+
             } catch (error) {
                 console.error("Lỗi khi tải danh sách:", error);
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-message" style="color: red;">❌ Lỗi tải dữ liệu. Hãy kiểm tra lại kết nối hoặc Rules của Firestore.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-message" style="color: red;">❌ Lỗi tải dữ liệu. Hãy kiểm tra lại kết nối hoặc Rules của Firestore.</td></tr>`;
             }
         }
 
         // Hàm cập nhật trạng thái VIP của đề thi
         async function toggleExamVip(examId, currentVipState) {
             try {
-                // Dùng setDoc với tùy chọn { merge: true } để tạo document mới nếu chưa có, hoặc chỉ cập nhật trường isVip nếu đã có.
                 await setDoc(doc(db, "exams", examId), { 
                     isVip: !currentVipState 
                 }, { merge: true });
@@ -466,6 +603,88 @@
             }
         }
 
+        // Hàm sửa thời gian làm bài
+        async function editExamTime(examId, currentTime) {
+            const newTimeInput = prompt(`Nhập số phút làm bài cho đề "${examId}":`, currentTime);
+            
+            if (newTimeInput === null || newTimeInput.trim() === "") {
+                return; // User cancelled
+            }
+
+            const newTime = Number(newTimeInput);
+            if (isNaN(newTime) || newTime <= 0) {
+                alert("❌ Thời gian không hợp lệ. Vui lòng nhập một số lớn hơn 0.");
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, "exams", examId), { 
+                    timeLimit: newTime 
+                }, { merge: true });
+
+                alert(`✅ Đã cập nhật thời gian làm bài đề "${examId}" thành ${newTime} phút!`);
+                loadExamList();
+            } catch (error) {
+                console.error("Lỗi cập nhật thời gian:", error);
+                alert("❌ Lỗi khi cập nhật thời gian: " + error.message);
+            }
+        }
+
+        // Hàm xem đánh giá và hiển thị Modal
+        async function viewFeedback(examId) {
+            const modal = document.getElementById("feedback-modal");
+            const modalExamId = document.getElementById("modal-exam-id");
+            const tbody = document.getElementById("feedback-list-body");
+            
+            modalExamId.innerText = examId;
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-message">⏳ Đang tải dữ liệu đánh giá...</td></tr>';
+            modal.style.display = "block"; // Hiện modal
+
+            try {
+                const q = query(collection(db, "feedbacks"), where("examId", "==", examId));
+                const querySnapshot = await getDocs(q);
+
+                tbody.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-message">Chưa có lượt đánh giá nào cho đề thi này.</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const email = data.email || "Khách vô danh";
+                    const rating = data.rating || 0;
+                    const comment = data.comment || data.feedback || "Không có góp ý bằng văn bản.";
+                    
+                    // Render ngôi sao
+                    let starsHtml = '';
+                    for (let i = 0; i < rating; i++) starsHtml += '<span class="rating-star">★</span>';
+                    
+                    // Format thời gian nếu có
+                    let timeStr = "N/A";
+                    if (data.createdAt && data.createdAt.toDate) {
+                        timeStr = data.createdAt.toDate().toLocaleString('vi-VN');
+                    } else if (data.timestamp) {
+                        timeStr = new Date(data.timestamp).toLocaleString('vi-VN');
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${email}</strong></td>
+                        <td class="text-center">${starsHtml}</td>
+                        <td>${comment}</td>
+                        <td class="text-center" style="font-size: 13px; color: #64748b;">${timeStr}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Lỗi tải đánh giá:", error);
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-message" style="color: red;">❌ Không thể tải dữ liệu đánh giá. Kiểm tra Rules Firestore.</td></tr>';
+            }
+        }
+
         // Hàm xóa toàn bộ câu hỏi của đề thi
         async function deleteExam(examId, buttonElement) {
             if (!confirm(`⚠️ CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ câu hỏi của đề "${examId}" này không?\nHành động này không thể hoàn tác!`)) {
@@ -473,7 +692,7 @@
             }
 
             const originalText = buttonElement.innerHTML;
-            buttonElement.innerHTML = "⏳ Đang xóa...";
+            buttonElement.innerHTML = "⏳...";
             buttonElement.disabled = true;
 
             try {
