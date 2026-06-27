@@ -18,12 +18,14 @@
         /* Thiết lập nền cho toàn bộ trang web (Có ảnh nền và lớp phủ tối) */
         body {
             /* Lớp phủ gradient màu đen mờ kết hợp ảnh nền Unsplash */
-            background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), 
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), 
                         url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1200') no-repeat center center / cover;
+            background-attachment: fixed; /* Giúp ảnh nền đứng yên khi cuộn trang trên mobile */
+            min-height: 100vh;
+            color: #334155;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
         }
 
         /* Hộp chứa form đăng nhập/đăng ký (Card) */
@@ -32,8 +34,8 @@
             width: 100%;
             max-width: 420px;
             padding: 45px 35px;
-            border-radius: 16px; /* Bo góc mềm mại hơn */
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); /* Đổ bóng sâu, nổi bật */
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
         }
 
         /* Tiêu đề của form */
@@ -71,7 +73,7 @@
 
         /* Hiệu ứng khi bấm vào ô nhập liệu */
         .form-group input:focus {
-            border-color: #2563eb; /* Màu xanh dương Primary Blue */
+            border-color: #2563eb;
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
         }
 
@@ -87,7 +89,7 @@
             width: 16px;
             height: 16px;
             cursor: pointer;
-            accent-color: #2563eb; /* Màu checkbox đồng bộ xanh dương */
+            accent-color: #2563eb;
         }
 
         .remember-me-container label {
@@ -101,7 +103,7 @@
         .btn-submit {
             width: 100%;
             padding: 14px;
-            background-color: #2563eb; /* Primary Blue */
+            background-color: #2563eb;
             color: white;
             border: none;
             border-radius: 10px;
@@ -109,15 +111,15 @@
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.1s ease;
-            margin-top: 5px; /* Giảm nhẹ khoảng cách vì đã có checkbox ở trên */
+            margin-top: 5px;
         }
 
         .btn-submit:hover {
-            background-color: #1d4ed8; /* Tối màu lại khi hover */
+            background-color: #1d4ed8;
         }
         
         .btn-submit:active {
-            transform: scale(0.98); /* Hiệu ứng nhấn nút */
+            transform: scale(0.98);
         }
 
         /* Nút đăng nhập Google */
@@ -189,9 +191,17 @@
             text-decoration: underline;
         }
 
-        /* Lớp CSS dùng để ẩn form (Khi muốn ẩn Form Đăng ký đi) */
+        /* Lớp CSS dùng để ẩn form */
         .hidden {
             display: none;
+        }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 900px) {
+            .auth-container {
+                padding: 35px 25px;
+                margin: 20px;
+            }
         }
     </style>
 </head>
@@ -202,65 +212,65 @@
         
         <!-- === FORM ĐĂNG NHẬP === -->
         <div id="login-form">
-            <h2>Đăng Nhập Hệ Thống</h2>
-            
-            <div class="form-group">
-                <label for="login-email">Email</label>
-                <input type="email" id="login-email" placeholder="Nhập địa chỉ email của bạn" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="login-password">Mật khẩu</label>
-                <input type="password" id="login-password" placeholder="Nhập mật khẩu" required>
+                    <h2>Đăng Nhập Hệ Thống</h2>
+                    
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" placeholder="Nhập địa chỉ email của bạn" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password">Mật khẩu</label>
+                        <input type="password" id="login-password" placeholder="Nhập mật khẩu" required>
+                    </div>
+
+                    <!-- Checkbox Ghi nhớ đăng nhập -->
+                    <div class="remember-me-container">
+                        <input type="checkbox" id="remember-me" checked>
+                        <label for="remember-me">Ghi nhớ đăng nhập</label>
+                    </div>
+                    
+                    <button id="btn-login" class="btn-submit">Đăng Nhập</button>
+                    
+                    <div class="divider">HOẶC</div>
+                    
+                    <button id="btn-google" class="btn-google">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22px" height="22px">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                        Đăng nhập bằng Google
+                    </button>
+
+                    <div class="toggle-form">
+                        Chưa có tài khoản? <span id="go-to-register">Đăng ký ngay</span>
+                    </div>
+                </div>
+
+                <!-- === FORM ĐĂNG KÝ (Mặc định được ẩn đi bởi class "hidden") === -->
+                <div id="register-form" class="hidden">
+                    <h2>Tạo Tài Khoản Mới</h2>
+                    
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" placeholder="Nhập địa chỉ email hợp lệ" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-password">Mật khẩu</label>
+                        <input type="password" id="register-password" placeholder="Tạo mật khẩu (Ít nhất 6 ký tự)" required>
+                    </div>
+                    
+                    <button id="btn-register" class="btn-submit">Đăng Ký</button>
+                
+                <div class="toggle-form">
+                    Đã có tài khoản? <span id="go-to-login">Quay lại đăng nhập</span>
+                </div>
             </div>
 
-            <!-- Checkbox Ghi nhớ đăng nhập (MỚI THÊM) -->
-            <div class="remember-me-container">
-                <input type="checkbox" id="remember-me" checked>
-                <label for="remember-me">Ghi nhớ đăng nhập</label>
-            </div>
-            
-            <button id="btn-login" class="btn-submit">Đăng Nhập</button>
-            
-            <div class="divider">HOẶC</div>
-            
-            <button id="btn-google" class="btn-google">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22px" height="22px">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                </svg>
-                Đăng nhập bằng Google
-            </button>
-
-            <div class="toggle-form">
-                Chưa có tài khoản? <span id="go-to-register">Đăng ký ngay</span>
-            </div>
         </div>
-
-        <!-- === FORM ĐĂNG KÝ (Mặc định được ẩn đi bởi class "hidden") === -->
-        <div id="register-form" class="hidden">
-            <h2>Tạo Tài Khoản Mới</h2>
-            
-            <div class="form-group">
-                <label for="register-email">Email</label>
-                <input type="email" id="register-email" placeholder="Nhập địa chỉ email hợp lệ" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="register-password">Mật khẩu</label>
-                <input type="password" id="register-password" placeholder="Tạo mật khẩu (Ít nhất 6 ký tự)" required>
-            </div>
-            
-            <button id="btn-register" class="btn-submit">Đăng Ký</button>
-            
-            <div class="toggle-form">
-                Đã có tài khoản? <span id="go-to-login">Quay lại đăng nhập</span>
-            </div>
-        </div>
-
-    </div>
 
     <!-- PHẦN 3: LOGIC CHUYỂN ĐỔI GIAO DIỆN (UI ONLY) -->
     <script>
@@ -280,11 +290,10 @@
         });
     </script>
 
-    <!-- PHẦN 4: LOGIC FIREBASE AUTHENTICATION -->
+    <!-- PHẦN 4: LOGIC FIREBASE AUTHENTICATION & FIRESTORE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
-        // Import thêm setPersistence, browserLocalPersistence, browserSessionPersistence
         import { 
             getAuth, 
             createUserWithEmailAndPassword, 
@@ -296,6 +305,13 @@
             browserLocalPersistence,
             browserSessionPersistence
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // MỚI: Import thêm getFirestore, doc, và setDoc từ thư viện Firestore
+        import {
+            getFirestore,
+            doc,
+            setDoc
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // CẤU HÌNH FIREBASE CỦA BẠN
         let firebaseConfig = {
@@ -316,17 +332,16 @@
             }
         }
 
-        let app, auth;
+        // Khai báo thêm biến db để sử dụng Firestore
+        let app, auth, db;
 
-        // Chỉ khởi tạo Firebase và Authentication khi biến apiKey đã có dữ liệu
         if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "") {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
+            db = getFirestore(app); // MỚI: Khởi tạo Firestore
 
-            // TÍNH NĂNG MỚI: KIỂM TRA ĐĂNG NHẬP TỰ ĐỘNG
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    // Nếu đã có thông tin user lưu trong phiên, tự động chuyển vào dashboard
                     window.location.href = 'dashboard.html';
                 }
             });
@@ -335,7 +350,7 @@
         // -- XỬ LÝ ĐĂNG KÝ TÀI KHOẢN (BẰNG EMAIL) --
         const btnRegister = document.getElementById('btn-register');
         btnRegister.addEventListener('click', () => {
-            if (!auth) {
+            if (!auth || !db) {
                 alert("Bạn chưa cấu hình Firebase!");
                 return;
             }
@@ -349,7 +364,17 @@
             }
 
             createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
+                .then(async (userCredential) => {
+                    // MỚI: Sử dụng setDoc để lưu thông tin tài khoản VIP ngay khi tạo user thành công
+                    try {
+                        await setDoc(doc(db, "users", userCredential.user.uid), {
+                            email: email,
+                            isVip: false
+                        });
+                    } catch (firestoreError) {
+                        console.error("Lỗi khi lưu Firestore:", firestoreError);
+                    }
+
                     alert("Đăng ký thành công! Mời bạn đăng nhập.");
                     document.getElementById('go-to-login').click();
                     document.getElementById('register-email').value = "";
@@ -386,10 +411,8 @@
                 return;
             }
 
-            // Chọn kiểu Persistence dựa trên checkbox
             const persistenceType = isRememberMeChecked ? browserLocalPersistence : browserSessionPersistence;
 
-            // Đặt persistence TRƯỚC khi gọi đăng nhập
             setPersistence(auth, persistenceType)
                 .then(() => {
                     return signInWithEmailAndPassword(auth, email, password);
@@ -418,10 +441,8 @@
 
             const isRememberMeChecked = document.getElementById('remember-me').checked;
             
-            // Chọn kiểu Persistence dựa trên checkbox
             const persistenceType = isRememberMeChecked ? browserLocalPersistence : browserSessionPersistence;
 
-            // Đặt persistence TRƯỚC khi gọi đăng nhập bằng Popup
             setPersistence(auth, persistenceType)
                 .then(() => {
                     const provider = new GoogleAuthProvider();
