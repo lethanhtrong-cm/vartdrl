@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Quản lý người dùng</title>
+    <style>
+        /* ================= CƠ BẢN & RESET ================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f4f6f9;
+            color: #333;
+            overflow: hidden;
+        }
+
+        /* ================= SIDEBAR ================= */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-bottom: 1px solid #34495e;
+            background-color: #1a252f;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 10px 0;
+        }
+
+        .sidebar-menu li a {
+            display: block;
+            padding: 15px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            background-color: #34495e;
+            color: white;
+            border-left: 4px solid #3498db;
+        }
+
+        /* ================= MAIN CONTENT ================= */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .header {
+            background-color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-body {
+            padding: 30px;
+        }
+
+        /* THỐNG KÊ (CARDS) */
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #3498db;
+        }
+
+        .stat-card.vip {
+            border-left-color: #f1c40f;
+        }
+
+        .stat-info h3 {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-info .number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* BỘ LỌC & TÌM KIẾM */
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .toolbar input, .toolbar select {
+            padding: 10px 15px;
+            border: 1px solid #dcdde1;
+            border-radius: 5px;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .toolbar input:focus, .toolbar select:focus {
+            border-color: #3498db;
+        }
+
+        .search-input {
+            flex: 1; /* Input tìm kiếm sẽ chiếm phần không gian còn lại */
+        }
+
+        /* BẢNG DỮ LIỆU */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        thead {
+            background-color: #f8f9fa;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        th {
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f9fbfd;
+        }
+
+        /* TRẠNG THÁI & NÚT BẤM */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .badge-vip { background-color: #fdf3d8; color: #f39c12; }
+        .badge-normal { background-color: #eaebed; color: #7f8c8d; }
+        .badge-banned { background-color: #f8d7da; color: #dc3545; } /* Trạng thái Bị Khóa */
+
+        .btn {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            color: white;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .btn-toggle-vip { background-color: #3498db; }
+        .btn-toggle-vip:hover { background-color: #2980b9; }
+
+        .btn-history { background-color: #2ecc71; }
+        .btn-history:hover { background-color: #27ae60; }
+
+        .btn-ban { background-color: #e74c3c; }
+        .btn-ban:hover { background-color: #c0392b; }
+        .btn-unban { background-color: #95a5a6; } /* Nút Mở khóa có màu xám tĩnh */
+        .btn-unban:hover { background-color: #7f8c8d; }
+
+        /* ================= MODAL LỊCH SỬ ================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #7f8c8d;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* ================= THÔNG BÁO (TOAST) ================= */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            background-color: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            margin-top: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .toast.success { background-color: #2ecc71; }
+        .toast.error { background-color: #e74c3c; }
+
+        .loading-text {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR (Đã tối giản) -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            Thi Trắc Nghiệm
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="admin.html">← Quay lại trang chủ</a></li>
+            <li><a href="#" class="active">Quản lý người dùng</a></li>
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <header class="header">
+            <h2>Quản lý người dùng</h2>
+            <div class="admin-profile">Admin Panel</div>
+        </header>
+
+        <div class="content-body">
+            <!-- Cụm thống kê -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Tổng số người dùng</h3>
+                        <div class="number" id="totalUsers">0</div>
+                    </div>
+                </div>
+                <div class="stat-card vip">
+                    <div class="stat-info">
+                        <h3>Tổng số tài khoản VIP</h3>
+                        <div class="number" id="totalVipUsers">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thanh công cụ Tìm kiếm & Lọc -->
+            <div class="toolbar">
+                <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm theo Email...">
+                <select id="filterSelect">
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="vip">Chỉ VIP</option>
+                    <option value="normal">Thường</option>
+                    <option value="banned">Bị Khóa</option>
+                </select>
+            </div>
+
+            <!-- Bảng danh sách người dùng -->
+            <div class="table-container">
+                <div class="table-header">Danh sách người dùng</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Email</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="4" class="loading-text">Đang tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL LỊCH SỬ THI -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modalTitle">Lịch sử thi của...</span>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table style="width: 100%; border: 1px solid #ecf0f1;">
+                    <thead style="background: #f8f9fa;">
+                        <tr>
+                            <th>Mã đề thi</th>
+                            <th>Điểm số</th>
+                            <th>Thời gian nộp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <!-- Dữ liệu lịch sử sẽ render ở đây -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHU VỰC HIỂN THỊ THÔNG BÁO -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- TÍCH HỢP FIREBASE & LOGIC JAVASCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
+            authDomain: "rt-examination.firebaseapp.com",
+            databaseURL: "https://rt-examination-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rt-examination",
+            storageBucket: "rt-examination.firebasestorage.app",
+            messagingSenderId: "920482699854",
+            appId: "1:920482699854:web:44f9b0d735bdc001c6c11f",
+            measurementId: "G-8N7RTTREQM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- HÀM TIỆN ÍCH: Hiển thị thông báo (Toast) ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast show ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ======================= LOGIC CHÍNH =======================
+
+        // 1. Hàm kéo và hiển thị dữ liệu người dùng
+        async function loadUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            try {
+                tbody.innerHTML = '<tr><td colspan="4" class="loading-text">Đang tải dữ liệu từ Firestore...</td></tr>';
+                
+                const usersCol = collection(db, "users");
+                const userSnapshot = await getDocs(usersCol);
+                
+                let totalUsers = 0;
+                let totalVips = 0;
+                let htmlContent = '';
+
+                if (userSnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="loading-text">Chưa có dữ liệu người dùng nào.</td></tr>';
+                    document.getElementById('totalUsers').innerText = 0;
+                    document.getElementById('totalVipUsers').innerText = 0;
+                    return;
+                }
+
+                userSnapshot.forEach((docSnap) => {
+                    const user = docSnap.data();
+                    const userId = docSnap.id;
+                    const email = user.email || 'Chưa cập nhật';
+                    const isVip = user.isVip || false;
+                    const isBanned = user.isBanned || false;
+
+                    totalUsers++;
+                    if (isVip && !isBanned) totalVips++; // Nếu bị khóa thì không tính là VIP hoạt động nữa
+
+                    // Phân tích trạng thái để thiết lập giao diện (Ưu tiên trạng thái Bị Khóa)
+                    let badgeClass = 'badge-normal';
+                    let badgeText = 'Thường';
+                    let statusKey = 'normal'; // Dùng cho bộ lọc
+
+                    if (isBanned) {
+                        badgeClass = 'badge-banned';
+                        badgeText = 'Bị Khóa';
+                        statusKey = 'banned';
+                    } else if (isVip) {
+                        badgeClass = 'badge-vip';
+                        badgeText = 'VIP';
+                        statusKey = 'vip';
+                    }
+
+                    // Nút Ban/Unban
+                    const banBtnClass = isBanned ? 'btn-unban' : 'btn-ban';
+                    const banBtnText = isBanned ? 'Mở Khóa' : 'Khóa TK';
+
+                    // Cấu trúc TR (Thêm class user-row và các data-attribute để phục vụ tính năng Lọc frontend)
+                    htmlContent += `
+                        <tr class="user-row" data-email="${email.toLowerCase()}" data-status="${statusKey}">
+                            <td>${totalUsers}</td>
+                            <td>${email}</td>
+                            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                            <td>
+                                <button class="btn btn-toggle-vip" data-id="${userId}" data-vip="${isVip}">
+                                    ${isVip ? 'Tắt VIP' : 'Bật VIP'}
+                                </button>
+                                <button class="btn btn-history" data-email="${email}">
+                                    Xem Lịch Sử
+                                </button>
+                                <button class="btn ${banBtnClass} btn-toggle-ban" data-id="${userId}" data-banned="${isBanned}">
+                                    ${banBtnText}
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = htmlContent;
+                document.getElementById('totalUsers').innerText = totalUsers;
+                document.getElementById('totalVipUsers').innerText = totalVips;
+
+                // Sau khi render xong, chạy hàm lọc (phòng trường hợp admin vừa gõ vừa bị load lại)
+                filterTable();
+
+            } catch (error) {
+                console.error("Lỗi khi tải users: ", error);
+                tbody.innerHTML = '<tr><td colspan="4" class="loading-text" style="color:red">Lỗi tải dữ liệu. Vui lòng kiểm tra Console.</td></tr>';
+                showToast("Không thể tải danh sách người dùng", "error");
+            }
+        }
+
+        // 2. Hàm Tìm kiếm & Lọc (Frontend Logic)
+        function filterTable() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const filterStatus = document.getElementById('filterSelect').value;
+            const rows = document.querySelectorAll('.user-row');
+
+            rows.forEach(row => {
+                const email = row.dataset.email || '';
+                const status = row.dataset.status || '';
+
+                // Điều kiện khớp chữ
+                const matchSearch = email.includes(searchText);
+                // Điều kiện khớp dropdown
+                const matchStatus = (filterStatus === 'all') || (status === filterStatus);
+
+                // Hiển thị hoặc ẩn đi dựa vào kết quả
+                if (matchSearch && matchStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // 3. Hàm Bật/Tắt trạng thái VIP
+        async function handleToggleVip(userId, currentVipStatus) {
+            try {
+                const userRef = doc(db, "users", userId);
+                const newVipStatus = !currentVipStatus;
+                
+                await updateDoc(userRef, { isVip: newVipStatus });
+                showToast(`Đã ${newVipStatus ? 'cấp' : 'hủy'} quyền VIP thành công!`, "success");
+                loadUsers();
+            } catch (error) {
+                console.error("Lỗi khi cập nhật VIP: ", error);
+                showToast("Lỗi khi cập nhật trạng thái VIP", "error");
+            }
+        }
+
+        // 4. Hàm Khóa/Mở Khóa tài khoản
+        async function handleToggleBan(userId, currentBannedStatus) {
+            // Xác nhận thêm cho thao tác nhạy cảm
+            const actionText = currentBannedStatus ? 'mở khóa' : 'khóa';
+            if (!confirm(`Bạn có chắc chắn muốn ${actionText} tài khoản này không?`)) return;
+
+            try {
+                const userRef = doc(db, "users", userId);
+                const newBannedStatus = !currentBannedStatus;
+                
+                await updateDoc(userRef, { isBanned: newBannedStatus });
+                showToast(`Đã ${actionText} tài khoản thành công!`, "success");
+                loadUsers();
+            } catch (error) {
+                console.error("Lỗi khi khóa/mở khóa TK: ", error);
+                showToast("Lỗi khi cập nhật trạng thái Khóa", "error");
+            }
+        }
+
+        // 5. Hàm Xem Lịch Sử
+        async function handleViewHistory(userEmail) {
+            const modal = document.getElementById('historyModal');
+            const historyBody = document.getElementById('historyTableBody');
+            
+            document.getElementById('modalTitle').innerText = `Lịch sử thi: ${userEmail}`;
+            historyBody.innerHTML = '<tr><td colspan="3" class="loading-text">Đang tìm dữ liệu thi...</td></tr>';
+            modal.classList.add('active');
+
+            try {
+                const resultsRef = collection(db, "results");
+                const q = query(resultsRef, where("email", "==", userEmail));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    historyBody.innerHTML = '<tr><td colspan="3" class="loading-text">Người dùng này chưa có lượt thi nào.</td></tr>';
+                    return;
+                }
+
+                let htmlContent = '';
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const examCode = data.examCode || data.quizId || 'Không rõ';
+                    const score = data.score !== undefined ? data.score : 'N/A';
+                    
+                    let timeStr = 'Không rõ';
+                    if (data.timestamp) {
+                        if (typeof data.timestamp.toDate === 'function') {
+                            timeStr = data.timestamp.toDate().toLocaleString('vi-VN');
+                        } else {
+                            timeStr = new Date(data.timestamp).toLocaleString('vi-VN');
+                        }
+                    }
+
+                    htmlContent += `
+                        <tr>
+                            <td>${examCode}</td>
+                            <td><strong style="color: #e74c3c">${score}</strong></td>
+                            <td>${timeStr}</td>
+                        </tr>
+                    `;
+                });
+
+                historyBody.innerHTML = htmlContent;
+
+            } catch (error) {
+                console.error("Lỗi khi lấy lịch sử thi: ", error);
+                historyBody.innerHTML = '<tr><td colspan="3" class="loading-text" style="color:red">Lỗi tải dữ liệu.</td></tr>';
+                showToast("Lỗi khi lấy lịch sử thi", "error");
+            }
+        }
+
+        // ======================= EVENT LISTENERS =======================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUsers();
+        });
+
+        // Lắng nghe sự kiện trên Toolbar (Lọc & Tìm kiếm Frontend)
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('filterSelect').addEventListener('change', filterTable);
+
+        // Sử dụng Event Delegation cho các nút trong bảng (Vì dữ liệu sinh ra động)
+        document.getElementById('usersTableBody').addEventListener('click', (e) => {
+            
+            // 1. Nút Toggle VIP
+            const vipBtn = e.target.closest('.btn-toggle-vip');
+            if (vipBtn) {
+                const userId = vipBtn.dataset.id;
+                const isVip = vipBtn.dataset.vip === 'true';
+                handleToggleVip(userId, isVip);
+                return;
+            }
+
+            // 2. Nút Toggle Khóa (Ban)
+            const banBtn = e.target.closest('.btn-toggle-ban');
+            if (banBtn) {
+                const userId = banBtn.dataset.id;
+                const isBanned = banBtn.dataset.banned === 'true';
+                handleToggleBan(userId, isBanned);
+                return;
+            }
+
+            // 3. Nút Xem lịch sử
+            const historyBtn = e.target.closest('.btn-history');
+            if (historyBtn) {
+                const email = historyBtn.dataset.email;
+                handleViewHistory(email);
+                return;
+            }
+        });
+
+        // Nút Đóng Modal
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('historyModal').classList.remove('active');
+        });
+        document.getElementById('historyModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('historyModal')) {
+                document.getElementById('historyModal').classList.remove('active');
+            }
+        });
+
+    </script>
+</body>
+</html>
