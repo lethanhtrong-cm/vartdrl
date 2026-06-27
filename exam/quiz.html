@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -44,7 +43,7 @@
 <body>
 
     <header class="quiz-header">
-        <div class="quiz-title">Bài thi: Kiến thức Tổng hợp</div>
+        <div class="quiz-title" id="quiz-title-display">Bài thi: Đang tải...</div>
         <div class="timer-container"><span id="countdown">15:00</span></div>
         <button id="btn-logout" class="btn-logout">Đăng xuất</button>
     </header>
@@ -74,8 +73,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        // Đã xóa bỏ thư viện getAnalytics
+        // BƯỚC 3: Import thêm query và where để lọc Firestore
+        import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Cấu hình Firebase
         const firebaseConfig = {
@@ -88,41 +87,51 @@
             measurementId: "G-8N7RTTREQM"
         };
 
-        const mockQuestions = [
-            { id: 1, text: "[Giả lập] Trong bảng tuần hoàn hóa học, nguyên tố nào có ký hiệu là 'O'?", options: ["Vàng", "Oxy", "Sắt", "Bạc"], correctAnswer: 1 },
-            { id: 2, text: "[Giả lập] Ai là người đầu tiên đặt chân lên Mặt Trăng?", options: ["Yuri Gagarin", "Neil Armstrong", "Buzz Aldrin", "Michael Collins"], correctAnswer: 1 },
-            { id: 3, text: "[Giả lập] Đại dương nào có diện tích lớn nhất trên Trái Đất?", options: ["Thái Bình Dương", "Đại Tây Dương", "Ấn Độ Dương", "Bắc Băng Dương"], correctAnswer: 0 }
-        ];
-
         let questions = [];
         let auth, db;
         let currentIndex = 0;
         let userAnswers = {};
         let isSubmitted = false;
+        let currentUser = null; // Biến lưu trữ người dùng hiện tại
 
         // Khởi tạo Firebase
         const app = initializeApp(firebaseConfig);
-        // Đã xóa bỏ khởi tạo analytics
         auth = getAuth(app);
         db = getFirestore(app); 
 
-        // Hàm chuyển hướng an toàn (tránh lỗi SyntaxError trên môi trường Preview)
-        function redirectToLogin() {
+        // Hàm chuyển hướng an toàn
+        function redirect(url) {
             try {
-                window.location.href = 'index.html';
+                window.location.href = url;
             } catch (error) {
                 console.warn("Môi trường Preview chặn chuyển hướng:", error);
-                document.body.innerHTML = "<h2 style='text-align:center; padding: 50px;'>Phiên bản tĩnh (Preview). Vui lòng chạy trên môi trường thực tế (GitHub Pages) để chuyển hướng bình thường.</h2>";
+                document.body.innerHTML = `<h2 style='text-align:center; padding: 50px;'>Hệ thống đang cố chuyển hướng tới ${url}. Vui lòng chạy trên môi trường thực tế.</h2>`;
             }
         }
 
-        // Kiểm tra xác thực (Bảo vệ Route)
+        // BƯỚC 2: Lấy mã đề (examId) từ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentExamId = urlParams.get('examId');
+
+        // Kiểm tra nếu không có mã đề trên URL thì văng về dashboard
+        if (!currentExamId) {
+            alert("Lỗi: Không tìm thấy mã đề thi! Đang chuyển hướng về phòng chờ...");
+            redirect('dashboard.html');
+        }
+
+        // BƯỚC 1: Kiểm tra xác thực (Chỉ cho phép tài khoản Email/Google)
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                // Nếu chưa đăng nhập, đá về trang đăng nhập
-                redirectToLogin();
+            // Nếu không có user HOẶC là user ẩn danh (anonymous) -> Đuổi về trang đăng nhập
+            if (!user || user.isAnonymous) {
+                redirect('index.html');
             } else {
-                // Đã đăng nhập hợp lệ, tiến hành tải đề thi
+                // Đã đăng nhập bằng tài khoản thực, lưu thông tin user
+                currentUser = user;
+                
+                // Hiển thị tên mã đề lên giao diện
+                document.getElementById('quiz-title-display').innerText = `Bài thi: ${currentExamId}`;
+                
+                // Bắt đầu tải đề thi theo mã đề
                 fetchQuestionsFromFirestore();
             }
         });
@@ -132,7 +141,11 @@
             document.getElementById('options-container').innerHTML = ''; 
 
             try {
-                const querySnapshot = await getDocs(collection(db, "questions"));
+                // BƯỚC 3: Dùng query và where để CHỈ LẤY câu hỏi có examId khớp với URL
+                const questionsRef = collection(db, "questions");
+                const q = query(questionsRef, where("examId", "==", currentExamId));
+                
+                const querySnapshot = await getDocs(q);
                 const fetched = querySnapshot.docs.map(doc => {
                     const data = doc.data();
                     return { id: doc.id, ...data };
@@ -141,11 +154,12 @@
                 if (fetched.length > 0) {
                     questions = fetched;
                 } else {
-                    throw new Error("Collection 'questions' hiện đang trống.");
+                    throw new Error(`Không tìm thấy câu hỏi nào cho mã đề: ${currentExamId}`);
                 }
             } catch (error) {
-                console.error("Lỗi khi tải dữ liệu từ Firestore. Chuyển sang dữ liệu giả lập.", error);
-                questions = mockQuestions;
+                console.error("Lỗi khi tải dữ liệu từ Firestore:", error);
+                document.getElementById('question-text').innerText = `Lỗi tải đề thi: ${error.message}`;
+                return; // Dừng hàm nếu không có câu hỏi thực tế
             }
 
             currentIndex = 0;
@@ -182,21 +196,21 @@
             btnSubmit.disabled = true; 
             btnSubmit.innerText = "Đã nộp bài"; 
 
-            const userEmail = auth?.currentUser?.email || "Unknown User";
-
+            // BƯỚC 4: Lưu kết quả kèm email thực tế và mã đề (examId)
             try {
                 await addDoc(collection(db, "results"), {
-                    email: userEmail,
+                    email: currentUser.email,       // Lấy email từ user đã xác thực
+                    examId: currentExamId,          // Lưu mã đề để sau này dễ tra cứu kết quả
                     score: score,
                     correctCount: correctCount,
                     totalQuestions: total,
                     timestamp: new Date().toISOString() 
                 });
+                alert(`Đã nộp bài thành công!\nBạn làm đúng ${correctCount}/${total} câu.\nTổng điểm: ${score}/10`);
             } catch (error) {
                 console.error("Không thể lưu kết quả lên Firebase:", error);
+                alert("Nộp bài thất bại. Xin vui lòng kiểm tra kết nối mạng.");
             }
-
-            alert(`Bạn đã làm đúng ${correctCount}/${total} câu.\nTổng điểm: ${score}/10`);
         }
 
         document.getElementById('btn-submit-exam').onclick = submitExam;
@@ -264,11 +278,10 @@
             if(currentIndex < questions.length - 1) { currentIndex++; renderAll(); } 
         };
 
-        // Xử lý sự kiện Đăng xuất thực tế
+        // Xử lý sự kiện Đăng xuất
         document.getElementById('btn-logout').addEventListener('click', () => {
             signOut(auth).then(() => {
-                // Đăng xuất thành công, chuyển hướng về trang index
-                redirectToLogin();
+                redirect('index.html');
             }).catch((error) => {
                 console.error("Lỗi đăng xuất:", error);
                 alert("Có lỗi xảy ra khi đăng xuất. Vui lòng thử lại.");
