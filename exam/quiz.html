@@ -81,7 +81,7 @@
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            display: none; /* Mặc định ẩn */
+            display: none; 
             justify-content: center; align-items: center;
             z-index: 1000;
             backdrop-filter: blur(3px);
@@ -92,13 +92,14 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 100%; max-width: 450px; text-align: center;
             animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh; overflow-y: auto;
         }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
         .modal-title { font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 20px; }
         .score-circle {
             width: 120px; height: 120px; border-radius: 50%;
-            background: conic-gradient(#10b981 0%, #d1fae5 0%); /* Sẽ được update bằng JS */
+            background: conic-gradient(#10b981 0%, #d1fae5 0%);
             margin: 0 auto 20px; display: flex; justify-content: center; align-items: center;
             position: relative;
         }
@@ -108,8 +109,18 @@
         }
         .score-number { font-size: 32px; font-weight: bold; color: #10b981; line-height: 1; }
         .score-label { font-size: 14px; color: #6b7280; margin-top: 5px; }
-        .modal-stats { font-size: 16px; color: #4b5563; margin-bottom: 30px; }
+        .modal-stats { font-size: 16px; color: #4b5563; margin-bottom: 25px; }
         .modal-stats strong { color: #111827; font-size: 18px; }
+
+        /* TÍNH NĂNG 3: CSS Khu vực Đánh giá */
+        .feedback-section { margin-bottom: 25px; text-align: left; background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .feedback-section h4 { margin-bottom: 10px; color: #374151; font-size: 15px; text-align: center; font-weight: bold;}
+        .stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; cursor: pointer; font-size: 28px; color: #d1d5db; }
+        .stars span { transition: color 0.2s; }
+        .stars span:hover, .stars span.active { color: #fbbf24; } /* Màu vàng sao */
+        .feedback-section textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; resize: none; height: 70px; font-family: inherit; font-size: 14px; outline: none;}
+        .feedback-section textarea:focus { border-color: #3b82f6; }
+        .feedback-thankyou { display: none; color: #10b981; font-weight: bold; font-size: 16px; margin-bottom: 25px; text-align: center; background: #d1fae5; padding: 10px; border-radius: 8px; }
 
         .modal-actions { display: flex; flex-direction: column; gap: 10px; }
         .btn-modal { padding: 12px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.2s; border: none; }
@@ -157,7 +168,7 @@
         </aside>
     </main>
 
-    <!-- NÂNG CẤP: HTML Modal Kết quả -->
+    <!-- HTML Modal Kết quả -->
     <div id="result-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-title">Kết Quả Bài Thi</div>
@@ -170,6 +181,22 @@
             <div class="modal-stats">
                 Trả lời đúng: <strong id="modal-correct-text">0/0</strong> câu
             </div>
+
+            <!-- TÍNH NĂNG 3: Khu vực đánh giá -->
+            <div id="feedback-thankyou" class="feedback-thankyou">Cảm ơn bạn đã góp ý! 🎉</div>
+            <div class="feedback-section" id="feedback-section">
+                <h4>Đánh giá đề thi này</h4>
+                <div class="stars" id="star-rating">
+                    <span data-value="1">★</span>
+                    <span data-value="2">★</span>
+                    <span data-value="3">★</span>
+                    <span data-value="4">★</span>
+                    <span data-value="5">★</span>
+                </div>
+                <textarea id="feedback-text" placeholder="Góp ý của bạn về đề thi này (độ khó, sai sót,...)"></textarea>
+                <button class="btn-modal primary" id="btn-submit-feedback" style="width:100%; margin-top:10px; padding: 10px;">Gửi Đánh Giá</button>
+            </div>
+
             <div class="modal-actions">
                 <button class="btn-modal success" id="btn-modal-explain">Xem giải thích chi tiết</button>
                 <button class="btn-modal primary" id="btn-modal-retry">Làm lại đề này</button>
@@ -181,7 +208,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Import BỔ SUNG: doc, getDoc, setDoc, increment cho Tính năng 1 và Tính năng 2
+        import { getFirestore, collection, getDocs, addDoc, query, where, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
@@ -199,13 +227,13 @@
         let userAnswers = {};
         
         let isSubmitted = false;
-        let isShowExplanation = false; // Biến trạng thái mới quản lý việc hiện đáp án
+        let isShowExplanation = false; 
         let currentUser = null; 
 
         // Biến cấu hình Thời gian đếm ngược
         let timerInterval;
-        const EXAM_DURATION = 15 * 60; // 15 phút tính bằng giây
-        let timeRemaining = EXAM_DURATION;
+        let examDuration = 15 * 60; // Mặc định 15 phút (Tính năng 1 sẽ ghi đè lên)
+        let timeRemaining = examDuration;
 
         const app = initializeApp(firebaseConfig);
         auth = getAuth(app);
@@ -234,36 +262,50 @@
             } else {
                 currentUser = user;
                 document.getElementById('quiz-title-display').innerText = `Bài thi: ${currentExamId}`;
-                fetchQuestionsFromFirestore();
+                // TÍNH NĂNG 1: Tải dữ liệu đề thi trước để lấy thời gian
+                loadExamDataAndQuestions();
             }
         });
 
-        async function fetchQuestionsFromFirestore() {
+        // TÍNH NĂNG 1: Lấy Time Limit từ hệ thống
+        async function loadExamDataAndQuestions() {
             document.getElementById('question-text').innerText = "Đang tải đề thi từ hệ thống...";
+            
+            try {
+                // 1. Lấy thông tin cấu hình của đề thi (timeLimit)
+                const examDocRef = doc(db, "exams", currentExamId);
+                const examDoc = await getDoc(examDocRef);
+                
+                if (examDoc.exists() && examDoc.data().timeLimit) {
+                    examDuration = examDoc.data().timeLimit * 60; // Đổi phút ra giây
+                }
+
+                // 2. Lấy danh sách câu hỏi
+                await fetchQuestionsFromFirestore();
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu đề thi:", error);
+                document.getElementById('question-text').innerText = `Lỗi tải đề thi: ${error.message}`;
+            }
+        }
+
+        async function fetchQuestionsFromFirestore() {
             document.getElementById('options-container').innerHTML = ''; 
 
-            try {
-                const questionsRef = collection(db, "questions");
-                const q = query(questionsRef, where("examId", "==", currentExamId));
-                
-                const querySnapshot = await getDocs(q);
-                const fetched = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return { id: doc.id, ...data };
-                });
-                
-                if (fetched.length > 0) {
-                    questions = fetched;
-                } else {
-                    throw new Error(`Không tìm thấy câu hỏi nào cho mã đề: ${currentExamId}`);
-                }
-            } catch (error) {
-                console.error("Lỗi khi tải dữ liệu từ Firestore:", error);
-                document.getElementById('question-text').innerText = `Lỗi tải đề thi: ${error.message}`;
-                return; 
+            const questionsRef = collection(db, "questions");
+            const q = query(questionsRef, where("examId", "==", currentExamId));
+            
+            const querySnapshot = await getDocs(q);
+            const fetched = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                return { id: doc.id, ...data };
+            });
+            
+            if (fetched.length > 0) {
+                questions = fetched;
+                initExamState();
+            } else {
+                throw new Error(`Không tìm thấy câu hỏi nào cho mã đề: ${currentExamId}`);
             }
-
-            initExamState();
         }
 
         // ================= LOGIC QUẢN LÝ TRẠNG THÁI & TIMER =================
@@ -278,12 +320,12 @@
             btnSubmit.innerText = "Nộp bài ngay"; 
 
             renderAll();
-            startTimer();
+            startTimer(); // TÍNH NĂNG 1: Bắt đầu đếm ngược
         }
 
         function startTimer() {
             clearInterval(timerInterval);
-            timeRemaining = EXAM_DURATION;
+            timeRemaining = examDuration; // Dùng thời gian đã lấy từ hệ thống
             updateTimerDisplay();
 
             timerInterval = setInterval(() => {
@@ -292,14 +334,14 @@
 
                 if (timeRemaining <= 0) {
                     clearInterval(timerInterval);
-                    // Hết giờ -> Tự động nộp bài, không cần hỏi
+                    // Hết giờ -> Tự động nộp bài (true = isAutoSubmit)
                     submitExam(true); 
                 }
             }, 1000);
         }
 
         function stopTimer() {
-            clearInterval(timerInterval);
+            clearInterval(timerInterval); // Dừng đồng hồ khi nộp sớm
         }
 
         function updateTimerDisplay() {
@@ -324,7 +366,7 @@
                 alert("Đã hết thời gian làm bài! Hệ thống tự động thu bài.");
             }
 
-            stopTimer();
+            stopTimer(); // TÍNH NĂNG 1: Dừng đồng hồ
             isSubmitted = true; 
             
             const btnSubmit = document.getElementById('btn-submit-exam');
@@ -342,12 +384,11 @@
             let score = (correctCount / total) * 10;
             score = Math.round(score * 100) / 100; 
 
-            // Render lại giao diện (sẽ block chọn đáp án, nhưng CHƯA hiện màu giải thích)
             renderAll(); 
             btnSubmit.innerText = "Đã nộp bài";
 
             try {
-                // Lưu kết quả lên Firestore
+                // 1. Lưu kết quả lên Firestore
                 await addDoc(collection(db, "results"), {
                     email: currentUser.email,
                     examId: currentExamId,
@@ -356,18 +397,89 @@
                     totalQuestions: total,
                     timestamp: new Date().toISOString() 
                 });
+
+                // 2. TÍNH NĂNG 2: Đếm số lượt thi (cộng dồn vào bảng exams)
+                try {
+                    const examDocRef = doc(db, "exams", currentExamId);
+                    await setDoc(examDocRef, {
+                        attemptCount: increment(1)
+                    }, { merge: true });
+                } catch (incErr) {
+                    console.error("Lỗi cập nhật lượt thi:", incErr);
+                }
                 
-                // Hiển thị Modal Kết quả thay vì Alert
+                // Hiển thị Modal Kết quả
                 showResultModal(correctCount, total, score);
 
             } catch (error) {
                 console.error("Không thể lưu kết quả lên Firebase:", error);
                 alert("Đã nộp bài nhưng không thể lưu kết quả lên máy chủ. Xin vui lòng kiểm tra kết nối mạng.");
-                showResultModal(correctCount, total, score); // Vẫn hiện kết quả cho học sinh xem
+                showResultModal(correctCount, total, score);
             }
         }
 
         document.getElementById('btn-submit-exam').onclick = () => submitExam(false);
+
+        // ================= TÍNH NĂNG 3: LOGIC FEEDBACK RATING =================
+        let selectedStars = 0;
+        const stars = document.querySelectorAll('#star-rating span');
+        
+        stars.forEach(star => {
+            star.onclick = () => {
+                selectedStars = parseInt(star.getAttribute('data-value'));
+                stars.forEach(s => {
+                    if (parseInt(s.getAttribute('data-value')) <= selectedStars) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            };
+        });
+
+        document.getElementById('btn-submit-feedback').onclick = async () => {
+            if (selectedStars === 0) {
+                alert("Vui lòng chọn số sao để đánh giá!");
+                return;
+            }
+            const text = document.getElementById('feedback-text').value;
+            const btn = document.getElementById('btn-submit-feedback');
+            btn.innerText = "Đang gửi...";
+            btn.disabled = true;
+
+            try {
+                // Đẩy feedback lên Firestore
+                await addDoc(collection(db, "feedbacks"), {
+                    examId: currentExamId,
+                    email: currentUser.email,
+                    rating: selectedStars,
+                    comment: text,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Ẩn form đánh giá, hiện thông báo cảm ơn
+                document.getElementById('feedback-section').style.display = 'none';
+                document.getElementById('feedback-thankyou').style.display = 'block';
+            } catch (error) {
+                console.error("Lỗi gửi đánh giá:", error);
+                alert("Lỗi khi gửi đánh giá. Vui lòng thử lại!");
+                btn.innerText = "Gửi Đánh Giá";
+                btn.disabled = false;
+            }
+        };
+
+        // Reset UI Feedback mỗi khi mở lại modal
+        function resetFeedbackUI() {
+            document.getElementById('feedback-section').style.display = 'block';
+            document.getElementById('feedback-thankyou').style.display = 'none';
+            selectedStars = 0;
+            stars.forEach(s => s.classList.remove('active'));
+            document.getElementById('feedback-text').value = '';
+            
+            const btn = document.getElementById('btn-submit-feedback');
+            btn.innerText = "Gửi Đánh Giá";
+            btn.disabled = false;
+        }
 
         // ================= LOGIC MODAL & ACTIONS =================
         function showResultModal(correctCount, total, score) {
@@ -380,6 +492,7 @@
             const circle = document.getElementById('modal-score-circle');
             circle.style.background = `conic-gradient(#10b981 ${percentage}%, #d1fae5 ${percentage}%)`;
 
+            resetFeedbackUI(); // TÍNH NĂNG 3: Reset giao diện đánh giá
             modal.classList.add('active');
         }
 
