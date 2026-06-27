@@ -33,22 +33,22 @@
         .option-label { font-weight: bold; margin-right: 15px; background-color: #f3f4f6; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; color: #4b5563; }
         .option-item.selected:not(.correct):not(.wrong) .option-label { background-color: #3b82f6; color: white; }
 
-        /* NÂNG CẤP: CSS khi nộp bài xong (Đúng/Sai) */
+        /* CSS khi nộp bài xong (Đúng/Sai) - Chỉ kích hoạt khi xem giải thích */
         .option-item.correct { background-color: #d1fae5; border-color: #059669; }
         .option-item.correct .option-label { background-color: #059669; color: white; }
         
         .option-item.wrong { background-color: #fee2e2; border-color: #dc2626; }
         .option-item.wrong .option-label { background-color: #dc2626; color: white; }
 
-        /* NÂNG CẤP: CSS cho Hộp giải thích */
+        /* CSS cho Hộp giải thích */
         .explanation-box {
             margin-top: 25px;
             padding: 20px;
-            background-color: #e0f2fe; /* Xanh dương nhạt */
+            background-color: #e0f2fe;
             border-left: 4px solid #3b82f6;
             border-radius: 8px;
             color: #1e3a8a;
-            display: none; /* Mặc định ẩn */
+            display: none;
             animation: fadeIn 0.5s ease;
         }
         .explanation-box h4 { margin-bottom: 8px; color: #1d4ed8; display: flex; align-items: center; gap: 5px; }
@@ -73,9 +73,52 @@
         .palette-btn.current { border: 2px solid #111827; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
         .palette-btn.answered { background-color: #3b82f6; color: white; border-color: #3b82f6; }
         
-        /* NÂNG CẤP: Trạng thái Palette sau khi nộp bài */
+        /* Trạng thái Palette sau khi xem giải thích */
         .palette-btn.correct-ans { background-color: #10b981; color: white; border-color: #10b981; }
         .palette-btn.wrong-ans { background-color: #ef4444; color: white; border-color: #ef4444; }
+
+        /* ================= MODAL KẾT QUẢ ================= */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* Mặc định ẩn */
+            justify-content: center; align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background-color: white; padding: 40px; border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%; max-width: 450px; text-align: center;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-title { font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 20px; }
+        .score-circle {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: conic-gradient(#10b981 0%, #d1fae5 0%); /* Sẽ được update bằng JS */
+            margin: 0 auto 20px; display: flex; justify-content: center; align-items: center;
+            position: relative;
+        }
+        .score-circle-inner {
+            width: 100px; height: 100px; border-radius: 50%; background-color: white;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .score-number { font-size: 32px; font-weight: bold; color: #10b981; line-height: 1; }
+        .score-label { font-size: 14px; color: #6b7280; margin-top: 5px; }
+        .modal-stats { font-size: 16px; color: #4b5563; margin-bottom: 30px; }
+        .modal-stats strong { color: #111827; font-size: 18px; }
+
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+        .btn-modal { padding: 12px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.2s; border: none; }
+        .btn-modal.primary { background-color: #3b82f6; color: white; }
+        .btn-modal.primary:hover { background-color: #2563eb; }
+        .btn-modal.success { background-color: #10b981; color: white; }
+        .btn-modal.success:hover { background-color: #059669; }
+        .btn-modal.outline { background-color: transparent; border: 2px solid #d1d5db; color: #4b5563; }
+        .btn-modal.outline:hover { background-color: #f3f4f6; border-color: #9ca3af; }
     </style>
 </head>
 <body>
@@ -94,7 +137,6 @@
                 
                 <div class="options-list" id="options-container"></div>
                 
-                <!-- NÂNG CẤP: Vùng hiển thị giải thích (Mặc định ẩn) -->
                 <div id="explanation-box" class="explanation-box">
                     <h4>💡 Giải thích:</h4>
                     <div id="explanation-content">Nội dung giải thích sẽ hiển thị ở đây.</div>
@@ -115,6 +157,27 @@
         </aside>
     </main>
 
+    <!-- NÂNG CẤP: HTML Modal Kết quả -->
+    <div id="result-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">Kết Quả Bài Thi</div>
+            <div class="score-circle" id="modal-score-circle">
+                <div class="score-circle-inner">
+                    <div class="score-number" id="modal-score-text">0.0</div>
+                    <div class="score-label">Điểm</div>
+                </div>
+            </div>
+            <div class="modal-stats">
+                Trả lời đúng: <strong id="modal-correct-text">0/0</strong> câu
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal success" id="btn-modal-explain">Xem giải thích chi tiết</button>
+                <button class="btn-modal primary" id="btn-modal-retry">Làm lại đề này</button>
+                <button class="btn-modal outline" id="btn-modal-dashboard">Về phòng chờ</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -134,8 +197,15 @@
         let auth, db;
         let currentIndex = 0;
         let userAnswers = {};
+        
         let isSubmitted = false;
+        let isShowExplanation = false; // Biến trạng thái mới quản lý việc hiện đáp án
         let currentUser = null; 
+
+        // Biến cấu hình Thời gian đếm ngược
+        let timerInterval;
+        const EXAM_DURATION = 15 * 60; // 15 phút tính bằng giây
+        let timeRemaining = EXAM_DURATION;
 
         const app = initializeApp(firebaseConfig);
         auth = getAuth(app);
@@ -193,23 +263,75 @@
                 return; 
             }
 
+            initExamState();
+        }
+
+        // ================= LOGIC QUẢN LÝ TRẠNG THÁI & TIMER =================
+        function initExamState() {
             currentIndex = 0;
             userAnswers = {};
             isSubmitted = false;
+            isShowExplanation = false;
+            
+            const btnSubmit = document.getElementById('btn-submit-exam');
+            btnSubmit.disabled = false; 
+            btnSubmit.innerText = "Nộp bài ngay"; 
+
             renderAll();
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeRemaining = EXAM_DURATION;
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    // Hết giờ -> Tự động nộp bài, không cần hỏi
+                    submitExam(true); 
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            const seconds = (timeRemaining % 60).toString().padStart(2, '0');
+            document.getElementById('countdown').innerText = `${minutes}:${seconds}`;
         }
 
         // ================= LOGIC NỘP BÀI VÀ CHẤM ĐIỂM =================
-        async function submitExam() {
+        async function submitExam(isAutoSubmit = false) {
             if (isSubmitted) return;
 
             const total = questions.length;
             const answeredCount = Object.keys(userAnswers).length;
             
-            if (!confirm(`Bạn đã làm ${answeredCount}/${total} câu. Bạn có chắc chắn muốn nộp bài?`)) {
-                return;
+            // Nếu người dùng chủ động nộp bài (không phải tự động do hết giờ)
+            if (!isAutoSubmit) {
+                if (!confirm(`Bạn đã làm ${answeredCount}/${total} câu. Bạn có chắc chắn muốn nộp bài?`)) {
+                    return;
+                }
+            } else {
+                alert("Đã hết thời gian làm bài! Hệ thống tự động thu bài.");
             }
 
+            stopTimer();
+            isSubmitted = true; 
+            
+            const btnSubmit = document.getElementById('btn-submit-exam');
+            btnSubmit.disabled = true; 
+            btnSubmit.innerText = "Đang xử lý..."; 
+
+            // Tính điểm
             let correctCount = 0;
             questions.forEach((question, idx) => {
                 if (userAnswers[idx] === question.correctAnswer) {
@@ -220,14 +342,12 @@
             let score = (correctCount / total) * 10;
             score = Math.round(score * 100) / 100; 
 
-            isSubmitted = true;
-            renderAll(); // Re-render toàn bộ giao diện để hiển thị kết quả đúng/sai
-            
-            const btnSubmit = document.getElementById('btn-submit-exam');
-            btnSubmit.disabled = true; 
-            btnSubmit.innerText = "Đã nộp bài"; 
+            // Render lại giao diện (sẽ block chọn đáp án, nhưng CHƯA hiện màu giải thích)
+            renderAll(); 
+            btnSubmit.innerText = "Đã nộp bài";
 
             try {
+                // Lưu kết quả lên Firestore
                 await addDoc(collection(db, "results"), {
                     email: currentUser.email,
                     examId: currentExamId,
@@ -236,14 +356,55 @@
                     totalQuestions: total,
                     timestamp: new Date().toISOString() 
                 });
-                alert(`Đã nộp bài thành công!\nBạn làm đúng ${correctCount}/${total} câu.\nTổng điểm: ${score}/10\n\nBây giờ bạn có thể xem lại chi tiết bài làm của mình.`);
+                
+                // Hiển thị Modal Kết quả thay vì Alert
+                showResultModal(correctCount, total, score);
+
             } catch (error) {
                 console.error("Không thể lưu kết quả lên Firebase:", error);
-                alert("Nộp bài thất bại. Xin vui lòng kiểm tra kết nối mạng.");
+                alert("Đã nộp bài nhưng không thể lưu kết quả lên máy chủ. Xin vui lòng kiểm tra kết nối mạng.");
+                showResultModal(correctCount, total, score); // Vẫn hiện kết quả cho học sinh xem
             }
         }
 
-        document.getElementById('btn-submit-exam').onclick = submitExam;
+        document.getElementById('btn-submit-exam').onclick = () => submitExam(false);
+
+        // ================= LOGIC MODAL & ACTIONS =================
+        function showResultModal(correctCount, total, score) {
+            const modal = document.getElementById('result-modal');
+            document.getElementById('modal-score-text').innerText = score;
+            document.getElementById('modal-correct-text').innerText = `${correctCount}/${total}`;
+            
+            // Tính phần trăm để vẽ vòng tròn điểm
+            const percentage = (correctCount / total) * 100;
+            const circle = document.getElementById('modal-score-circle');
+            circle.style.background = `conic-gradient(#10b981 ${percentage}%, #d1fae5 ${percentage}%)`;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').classList.remove('active');
+        }
+
+        // Action: Về phòng chờ
+        document.getElementById('btn-modal-dashboard').onclick = () => {
+            redirect('dashboard.html');
+        };
+
+        // Action: Làm lại
+        document.getElementById('btn-modal-retry').onclick = () => {
+            closeModal();
+            initExamState(); // Reset toàn bộ state và đếm lại giờ
+        };
+
+        // Action: Xem giải thích
+        document.getElementById('btn-modal-explain').onclick = () => {
+            closeModal();
+            isShowExplanation = true; // Kích hoạt biến cho phép hiển thị đáp án đúng/sai
+            renderAll(); // Render lại để áp dụng css màu xanh/đỏ
+        };
+
 
         // ================= LOGIC GIAO DIỆN (UI) =================
 
@@ -255,7 +416,6 @@
 
         function renderQuestion() {
             const questionData = questions[currentIndex];
-            
             const questionText = questionData.text || "Câu hỏi không có nội dung";
             const options = questionData.options || [];
 
@@ -265,33 +425,31 @@
             const container = document.getElementById('options-container');
             container.innerHTML = ''; 
 
-            // NÂNG CẤP 1: Xử lý màu sắc cho Option
             options.forEach((opt, idx) => {
                 const div = document.createElement('div');
                 
                 let extraClasses = '';
-                if (isSubmitted) {
-                    extraClasses += ' disabled';
-                    // Nếu là đáp án đúng
+                
+                // Khóa chọn khi đã nộp bài
+                if (isSubmitted) extraClasses += ' disabled';
+                
+                // TÔ MÀU ĐÁP ÁN: Chỉ xảy ra khi user bấm "Xem giải thích" (isShowExplanation = true)
+                if (isShowExplanation) {
                     if (idx === questionData.correctAnswer) {
-                        extraClasses += ' correct';
-                    } 
-                    // Nếu học sinh chọn sai
-                    else if (userAnswers[currentIndex] === idx) {
-                        extraClasses += ' wrong';
+                        extraClasses += ' correct'; // Đáp án đúng thực sự
+                    } else if (userAnswers[currentIndex] === idx) {
+                        extraClasses += ' wrong'; // Trả lời sai
                     }
                 } else {
-                    // Trạng thái đang làm bài bình thường
+                    // Nếu chưa xem giải thích, chỉ bôi xanh ô user đã chọn
                     if (userAnswers[currentIndex] === idx) extraClasses += ' selected';
                 }
 
                 div.className = 'option-item' + extraClasses;
-                
                 div.innerHTML = `<div class="option-label">${['A','B','C','D'][idx]}</div><div>${opt}</div>`;
                 
                 div.onclick = () => { 
                     if (isSubmitted) return; // Chặn click nếu đã nộp bài
-
                     userAnswers[currentIndex] = idx; 
                     renderQuestion(); 
                     renderPalette();  
@@ -299,17 +457,16 @@
                 container.appendChild(div);
             });
 
-            // NÂNG CẤP 2: Hiển thị hộp giải thích
+            // HIỆN GIẢI THÍCH: Chỉ hiện khi isShowExplanation = true
             const explanationBox = document.getElementById('explanation-box');
             const explanationContent = document.getElementById('explanation-content');
             
-            if (isSubmitted) {
+            if (isShowExplanation) {
                 explanationBox.style.display = 'block';
-                // Kiểm tra xem database có thuộc tính explanation không
                 if (questionData.explanation && questionData.explanation.trim() !== '') {
                     explanationContent.innerText = questionData.explanation;
                 } else {
-                    explanationContent.innerText = "Không có giải thích cho câu hỏi này.";
+                    explanationContent.innerText = "Không có giải thích chi tiết cho câu hỏi này.";
                 }
             } else {
                 explanationBox.style.display = 'none';
@@ -320,22 +477,21 @@
             const container = document.getElementById('palette-container');
             container.innerHTML = '';
             
-            // NÂNG CẤP 3: Xử lý màu sắc cho Palette bên phải
             questions.forEach((q, idx) => {
                 const btn = document.createElement('button');
                 
                 let btnClasses = 'palette-btn';
                 if (idx === currentIndex) btnClasses += ' current';
 
-                if (isSubmitted) {
-                    // Khi đã nộp bài, phân màu Xanh (Đúng) / Đỏ (Sai hoặc bỏ trống)
+                // Nếu đang chế độ xem giải thích: Phân màu Đúng/Sai
+                if (isShowExplanation) {
                     if (userAnswers[idx] === q.correctAnswer) {
                         btnClasses += ' correct-ans';
                     } else {
                         btnClasses += ' wrong-ans';
                     }
                 } else {
-                    // Khi đang thi, phân màu Xanh (Đã làm)
+                    // Trạng thái bình thường (hoặc vừa nộp bài xong nhưng chưa xem giải thích)
                     if (userAnswers[idx] !== undefined) btnClasses += ' answered';
                 }
 
@@ -357,7 +513,6 @@
             if(currentIndex < questions.length - 1) { currentIndex++; renderAll(); } 
         };
 
-        // Xử lý sự kiện Đăng xuất
         document.getElementById('btn-logout').addEventListener('click', () => {
             signOut(auth).then(() => {
                 redirect('index.html');
