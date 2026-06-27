@@ -306,7 +306,7 @@
             browserSessionPersistence
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // MỚI: Import thêm getFirestore, doc, và setDoc từ thư viện Firestore
+        // Import thêm getFirestore, doc, và setDoc từ thư viện Firestore
         import {
             getFirestore,
             doc,
@@ -338,10 +338,21 @@
         if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "") {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
-            db = getFirestore(app); // MỚI: Khởi tạo Firestore
+            db = getFirestore(app); // Khởi tạo Firestore
 
-            onAuthStateChanged(auth, (user) => {
+            onAuthStateChanged(auth, async (user) => {
                 if (user) {
+                    // Kẻ gác cổng: Chặn lại 1 nhịp để lưu thông tin vào Firestore trước!
+                    try {
+                        await setDoc(doc(db, "users", user.uid), { 
+                            email: user.email,
+                            isVip: false 
+                        }, { merge: true }); // merge:true để giữ nguyên quyền VIP của người cũ
+                    } catch (error) {
+                        console.error("Lỗi khi gác cổng lưu data:", error);
+                    }
+                    
+                    // Lưu xong xuôi mới cho phép qua phòng chờ
                     window.location.href = 'dashboard.html';
                 }
             });
@@ -365,7 +376,7 @@
 
             createUserWithEmailAndPassword(auth, email, password)
                 .then(async (userCredential) => {
-                    // MỚI: Sử dụng setDoc để lưu thông tin tài khoản VIP ngay khi tạo user thành công
+                    // Sử dụng setDoc để lưu thông tin tài khoản VIP ngay khi tạo user thành công
                     try {
                         await setDoc(doc(db, "users", userCredential.user.uid), {
                             email: email,
@@ -394,7 +405,7 @@
                 });
         });
 
-        // -- XỬ LÝ ĐĂNG NHẬP (BẰNG EMAIL) CÓ XỬ LÝ PERSISTENCE --
+        // -- XỬ LÝ ĐĂNG NHẬP (BẰNG EMAIL) CÓ XỬ LÝ PERSISTENCE VÀ LƯU DATABASE --
         const btnLogin = document.getElementById('btn-login');
         btnLogin.addEventListener('click', () => {
             if (!auth) {
@@ -417,7 +428,17 @@
                 .then(() => {
                     return signInWithEmailAndPassword(auth, email, password);
                 })
-                .then((userCredential) => {
+                .then(async (userCredential) => { // Đổi thành async
+                    // Lưu/Cập nhật thông tin user vào Firestore, dùng merge: true để không ghi đè dữ liệu cũ
+                    try {
+                        await setDoc(doc(db, "users", userCredential.user.uid), { 
+                            email: userCredential.user.email,
+                            isVip: false
+                        }, { merge: true });
+                    } catch (error) {
+                        console.error("Lỗi cập nhật Firestore khi login email:", error);
+                    }
+
                     alert("Đăng nhập thành công! Đang chuyển vào phòng chờ...");
                     window.location.href = 'dashboard.html';
                 })
@@ -431,7 +452,7 @@
                 });
         });
 
-        // -- XỬ LÝ ĐĂNG NHẬP BẰNG GOOGLE CÓ XỬ LÝ PERSISTENCE --
+        // -- XỬ LÝ ĐĂNG NHẬP BẰNG GOOGLE CÓ XỬ LÝ PERSISTENCE VÀ LƯU DATABASE --
         const btnGoogle = document.getElementById('btn-google');
         btnGoogle.addEventListener('click', () => {
             if (!auth) {
@@ -448,7 +469,17 @@
                     const provider = new GoogleAuthProvider();
                     return signInWithPopup(auth, provider);
                 })
-                .then((result) => {
+                .then(async (result) => { // Đổi thành async
+                    // Lưu/Cập nhật thông tin user vào Firestore, dùng merge: true để không ghi đè dữ liệu cũ
+                    try {
+                        await setDoc(doc(db, "users", result.user.uid), { 
+                            email: result.user.email,
+                            isVip: false 
+                        }, { merge: true });
+                    } catch (error) {
+                        console.error("Lỗi cập nhật Firestore khi login google:", error);
+                    }
+
                     alert("Đăng nhập thành công! Đang chuyển vào phòng chờ...");
                     window.location.href = 'dashboard.html';
                 })
