@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ thống Thi Trắc Nghiệm - Đăng nhập</title>
 
-    <!-- PHẦN 1: CSS GIAO DIỆN -->
     <style>
         /* Reset CSS cơ bản để giao diện đồng nhất trên mọi trình duyệt */
         * {
@@ -164,10 +163,8 @@
 </head>
 <body>
 
-    <!-- PHẦN 2: CẤU TRÚC HTML GIAO DIỆN -->
     <div class="auth-container">
         
-        <!-- === FORM ĐĂNG NHẬP === -->
         <div id="login-form">
             <h2>Đăng Nhập Hệ Thống</h2>
             
@@ -183,7 +180,6 @@
             
             <button id="btn-login" class="btn-submit">Đăng Nhập</button>
             
-            <!-- Phần Đăng nhập bằng Google MỚI THÊM -->
             <div class="divider">HOẶC</div>
             
             <button id="btn-google" class="btn-google">
@@ -201,7 +197,6 @@
             </div>
         </div>
 
-        <!-- === FORM ĐĂNG KÝ (Mặc định được ẩn đi bởi class "hidden") === -->
         <div id="register-form" class="hidden">
             <h2>Tạo Tài Khoản Mới</h2>
             
@@ -224,7 +219,6 @@
 
     </div>
 
-    <!-- PHẦN 3: LOGIC CHUYỂN ĐỔI GIAO DIỆN (UI ONLY) -->
     <script>
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
@@ -242,7 +236,6 @@
         });
     </script>
 
-    <!-- PHẦN 4: LOGIC FIREBASE AUTHENTICATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
@@ -338,8 +331,8 @@
 
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    alert("Đăng nhập thành công! Đang chuyển hướng vào phòng thi...");
-                    window.location.href = 'quiz.html';
+                    alert("Đăng nhập thành công! Đang chuyển vào phòng chờ...");
+                    window.location.href = 'dashboard.html';
                 })
                 .catch((error) => {
                     const errorCode = error.code;
@@ -365,8 +358,8 @@
             // Gọi Popup Đăng nhập
             signInWithPopup(auth, provider)
                 .then((result) => {
-                    alert("Đăng nhập bằng Google thành công! Đang chuyển hướng vào phòng thi...");
-                    window.location.href = 'quiz.html';
+                    alert("Đăng nhập thành công! Đang chuyển vào phòng chờ...");
+                    window.location.href = 'dashboard.html';
                 })
                 .catch((error) => {
                     const errorCode = error.code;
