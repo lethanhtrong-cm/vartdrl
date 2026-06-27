@@ -8,23 +8,53 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f3f4f6; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        
         .quiz-header { background-color: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); position: sticky; top: 0; z-index: 100; }
         .quiz-title { font-size: 20px; font-weight: bold; color: #1f2937; }
         .timer-container { display: flex; align-items: center; gap: 10px; background-color: #fee2e2; color: #ef4444; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; }
         .btn-logout { padding: 8px 16px; background-color: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
         .btn-logout:hover { background-color: #e5e7eb; color: #1f2937; }
+        
         .quiz-body { display: flex; flex: 1; max-width: 1200px; margin: 30px auto; width: 100%; gap: 25px; padding: 0 20px; }
+        
+        /* Cột bên trái */
         .left-panel { flex: 3; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); display: flex; flex-direction: column; overflow: hidden; }
         .question-content { padding: 40px; flex: 1; }
         .question-number-badge { display: inline-block; background-color: #e0e7ff; color: #4f46e5; padding: 5px 12px; border-radius: 6px; font-weight: bold; margin-bottom: 15px; font-size: 14px; }
         .question-text { font-size: 20px; line-height: 1.6; margin-bottom: 30px; color: #111827; }
         .options-list { display: flex; flex-direction: column; gap: 15px; }
+        
+        /* CSS cho các lựa chọn đáp án */
         .option-item { display: flex; align-items: center; padding: 15px 20px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s; background-color: #ffffff; font-size: 16px; }
         .option-item:hover:not(.disabled) { border-color: #c7d2fe; background-color: #f8fafc; }
-        .option-item.selected { border-color: #3b82f6; background-color: #eff6ff; }
-        .option-item.disabled { cursor: not-allowed; opacity: 0.7; }
+        .option-item.selected:not(.correct):not(.wrong) { border-color: #3b82f6; background-color: #eff6ff; }
+        .option-item.disabled { cursor: not-allowed; }
+        
         .option-label { font-weight: bold; margin-right: 15px; background-color: #f3f4f6; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; color: #4b5563; }
-        .option-item.selected .option-label { background-color: #3b82f6; color: white; }
+        .option-item.selected:not(.correct):not(.wrong) .option-label { background-color: #3b82f6; color: white; }
+
+        /* NÂNG CẤP: CSS khi nộp bài xong (Đúng/Sai) */
+        .option-item.correct { background-color: #d1fae5; border-color: #059669; }
+        .option-item.correct .option-label { background-color: #059669; color: white; }
+        
+        .option-item.wrong { background-color: #fee2e2; border-color: #dc2626; }
+        .option-item.wrong .option-label { background-color: #dc2626; color: white; }
+
+        /* NÂNG CẤP: CSS cho Hộp giải thích */
+        .explanation-box {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e0f2fe; /* Xanh dương nhạt */
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            color: #1e3a8a;
+            display: none; /* Mặc định ẩn */
+            animation: fadeIn 0.5s ease;
+        }
+        .explanation-box h4 { margin-bottom: 8px; color: #1d4ed8; display: flex; align-items: center; gap: 5px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Footer Buttons */
         .quiz-footer { padding: 20px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
         .nav-buttons { display: flex; gap: 15px; }
         .btn-nav { padding: 10px 20px; border: 1px solid #d1d5db; background-color: white; border-radius: 6px; cursor: pointer; font-weight: 600; color: #374151; transition: all 0.2s; }
@@ -32,12 +62,20 @@
         .btn-submit { padding: 12px 30px; background-color: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: all 0.2s; }
         .btn-submit:hover:not(:disabled) { background-color: #059669; }
         .btn-submit:disabled { background-color: #9ca3af; cursor: not-allowed; opacity: 0.8; }
-        .right-panel { flex: 1; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); padding: 25px; height: fit-content; }
+        
+        /* Cột bên phải (Palette) */
+        .right-panel { flex: 1; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); padding: 25px; height: fit-content; position: sticky; top: 90px; }
         .panel-title { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #1f2937; text-align: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px; }
         .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        .palette-btn { aspect-ratio: 1; border: 1px solid #d1d5db; background-color: white; border-radius: 6px; font-weight: bold; color: #4b5563; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-        .palette-btn.current { border: 2px solid #3b82f6; }
+        .palette-btn { aspect-ratio: 1; border: 1px solid #d1d5db; background-color: white; border-radius: 6px; font-weight: bold; color: #4b5563; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s; }
+        
+        /* Trạng thái Palette đang thi */
+        .palette-btn.current { border: 2px solid #111827; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
         .palette-btn.answered { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+        
+        /* NÂNG CẤP: Trạng thái Palette sau khi nộp bài */
+        .palette-btn.correct-ans { background-color: #10b981; color: white; border-color: #10b981; }
+        .palette-btn.wrong-ans { background-color: #ef4444; color: white; border-color: #ef4444; }
     </style>
 </head>
 <body>
@@ -53,7 +91,14 @@
             <div class="question-content">
                 <span class="question-number-badge" id="question-badge">Câu hỏi</span>
                 <h2 class="question-text" id="question-text">Đang chuẩn bị dữ liệu...</h2>
+                
                 <div class="options-list" id="options-container"></div>
+                
+                <!-- NÂNG CẤP: Vùng hiển thị giải thích (Mặc định ẩn) -->
+                <div id="explanation-box" class="explanation-box">
+                    <h4>💡 Giải thích:</h4>
+                    <div id="explanation-content">Nội dung giải thích sẽ hiển thị ở đây.</div>
+                </div>
             </div>
             <footer class="quiz-footer">
                 <div class="nav-buttons">
@@ -73,10 +118,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // BƯỚC 3: Import thêm query và where để lọc Firestore
         import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Cấu hình Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
             authDomain: "rt-examination.firebaseapp.com",
@@ -92,14 +135,12 @@
         let currentIndex = 0;
         let userAnswers = {};
         let isSubmitted = false;
-        let currentUser = null; // Biến lưu trữ người dùng hiện tại
+        let currentUser = null; 
 
-        // Khởi tạo Firebase
         const app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app); 
 
-        // Hàm chuyển hướng an toàn
         function redirect(url) {
             try {
                 window.location.href = url;
@@ -109,29 +150,20 @@
             }
         }
 
-        // BƯỚC 2: Lấy mã đề (examId) từ URL
         const urlParams = new URLSearchParams(window.location.search);
         const currentExamId = urlParams.get('examId');
 
-        // Kiểm tra nếu không có mã đề trên URL thì văng về dashboard
         if (!currentExamId) {
             alert("Lỗi: Không tìm thấy mã đề thi! Đang chuyển hướng về phòng chờ...");
             redirect('dashboard.html');
         }
 
-        // BƯỚC 1: Kiểm tra xác thực (Chỉ cho phép tài khoản Email/Google)
         onAuthStateChanged(auth, (user) => {
-            // Nếu không có user HOẶC là user ẩn danh (anonymous) -> Đuổi về trang đăng nhập
             if (!user || user.isAnonymous) {
                 redirect('index.html');
             } else {
-                // Đã đăng nhập bằng tài khoản thực, lưu thông tin user
                 currentUser = user;
-                
-                // Hiển thị tên mã đề lên giao diện
                 document.getElementById('quiz-title-display').innerText = `Bài thi: ${currentExamId}`;
-                
-                // Bắt đầu tải đề thi theo mã đề
                 fetchQuestionsFromFirestore();
             }
         });
@@ -141,7 +173,6 @@
             document.getElementById('options-container').innerHTML = ''; 
 
             try {
-                // BƯỚC 3: Dùng query và where để CHỈ LẤY câu hỏi có examId khớp với URL
                 const questionsRef = collection(db, "questions");
                 const q = query(questionsRef, where("examId", "==", currentExamId));
                 
@@ -159,7 +190,7 @@
             } catch (error) {
                 console.error("Lỗi khi tải dữ liệu từ Firestore:", error);
                 document.getElementById('question-text').innerText = `Lỗi tải đề thi: ${error.message}`;
-                return; // Dừng hàm nếu không có câu hỏi thực tế
+                return; 
             }
 
             currentIndex = 0;
@@ -190,23 +221,22 @@
             score = Math.round(score * 100) / 100; 
 
             isSubmitted = true;
-            renderAll(); 
+            renderAll(); // Re-render toàn bộ giao diện để hiển thị kết quả đúng/sai
             
             const btnSubmit = document.getElementById('btn-submit-exam');
             btnSubmit.disabled = true; 
             btnSubmit.innerText = "Đã nộp bài"; 
 
-            // BƯỚC 4: Lưu kết quả kèm email thực tế và mã đề (examId)
             try {
                 await addDoc(collection(db, "results"), {
-                    email: currentUser.email,       // Lấy email từ user đã xác thực
-                    examId: currentExamId,          // Lưu mã đề để sau này dễ tra cứu kết quả
+                    email: currentUser.email,
+                    examId: currentExamId,
                     score: score,
                     correctCount: correctCount,
                     totalQuestions: total,
                     timestamp: new Date().toISOString() 
                 });
-                alert(`Đã nộp bài thành công!\nBạn làm đúng ${correctCount}/${total} câu.\nTổng điểm: ${score}/10`);
+                alert(`Đã nộp bài thành công!\nBạn làm đúng ${correctCount}/${total} câu.\nTổng điểm: ${score}/10\n\nBây giờ bạn có thể xem lại chi tiết bài làm của mình.`);
             } catch (error) {
                 console.error("Không thể lưu kết quả lên Firebase:", error);
                 alert("Nộp bài thất bại. Xin vui lòng kiểm tra kết nối mạng.");
@@ -235,16 +265,32 @@
             const container = document.getElementById('options-container');
             container.innerHTML = ''; 
 
+            // NÂNG CẤP 1: Xử lý màu sắc cho Option
             options.forEach((opt, idx) => {
                 const div = document.createElement('div');
-                div.className = 'option-item ' + 
-                              (userAnswers[currentIndex] === idx ? 'selected' : '') + 
-                              (isSubmitted ? ' disabled' : '');
+                
+                let extraClasses = '';
+                if (isSubmitted) {
+                    extraClasses += ' disabled';
+                    // Nếu là đáp án đúng
+                    if (idx === questionData.correctAnswer) {
+                        extraClasses += ' correct';
+                    } 
+                    // Nếu học sinh chọn sai
+                    else if (userAnswers[currentIndex] === idx) {
+                        extraClasses += ' wrong';
+                    }
+                } else {
+                    // Trạng thái đang làm bài bình thường
+                    if (userAnswers[currentIndex] === idx) extraClasses += ' selected';
+                }
+
+                div.className = 'option-item' + extraClasses;
                 
                 div.innerHTML = `<div class="option-label">${['A','B','C','D'][idx]}</div><div>${opt}</div>`;
                 
                 div.onclick = () => { 
-                    if (isSubmitted) return; 
+                    if (isSubmitted) return; // Chặn click nếu đã nộp bài
 
                     userAnswers[currentIndex] = idx; 
                     renderQuestion(); 
@@ -252,15 +298,48 @@
                 };
                 container.appendChild(div);
             });
+
+            // NÂNG CẤP 2: Hiển thị hộp giải thích
+            const explanationBox = document.getElementById('explanation-box');
+            const explanationContent = document.getElementById('explanation-content');
+            
+            if (isSubmitted) {
+                explanationBox.style.display = 'block';
+                // Kiểm tra xem database có thuộc tính explanation không
+                if (questionData.explanation && questionData.explanation.trim() !== '') {
+                    explanationContent.innerText = questionData.explanation;
+                } else {
+                    explanationContent.innerText = "Không có giải thích cho câu hỏi này.";
+                }
+            } else {
+                explanationBox.style.display = 'none';
+            }
         }
 
         function renderPalette() {
             const container = document.getElementById('palette-container');
             container.innerHTML = '';
             
-            questions.forEach((_, idx) => {
+            // NÂNG CẤP 3: Xử lý màu sắc cho Palette bên phải
+            questions.forEach((q, idx) => {
                 const btn = document.createElement('button');
-                btn.className = `palette-btn ${idx === currentIndex ? 'current' : ''} ${userAnswers[idx] !== undefined ? 'answered' : ''}`;
+                
+                let btnClasses = 'palette-btn';
+                if (idx === currentIndex) btnClasses += ' current';
+
+                if (isSubmitted) {
+                    // Khi đã nộp bài, phân màu Xanh (Đúng) / Đỏ (Sai hoặc bỏ trống)
+                    if (userAnswers[idx] === q.correctAnswer) {
+                        btnClasses += ' correct-ans';
+                    } else {
+                        btnClasses += ' wrong-ans';
+                    }
+                } else {
+                    // Khi đang thi, phân màu Xanh (Đã làm)
+                    if (userAnswers[idx] !== undefined) btnClasses += ' answered';
+                }
+
+                btn.className = btnClasses;
                 btn.innerText = idx + 1;
                 
                 btn.onclick = () => { 
