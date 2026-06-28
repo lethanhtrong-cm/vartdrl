@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý tài khoản & Thanh toán</title>
+    <style>
+        /* === CƠ BẢN & MÀU SẮC (THEME Y KHOA) === */
+        :root {
+            --primary-blue: #0056b3; /* Xanh dương đậm y khoa */
+            --light-blue: #e3f2fd;
+            --white: #ffffff;
+            --gray-bg: #f4f7f6;
+            --text-main: #333333;
+            --warning-orange: #f57c00;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gray-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* === NAVBAR === */
+        .navbar {
+            background-color: var(--primary-blue);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--white);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .nav-buttons a, .nav-buttons button {
+            text-decoration: none;
+            background-color: var(--white);
+            color: var(--primary-blue);
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            margin-left: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .nav-buttons a:hover, .nav-buttons button:hover {
+            background-color: var(--light-blue);
+        }
+
+        /* === BỐ CỤC CHÍNH (CARD LAYOUT) === */
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Khoảng cách giữa các Card */
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--primary-blue);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary-blue);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* KHU VỰC 2: GÓI CƯỚC */
+        .status-vip {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .status-unactive {
+            color: var(--warning-orange);
+        }
+
+        .btn-upgrade {
+            background-color: var(--warning-orange);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-upgrade:hover {
+            background-color: #e65100;
+        }
+
+        /* KHU VỰC 3: BẢNG LỊCH SỬ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+        }
+
+        /* === MODAL THANH TOÁN === */
+        .modal {
+            display: none; /* Ẩn mặc định */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            color: var(--primary-blue);
+            margin-top: 0;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background-color: #eee;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+        }
+
+        .qr-placeholder img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        .instruction {
+            background-color: var(--light-blue);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .btn-confirm {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-confirm:hover {
+            background-color: #004494;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <h2>Hệ Thống Trắc Nghiệm Y Khoa</h2>
+        <div class="nav-buttons">
+            <a href="dashboard.html">Về Phòng Chờ</a>
+            <button id="btnLogout">Đăng xuất</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div class="card">
+            <h3>Thông tin tài khoản</h3>
+            <p><strong>Email đăng nhập:</strong> <span id="displayEmail">Đang tải...</span></p>
+        </div>
+
+        <div class="card">
+            <h3>Gói cước của bạn</h3>
+            <div class="status-vip">
+                Tình trạng: <span class="status-unactive">Chưa kích hoạt VIP</span>
+            </div>
+            <button id="btnOpenModal" class="btn-upgrade">🚀 Nâng cấp VIP ngay</button>
+        </div>
+
+        <div class="card">
+            <h3>Lịch sử thanh toán</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ngày/Giờ</th>
+                        <th>Số tiền (VNĐ)</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="billingHistory">
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: #777;">Chưa có giao dịch nào</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <h3>Thanh toán qua QR Code</h3>
+            
+            <div class="qr-placeholder">
+                <img src="https://via.placeholder.com/200?text=QR+Code+Demo" alt="Mã QR Chuyển khoản">
+            </div>
+
+            <div class="instruction">
+                Vui lòng chuyển khoản <strong>100.000đ</strong> với nội dung:<br><br>
+                <span class="highlight">NAP <span id="modalEmail">[Email của bạn]</span></span><br><br>
+                để được mở khóa toàn bộ đề thi.
+            </div>
+
+            <button id="btnConfirmPayment" class="btn-confirm">Tôi đã chuyển khoản</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // 1. Import các hàm cần thiết từ Firebase v11.6.1
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Cấu hình Firebase (Sử dụng config bạn đã cung cấp)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
+            authDomain: "rt-examination.firebaseapp.com",
+            databaseURL: "https://rt-examination-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rt-examination",
+            storageBucket: "rt-examination.firebasestorage.app",
+            messagingSenderId: "920482699854",
+            appId: "1:920482699854:web:44f9b0d735bdc001c6c11f",
+            measurementId: "G-8N7RTTREQM"
+        };
+
+        // 2. Khởi tạo Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app); // Khởi tạo sẵn Firestore cho việc lưu lịch sử sau này
+
+        // Các DOM Element
+        const displayEmail = document.getElementById("displayEmail");
+        const modalEmail = document.getElementById("modalEmail");
+        const btnLogout = document.getElementById("btnLogout");
+        
+        // DOM Element cho Modal
+        const modal = document.getElementById("paymentModal");
+        const btnOpenModal = document.getElementById("btnOpenModal");
+        const btnConfirmPayment = document.getElementById("btnConfirmPayment");
+
+        // 3. Bảo vệ Route bằng onAuthStateChanged
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Nếu đã đăng nhập, hiển thị email lên giao diện
+                const userEmail = user.email;
+                displayEmail.textContent = userEmail;
+                modalEmail.textContent = userEmail; // Điền sẵn email vào cú pháp nạp tiền
+            } else {
+                // Chưa đăng nhập thì đá về trang chủ (index.html)
+                window.location.href = 'index.html';
+            }
+        });
+
+        // 4. Xử lý Đăng xuất
+        btnLogout.addEventListener("click", () => {
+            signOut(auth).then(() => {
+                // Đăng xuất thành công, hàm onAuthStateChanged ở trên sẽ tự động bắt sự kiện 
+                // và chuyển hướng người dùng về index.html
+            }).catch((error) => {
+                console.error("Lỗi đăng xuất:", error);
+                alert("Đã xảy ra lỗi khi đăng xuất!");
+            });
+        });
+
+        // 5. Xử lý Modal Thanh toán
+        // Mở Modal
+        btnOpenModal.addEventListener("click", () => {
+            modal.style.display = "block";
+        });
+
+        // Đóng Modal khi bấm "Tôi đã chuyển khoản"
+        btnConfirmPayment.addEventListener("click", () => {
+            modal.style.display = "none";
+            alert("Hệ thống đã ghi nhận yêu cầu. Chúng tôi sẽ kiểm tra và kích hoạt VIP cho bạn trong thời gian sớm nhất!");
+        });
+
+        // (Tuỳ chọn) Bấm ra ngoài vùng Modal để đóng
+        window.addEventListener("click", (event) => {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
+    </script>
+
+</body>
+</html>
