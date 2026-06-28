@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Cá Nhân - Hệ Thống Trắc Nghiệm Y Khoa</title>
+    <!-- Thêm Font Awesome để dùng Icon cho đẹp -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* === CƠ BẢN & MÀU SẮC (THEME Y KHOA) === */
@@ -190,6 +191,13 @@
             font-size: 1rem;
         }
 
+        /* Tùy chỉnh input file cho đẹp hơn một chút */
+        input[type="file"] {
+            padding: 7px;
+            background-color: var(--light-blue);
+            cursor: pointer;
+        }
+
         .btn-primary {
             background-color: var(--primary-blue);
             color: var(--white);
@@ -202,6 +210,7 @@
         }
 
         .btn-primary:hover { background-color: #004494; }
+        .btn-primary:disabled { background-color: #999; cursor: not-allowed; }
 
         /* Nút VIP & Status */
         .status-badge {
@@ -268,6 +277,7 @@
 </head>
 <body>
 
+    <!-- 1. SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>Hệ Thống<br>Trắc Nghiệm Y Khoa</h2>
@@ -293,9 +303,12 @@
         </div>
     </div>
 
+    <!-- 2. MAIN CONTENT -->
     <div class="main-content">
         
+        <!-- TAB 1: HỒ SƠ CÁ NHÂN -->
         <div id="tab-profile" class="tab-pane active">
+            <!-- Card Thông tin -->
             <div class="card">
                 <h3><i class="fa-solid fa-address-card"></i> Thông tin chung</h3>
                 <div class="profile-container">
@@ -315,6 +328,7 @@
                 </div>
             </div>
 
+            <!-- Card Cập nhật thông tin -->
             <div class="card">
                 <h3><i class="fa-solid fa-pen-to-square"></i> Cập nhật hồ sơ</h3>
                 <form id="updateProfileForm">
@@ -323,14 +337,27 @@
                         <input type="text" id="inputName" placeholder="Nhập tên của bạn...">
                     </div>
                     <div class="form-group">
-                        <label for="inputAvatarUrl">Đường dẫn ảnh đại diện (URL):</label>
-                        <input type="url" id="inputAvatarUrl" placeholder="https://domain.com/anh-cua-ban.jpg">
+                        <label for="inputAvatarFile">Tải lên ảnh đại diện mới:</label>
+                        <input type="file" id="inputAvatarFile" accept="image/*">
                     </div>
                     <button type="submit" id="btnUpdateProfile" class="btn-primary">Lưu thay đổi</button>
                 </form>
             </div>
+
+            <!-- Card Đổi mật khẩu -->
+            <div class="card">
+                <h3><i class="fa-solid fa-lock"></i> Đổi mật khẩu</h3>
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="inputNewPassword">Mật khẩu mới:</label>
+                        <input type="password" id="inputNewPassword" placeholder="Nhập mật khẩu mới..." required minlength="6">
+                    </div>
+                    <button type="submit" id="btnChangePassword" class="btn-primary">Cập nhật mật khẩu</button>
+                </form>
+            </div>
         </div>
 
+        <!-- TAB 2: LỊCH SỬ LÀM BÀI -->
         <div id="tab-history" class="tab-pane">
             <div class="card">
                 <h3><i class="fa-solid fa-list-check"></i> Lịch sử các lần thi</h3>
@@ -353,6 +380,7 @@
             </div>
         </div>
 
+        <!-- TAB 3: NÂNG CẤP VIP -->
         <div id="tab-vip" class="tab-pane">
             <div class="vip-layout">
                 <div class="card vip-card-box">
@@ -387,11 +415,15 @@
 
     </div>
 
+    <!-- === JAVASCRIPT === -->
     <script type="module">
         // 1. Import các hàm cần thiết từ Firebase v11.6.1
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Import updatePassword để đổi mật khẩu
+        import { getAuth, onAuthStateChanged, signOut, updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Import Firebase Storage để upload ảnh
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
         
         // 2. Cấu hình Firebase
         const firebaseConfig = {
@@ -408,6 +440,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        // Khởi tạo Storage
+        const storage = getStorage(app);
 
         // 3. Logic Chuyển Tab (Sidebar)
         const menuItems = document.querySelectorAll('.sidebar-menu .menu-item[data-target]');
@@ -415,30 +449,29 @@
 
         menuItems.forEach(item => {
             item.addEventListener('click', () => {
-                // Xóa active khỏi tất cả menu
                 menuItems.forEach(m => m.classList.remove('active'));
-                // Thêm active vào menu vừa click
                 item.classList.add('active');
 
-                // Ẩn tất cả tab nội dung
                 tabPanes.forEach(pane => pane.classList.remove('active'));
-                // Hiện tab nội dung tương ứng
                 const targetId = item.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('active');
             });
         });
 
         // 4. Các DOM Elements cần thao tác
-        // Profile
         const displayEmail = document.getElementById("displayEmail");
         const displayName = document.getElementById("displayName");
         const userAvatar = document.getElementById("userAvatar");
         const inputName = document.getElementById("inputName");
-        const inputAvatarUrl = document.getElementById("inputAvatarUrl");
+        const inputAvatarFile = document.getElementById("inputAvatarFile");
         const updateProfileForm = document.getElementById("updateProfileForm");
         const btnUpdateProfile = document.getElementById("btnUpdateProfile");
         
-        // VIP
+        // Đổi mật khẩu Elements
+        const changePasswordForm = document.getElementById("changePasswordForm");
+        const inputNewPassword = document.getElementById("inputNewPassword");
+        const btnChangePassword = document.getElementById("btnChangePassword");
+
         const vipStatusBadge = document.getElementById("vipStatusBadge");
         const vipStartDate = document.getElementById("vipStartDate");
         const vipEndDate = document.getElementById("vipEndDate");
@@ -446,48 +479,33 @@
         const paymentEmail = document.getElementById("paymentEmail");
         const btnConfirmPayment = document.getElementById("btnConfirmPayment");
 
-        // History
         const historyTableBody = document.getElementById("historyTableBody");
-        
-        // Global
         const btnLogout = document.getElementById("btnLogout");
 
         // 5. Kiểm tra đăng nhập
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 5.1 Render thông tin Auth cơ bản
                 renderAuthInfo(user);
-
-                // 5.2 Lấy thông tin VIP từ Firestore (collection 'users')
                 await fetchVipStatus(user.uid);
-
-                // 5.3 Lấy Lịch sử làm bài (collection 'results')
                 await fetchHistory(user.email);
-
             } else {
-                // Chưa đăng nhập thì đuổi về trang chủ
                 window.location.href = 'index.html';
             }
         });
 
-        // Hàm render thông tin từ Firebase Auth
         function renderAuthInfo(user) {
             const email = user.email;
             const name = user.displayName || "Người dùng ẩn danh";
-            // Dùng UI-Avatars nếu chưa có ảnh
             const photoUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0056b3&color=fff`;
 
             displayEmail.textContent = email;
-            paymentEmail.textContent = email; // Gắn email vào cú pháp chuyển khoản
+            paymentEmail.textContent = email; 
             displayName.textContent = name;
             userAvatar.src = photoUrl;
 
-            // Điền sẵn vào form cập nhật
             inputName.value = user.displayName || "";
-            inputAvatarUrl.value = user.photoURL || "";
         }
 
-        // Hàm lấy trạng thái VIP từ Firestore
         async function fetchVipStatus(uid) {
             try {
                 const userDocRef = doc(db, "users", uid);
@@ -498,20 +516,18 @@
                     const isVip = data.isVip || false;
 
                     if (isVip) {
-                        // Giao diện: Kích hoạt VIP
                         vipStatusBadge.textContent = "Đã kích hoạt VIP";
                         vipStatusBadge.className = "status-badge status-active";
                         vipStatusTab3.textContent = "VIP Hoạt động";
                         vipStatusTab3.className = "status-badge status-active";
 
-                        // Hiển thị ngày tháng (Giả sử bạn lưu dạng string hoặc timestamp trong field 'vipStart' và 'vipEnd')
                         vipStartDate.textContent = data.vipStart ? formatDate(data.vipStart) : "Không xác định";
                         vipEndDate.textContent = data.vipEnd ? formatDate(data.vipEnd) : "Không xác định";
                     } else {
                         setVipInactive();
                     }
                 } else {
-                    setVipInactive(); // Document chưa tồn tại
+                    setVipInactive(); 
                 }
             } catch (error) {
                 console.error("Lỗi khi lấy trạng thái VIP:", error);
@@ -528,7 +544,6 @@
             vipEndDate.textContent = "Không xác định";
         }
 
-        // Hàm lấy Lịch sử từ Firestore
         async function fetchHistory(userEmail) {
             try {
                 const resultsRef = collection(db, "results");
@@ -540,29 +555,33 @@
                     return;
                 }
 
-                historyTableBody.innerHTML = ""; // Xóa dòng "Đang tải..."
+                historyTableBody.innerHTML = ""; 
                 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     const tr = document.createElement("tr");
 
-                    // Trích xuất dữ liệu, kiểm tra nếu rỗng thì để mặc định
-                    const quizId = data.quizId || "Không rõ";
+                    // Fix: Lấy mã đề từ examId hoặc examCode
+                    const quizId = data.examId || data.examCode || "Không rõ";
                     const score = data.score !== undefined ? data.score : 0;
                     const correctAnswers = data.correctAnswers !== undefined ? data.correctAnswers : 0;
                     
-                    // Xử lý thời gian nộp (Firebase Timestamp -> String)
                     let submitTime = "Không xác định";
                     if (data.submitTime) {
                         submitTime = formatDate(data.submitTime);
                     }
 
+                    // Fix: Chuyển hướng tới quiz.html kèm resultId để xem lại
                     tr.innerHTML = `
                         <td><strong>${quizId}</strong></td>
                         <td>${submitTime}</td>
                         <td>${correctAnswers} câu</td>
                         <td style="color: var(--primary-blue); font-weight: bold;">${score}</td>
-                        <td><button class="btn-review" onclick="alert('Tính năng xem lại bài sẽ chuyển hướng sang trang quiz với mode=review')"><i class="fa-solid fa-eye"></i> Xem lại</button></td>
+                        <td>
+                            <button class="btn-review" onclick="window.location.href='quiz.html?resultId=${doc.id}'">
+                                <i class="fa-solid fa-eye"></i> Xem lại
+                            </button>
+                        </td>
                     `;
                     historyTableBody.appendChild(tr);
                 });
@@ -573,33 +592,49 @@
             }
         }
 
-        // Helper format ngày tháng (Hỗ trợ Firebase Timestamp hoặc Date string)
         function formatDate(dateData) {
             if (dateData && typeof dateData.toDate === 'function') {
                 return dateData.toDate().toLocaleString('vi-VN');
             }
-            // Fallback nếu lưu bằng string
             return new Date(dateData).toLocaleString('vi-VN');
         }
 
-        // 6. Xử lý Cập nhật Hồ sơ cá nhân (Firebase Auth)
+        // 6. Xử lý Cập nhật Hồ sơ cá nhân (Kèm Upload Ảnh lên Storage)
         updateProfileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             btnUpdateProfile.textContent = "Đang lưu...";
             btnUpdateProfile.disabled = true;
 
             const newName = inputName.value.trim();
-            const newPhotoUrl = inputAvatarUrl.value.trim();
+            // Khởi tạo photoURL mặc định là URL cũ của user (nếu có)
+            let photoURL = auth.currentUser.photoURL;
 
             try {
+                // Kiểm tra xem người dùng có chọn file ảnh mới không
+                if (inputAvatarFile.files.length > 0) {
+                    const file = inputAvatarFile.files[0];
+                    
+                    // Tạo reference trên Storage (Lưu tại thư mục avatars/ với tên file là UID của user)
+                    const avatarRef = ref(storage, `avatars/${auth.currentUser.uid}`);
+                    
+                    // Upload file lên Storage
+                    await uploadBytes(avatarRef, file);
+                    
+                    // Lấy link tải xuống trực tiếp
+                    photoURL = await getDownloadURL(avatarRef);
+                }
+
+                // Cập nhật Profile trong Firebase Auth
                 await updateProfile(auth.currentUser, {
                     displayName: newName,
-                    photoURL: newPhotoUrl
+                    photoURL: photoURL
                 });
 
                 alert("Cập nhật hồ sơ thành công!");
-                // Gọi lại hàm render để cập nhật UI ngay lập tức
-                renderAuthInfo(auth.currentUser);
+                renderAuthInfo(auth.currentUser); // Cập nhật lại UI
+                
+                // Xóa file trong ô input sau khi upload thành công
+                inputAvatarFile.value = ""; 
 
             } catch (error) {
                 console.error("Lỗi cập nhật hồ sơ:", error);
@@ -610,12 +645,39 @@
             }
         });
 
-        // 7. Xử lý Nút Xác nhận chuyển khoản (Tab VIP)
+        // 7. Xử lý Đổi Mật Khẩu
+        changePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = inputNewPassword.value;
+            
+            btnChangePassword.textContent = "Đang xử lý...";
+            btnChangePassword.disabled = true;
+
+            try {
+                await updatePassword(auth.currentUser, newPassword);
+                alert("Đổi mật khẩu thành công!");
+                inputNewPassword.value = ""; // Xóa trắng ô input
+            } catch (error) {
+                console.error("Lỗi đổi mật khẩu:", error);
+                
+                // Bắt lỗi require recent login của Firebase
+                if (error.code === 'auth/requires-recent-login') {
+                    alert("Vì lý do bảo mật, bạn cần Đăng xuất và Đăng nhập lại để thực hiện đổi mật khẩu.");
+                } else {
+                    alert("Lỗi: " + error.message);
+                }
+            } finally {
+                btnChangePassword.textContent = "Cập nhật mật khẩu";
+                btnChangePassword.disabled = false;
+            }
+        });
+
+        // 8. Xử lý Nút Xác nhận chuyển khoản (Tab VIP)
         btnConfirmPayment.addEventListener("click", () => {
             alert("Hệ thống đã ghi nhận yêu cầu. Chúng tôi sẽ kiểm tra và kích hoạt VIP cho bạn trong thời gian sớm nhất!");
         });
 
-        // 8. Đăng xuất
+        // 9. Đăng xuất
         btnLogout.addEventListener("click", () => {
             signOut(auth).catch((error) => {
                 console.error("Lỗi đăng xuất:", error);
