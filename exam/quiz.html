@@ -425,6 +425,9 @@
             stopTimer(); 
             isSubmitted = true; 
             
+            // Tính toán thời gian đã làm (Tính năng mới)
+            const timeSpent = examDuration - timeRemaining; 
+            
             const btnSubmit = document.getElementById('btn-submit-exam');
             btnSubmit.disabled = true; 
             btnSubmit.innerText = "Đang xử lý..."; 
@@ -444,7 +447,7 @@
             btnSubmit.innerText = "Đã nộp bài";
 
             try {
-                // YÊU CẦU 1: LƯU SAVED_ANSWERS VÀO DB ĐỂ SAU NÀY REVIEW MODE DÙNG
+                // LƯU KẾT QUẢ CÙNG TIME_SPENT & SAVED_ANSWERS
                 await addDoc(collection(db, "results"), {
                     email: currentUser.email,
                     examId: currentExamId,
@@ -452,6 +455,7 @@
                     correctCount: correctCount,
                     totalQuestions: total,
                     savedAnswers: userAnswers, 
+                    timeSpent: timeSpent, // Lưu thời gian học sinh đã bỏ ra
                     timestamp: new Date().toISOString() 
                 });
 
@@ -621,18 +625,25 @@
                 
                 if (isSubmitted) extraClasses += ' disabled';
                 
+                let displayOpt = opt; // Biến phụ để chứa text hiển thị
+
                 if (isShowExplanation) {
                     if (idx === questionData.correctAnswer) {
                         extraClasses += ' correct';
                     } else if (userAnswers[currentIndex] === idx) {
                         extraClasses += ' wrong';
                     }
+                    
+                    // Nổi bật đáp án mà người dùng đã chọn trong Review Mode
+                    if (userAnswers[currentIndex] === idx) {
+                        displayOpt += ' <strong style="margin-left:10px; color:#3b82f6;">(Bạn chọn)</strong>';
+                    }
                 } else {
                     if (userAnswers[currentIndex] === idx) extraClasses += ' selected';
                 }
 
                 div.className = 'option-item' + extraClasses;
-                div.innerHTML = `<div class="option-label">${['A','B','C','D'][idx]}</div><div>${opt}</div>`;
+                div.innerHTML = `<div class="option-label">${['A','B','C','D'][idx]}</div><div>${displayOpt}</div>`;
                 
                 div.onclick = () => handleOptionSelect(idx);
                 container.appendChild(div);
