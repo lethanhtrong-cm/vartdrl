@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Cá Nhân - Hệ Thống Trắc Nghiệm Y Khoa</title>
-    <!-- Thêm Font Awesome để dùng Icon cho đẹp -->
+    <!-- Thêm Font Awesome để dùng Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* === CƠ BẢN & MÀU SẮC (THEME Y KHOA) === */
@@ -191,7 +191,7 @@
             font-size: 1rem;
         }
 
-        /* Tùy chỉnh input file cho đẹp hơn một chút */
+        /* Tùy chỉnh input file cho đẹp */
         input[type="file"] {
             padding: 7px;
             background-color: var(--light-blue);
@@ -337,8 +337,10 @@
                         <input type="text" id="inputName" placeholder="Nhập tên của bạn...">
                     </div>
                     <div class="form-group">
-                        <label for="inputAvatarFile">Tải lên ảnh đại diện mới:</label>
+                        <label for="inputAvatarFile">Tải lên ảnh đại diện (Không cần Storage):</label>
+                        <!-- Ô input để chọn file ảnh, hỗ trợ nén Base64 -->
                         <input type="file" id="inputAvatarFile" accept="image/*">
+                        <small style="display: block; color: #666; margin-top: 5px;">Ảnh sẽ được tự động thay đổi kích thước xuống 200x200 để tiết kiệm dung lượng.</small>
                     </div>
                     <button type="submit" id="btnUpdateProfile" class="btn-primary">Lưu thay đổi</button>
                 </form>
@@ -346,7 +348,7 @@
 
             <!-- Card Đổi mật khẩu -->
             <div class="card">
-                <h3><i class="fa-solid fa-lock"></i> Đổi mật khẩu</h3>
+                <h3>🔒 Đổi Mật Khẩu</h3>
                 <form id="changePasswordForm">
                     <div class="form-group">
                         <label for="inputNewPassword">Mật khẩu mới:</label>
@@ -417,13 +419,11 @@
 
     <!-- === JAVASCRIPT === -->
     <script type="module">
-        // 1. Import các hàm cần thiết từ Firebase v11.6.1
+        // 1. Import các hàm Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // Import updatePassword để đổi mật khẩu
+        // Bổ sung updatePassword từ Auth
         import { getAuth, onAuthStateChanged, signOut, updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        // Import Firebase Storage để upload ảnh
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
         
         // 2. Cấu hình Firebase
         const firebaseConfig = {
@@ -440,8 +440,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        // Khởi tạo Storage
-        const storage = getStorage(app);
+        // LƯU Ý: Không sử dụng Firebase Storage ở đây nữa
 
         // 3. Logic Chuyển Tab (Sidebar)
         const menuItems = document.querySelectorAll('.sidebar-menu .menu-item[data-target]');
@@ -462,6 +461,7 @@
         const displayEmail = document.getElementById("displayEmail");
         const displayName = document.getElementById("displayName");
         const userAvatar = document.getElementById("userAvatar");
+        
         const inputName = document.getElementById("inputName");
         const inputAvatarFile = document.getElementById("inputAvatarFile");
         const updateProfileForm = document.getElementById("updateProfileForm");
@@ -496,6 +496,7 @@
         function renderAuthInfo(user) {
             const email = user.email;
             const name = user.displayName || "Người dùng ẩn danh";
+            // Nếu có photoURL dạng Base64 hoặc link ngoài thì hiện, còn không dùng ảnh mặc định
             const photoUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0056b3&color=fff`;
 
             displayEmail.textContent = email;
@@ -561,7 +562,7 @@
                     const data = doc.data();
                     const tr = document.createElement("tr");
 
-                    // Fix: Lấy mã đề từ examId hoặc examCode
+                    // 1. Sửa lỗi lấy Mã Đề (examId hoặc examCode)
                     const quizId = data.examId || data.examCode || "Không rõ";
                     const score = data.score !== undefined ? data.score : 0;
                     const correctAnswers = data.correctAnswers !== undefined ? data.correctAnswers : 0;
@@ -571,7 +572,7 @@
                         submitTime = formatDate(data.submitTime);
                     }
 
-                    // Fix: Chuyển hướng tới quiz.html kèm resultId để xem lại
+                    // 1. Sửa Nút xem lại -> chuyển hướng sang quiz.html?resultId=
                     tr.innerHTML = `
                         <td><strong>${quizId}</strong></td>
                         <td>${submitTime}</td>
@@ -599,42 +600,82 @@
             return new Date(dateData).toLocaleString('vi-VN');
         }
 
-        // 6. Xử lý Cập nhật Hồ sơ cá nhân (Kèm Upload Ảnh lên Storage)
+        // --- HÀM HELPER: XỬ LÝ RESIZE ẢNH THÀNH BASE64 BẰNG CANVAS ---
+        function resizeImageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file); // Đọc file thành Data URL
+                
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 200;
+                        const MAX_HEIGHT = 200;
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Tính toán kích thước mới nhưng vẫn giữ nguyên tỷ lệ (Aspect Ratio)
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        // Vẽ ảnh lên canvas
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Chuyển canvas thành chuỗi Base64 định dạng JPEG, chất lượng 0.7 (để giảm dung lượng)
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve(dataUrl);
+                    };
+                    
+                    img.onerror = (error) => reject(error);
+                };
+                
+                reader.onerror = (error) => reject(error);
+            });
+        }
+
+        // 6. Xử lý Cập nhật Hồ sơ cá nhân (Dùng Base64, không dùng Storage)
         updateProfileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             btnUpdateProfile.textContent = "Đang lưu...";
             btnUpdateProfile.disabled = true;
 
             const newName = inputName.value.trim();
-            // Khởi tạo photoURL mặc định là URL cũ của user (nếu có)
-            let photoURL = auth.currentUser.photoURL;
+            // Mặc định lấy lại photoURL cũ
+            let newPhotoURL = auth.currentUser.photoURL;
 
             try {
                 // Kiểm tra xem người dùng có chọn file ảnh mới không
                 if (inputAvatarFile.files.length > 0) {
                     const file = inputAvatarFile.files[0];
-                    
-                    // Tạo reference trên Storage (Lưu tại thư mục avatars/ với tên file là UID của user)
-                    const avatarRef = ref(storage, `avatars/${auth.currentUser.uid}`);
-                    
-                    // Upload file lên Storage
-                    await uploadBytes(avatarRef, file);
-                    
-                    // Lấy link tải xuống trực tiếp
-                    photoURL = await getDownloadURL(avatarRef);
+                    // 2. Chuyển đổi và nén file ảnh sang Base64
+                    newPhotoURL = await resizeImageToBase64(file);
                 }
 
                 // Cập nhật Profile trong Firebase Auth
                 await updateProfile(auth.currentUser, {
                     displayName: newName,
-                    photoURL: photoURL
+                    photoURL: newPhotoURL // Chứa chuỗi base64 hoặc URL cũ
                 });
 
                 alert("Cập nhật hồ sơ thành công!");
-                renderAuthInfo(auth.currentUser); // Cập nhật lại UI
-                
-                // Xóa file trong ô input sau khi upload thành công
-                inputAvatarFile.value = ""; 
+                renderAuthInfo(auth.currentUser); // Cập nhật lại UI lập tức
+                inputAvatarFile.value = ""; // Xóa input file đi
 
             } catch (error) {
                 console.error("Lỗi cập nhật hồ sơ:", error);
@@ -645,7 +686,7 @@
             }
         });
 
-        // 7. Xử lý Đổi Mật Khẩu
+        // 7. Tính năng Đổi Mật Khẩu (Bảo mật)
         changePasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const newPassword = inputNewPassword.value;
@@ -654,15 +695,17 @@
             btnChangePassword.disabled = true;
 
             try {
+                // Gọi API đổi mật khẩu của Firebase Auth
                 await updatePassword(auth.currentUser, newPassword);
                 alert("Đổi mật khẩu thành công!");
-                inputNewPassword.value = ""; // Xóa trắng ô input
+                inputNewPassword.value = ""; // Xóa trắng ô input mật khẩu
+                
             } catch (error) {
                 console.error("Lỗi đổi mật khẩu:", error);
                 
-                // Bắt lỗi require recent login của Firebase
+                // Xử lý cơ chế bảo vệ của Firebase (yêu cầu đăng nhập lại nếu phiên quá lâu)
                 if (error.code === 'auth/requires-recent-login') {
-                    alert("Vì lý do bảo mật, bạn cần Đăng xuất và Đăng nhập lại để thực hiện đổi mật khẩu.");
+                    alert("Vì lý do bảo mật, phiên đăng nhập của bạn đã hết hạn bảo vệ. Vui lòng Đăng xuất và Đăng nhập lại để thực hiện đổi mật khẩu.");
                 } else {
                     alert("Lỗi: " + error.message);
                 }
