@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Đa Năng - Hệ Thống Trắc Nghiệm Y Khoa</title>
+    <title>Dashboard Đa Năng - Hệ Thống Câu Hỏi Trắc Nghiệm</title>
     <!-- Thêm Font Awesome để dùng Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -19,11 +19,13 @@
             --text-muted: #6b7280;
             --warning-orange: #f57c00;
             --success-green: #28a745;
-            --border-color: #ddd;
+            --border-color: #e5e7eb;
             --danger-red: #ef4444;
             --locked-color: #9ca3af;
             --locked-hover: #6b7280;
             --vip-color: #d97706;
+            --free-color: #10b981;
+            --star-color: #fbbf24;
         }
 
         body {
@@ -120,12 +122,12 @@
         }
 
         .tab-pane {
-            display: none; /* Ẩn các tab mặc định */
+            display: none;
             animation: fadeIn 0.3s ease;
         }
 
         .tab-pane.active {
-            display: block; /* Chỉ hiện tab đang active */
+            display: block;
         }
 
         @keyframes fadeIn {
@@ -134,7 +136,7 @@
         }
 
         /* =========================================
-           3. THÀNH PHẦN CHUNG (CARDS, BADGES, BUTTONS)
+           3. THÀNH PHẦN CHUNG
            ========================================= */
         .card {
             background: var(--white);
@@ -151,6 +153,9 @@
             border-bottom: 1px solid #eee;
             padding-bottom: 10px;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .status-badge {
@@ -182,58 +187,182 @@
             color: var(--text-muted);
             font-style: italic;
             text-align: center;
-            padding: 1rem;
+            padding: 2rem;
+            width: 100%;
         }
 
         /* =========================================
            4. CSS RIÊNG TỪNG TAB
            ========================================= */
         
-        /* TAB 1: KHO ĐỀ THI */
-        .exam-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .exam-item {
+        /* --- TAB 1: KHO ĐỀ THI (NÂNG CẤP) --- */
+        
+        /* Toolbar */
+        .toolbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--border-color);
+            background-color: var(--white);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-        .exam-item:last-child {
-            border-bottom: none;
-        }
-        .exam-name {
-            font-weight: 600;
-            font-size: 1.1rem;
+
+        .toolbar-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
-        .exam-vip-text { color: var(--vip-color); }
-        .badge-vip {
-            background-color: #ffc107;
-            color: #856404;
+
+        .toolbar label { font-weight: 600; color: var(--text-main); }
+        
+        .toolbar select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            font-family: inherit;
+            color: var(--text-main);
+            background-color: var(--gray-bg);
+            cursor: pointer;
+        }
+
+        .view-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+        .view-btn.active {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border-color: var(--primary-blue);
+        }
+
+        /* Chế độ Grid View (Mặc định) */
+        .grid-view {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        /* Chế độ List View */
+        .list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Thẻ Đề Thi (Course Card) */
+        .course-card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .course-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
             font-size: 0.75rem;
-            padding: 3px 6px;
-            border-radius: 4px;
             font-weight: bold;
+            color: #fff;
+            z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .badge-free {
-            background-color: #e2e3e5;
-            color: #383d41;
-            font-size: 0.75rem;
-            padding: 3px 6px;
-            border-radius: 4px;
+        .badge-vip { background-color: var(--vip-color); }
+        .badge-free { background-color: var(--free-color); }
+
+        .card-body {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin: 0 0 15px 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            padding-right: 50px; /* Nhường chỗ cho badge */
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-meta {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .rating {
             font-weight: bold;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
+        .rating i { color: var(--star-color); }
+        .attempts { font-size: 0.85rem; color: var(--text-muted); }
+
+        .card-footer {
+            padding: 15px 20px;
+            background-color: var(--gray-bg);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .card-footer button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+        }
+
+        /* Nút Khóa */
         .btn-locked {
             background-color: var(--locked-color);
             color: white;
             border: none;
-            padding: 8px 15px;
             border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
@@ -241,7 +370,66 @@
         }
         .btn-locked:hover { background-color: var(--locked-hover); }
 
-        /* TAB 2: HỒ SƠ */
+        /* CSS Tinh chỉnh cho List View */
+        .list-view .course-card {
+            flex-direction: row;
+            align-items: center;
+        }
+        .list-view .card-body {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .list-view .card-title {
+            margin: 0;
+            padding-right: 0;
+            flex: 1.5;
+        }
+        .list-view .card-stats {
+            grid-template-columns: 1fr;
+            margin: 0;
+            flex: 1;
+        }
+        .list-view .card-meta {
+            border-top: none;
+            padding-top: 0;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+            flex: 1;
+        }
+        .list-view .course-badge {
+            position: relative;
+            top: 0;
+            right: 0;
+            margin-left: 15px;
+            box-shadow: none;
+        }
+        .list-view .card-footer {
+            border-top: none;
+            border-left: 1px solid var(--border-color);
+            background: transparent;
+            min-width: 200px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .grid-view { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .grid-view { grid-template-columns: 1fr; }
+            .list-view .course-card { flex-direction: column; align-items: stretch; }
+            .list-view .card-body { flex-direction: column; align-items: flex-start; }
+            .list-view .card-footer { border-left: none; border-top: 1px solid var(--border-color); }
+            .list-view .course-badge { position: absolute; top: 15px; right: 15px; }
+            .sidebar { width: 60px; }
+            .menu-item span, .sidebar-header h2 { display: none; }
+            .menu-item { justify-content: center; padding: 15px; }
+        }
+
+
+        /* --- TAB 2: HỒ SƠ --- */
         .profile-container { display: flex; gap: 30px; align-items: flex-start; }
         .profile-avatar { text-align: center; }
         .profile-avatar img {
@@ -260,7 +448,7 @@
         }
         input[type="file"] { padding: 7px; background-color: var(--light-blue); cursor: pointer; }
 
-        /* TAB 3: LỊCH SỬ */
+        /* --- TAB 3: LỊCH SỬ --- */
         table { width: 100%; border-collapse: collapse; }
         table th, table td { border: 1px solid var(--border-color); padding: 12px; text-align: center; }
         table th { background-color: var(--light-blue); color: var(--primary-blue); }
@@ -275,7 +463,7 @@
         }
         .btn-delete-history:hover { background-color: #dc2626; }
 
-        /* TAB 4: VIP */
+        /* --- TAB 4: VIP --- */
         .vip-layout { display: flex; gap: 20px; flex-wrap: wrap; }
         .vip-card-box { flex: 1; min-width: 300px; }
         .qr-placeholder {
@@ -293,25 +481,25 @@
 <body>
 
     <!-- =========================================
-         1. SIDEBAR (MENU BÊN TRÁI)
+         1. SIDEBAR
          ========================================= -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>Hệ Thống<br>Trắc Nghiệm Y Khoa</h2>
+            <h2>Hệ Thống<br>Câu hỏi Trắc Nghiệm</h2>
         </div>
         
         <div class="sidebar-menu">
             <div class="menu-item active" data-target="tab-exams">
-                <i class="fa-solid fa-book"></i> Kho Đề Thi
+                <i class="fa-solid fa-book"></i> <span>Kho Đề Thi</span>
             </div>
             <div class="menu-item" data-target="tab-profile">
-                <i class="fa-solid fa-user"></i> Hồ sơ cá nhân
+                <i class="fa-solid fa-user"></i> <span>Hồ sơ cá nhân</span>
             </div>
             <div class="menu-item" data-target="tab-history">
-                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử làm bài
+                <i class="fa-solid fa-clock-rotate-left"></i> <span>Lịch sử làm bài</span>
             </div>
             <div class="menu-item" data-target="tab-vip">
-                <i class="fa-solid fa-gem"></i> Nâng cấp VIP
+                <i class="fa-solid fa-gem"></i> <span>Nâng cấp VIP</span>
             </div>
         </div>
 
@@ -321,17 +509,40 @@
     </div>
 
     <!-- =========================================
-         2. MAIN CONTENT (NỘI DUNG BÊN PHẢI)
+         2. MAIN CONTENT
          ========================================= -->
     <div class="main-content">
         
-        <!-- TAB 1: KHO ĐỀ THI (ACTIVE MẶC ĐỊNH) -->
+        <!-- TAB 1: KHO ĐỀ THI (ĐÃ NÂNG CẤP) -->
         <div id="tab-exams" class="tab-pane active">
-            <div class="card">
-                <h3><i class="fa-solid fa-list-ul"></i> Danh Sách Đề Thi</h3>
-                <ul id="examListContainer" class="exam-list">
-                    <li class="loading-text">Đang tải danh sách đề thi...</li>
-                </ul>
+            <h2 style="margin-top: 0; color: var(--primary-blue);">Khám Phá Kho Đề Thi</h2>
+            
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <label for="sortFilter"><i class="fa-solid fa-filter"></i> Sắp xếp & Lọc:</label>
+                    <select id="sortFilter">
+                        <option value="newest">Mới nhất (Mặc định)</option>
+                        <option value="highest_rating">Đánh giá cao nhất</option>
+                        <option value="most_attempts">Lượt thi nhiều nhất</option>
+                        <option value="only_vip">Chỉ hiện đề VIP</option>
+                        <option value="only_free">Chỉ hiện đề Miễn phí</option>
+                    </select>
+                </div>
+                
+                <div class="toolbar-group">
+                    <button class="view-btn active" data-view="grid" title="Hiển thị dạng lưới">
+                        <i class="fa-solid fa-border-all"></i>
+                    </button>
+                    <button class="view-btn" data-view="list" title="Hiển thị dạng danh sách">
+                        <i class="fa-solid fa-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Container Đề Thi -->
+            <div id="examListContainer" class="grid-view">
+                <div class="loading-text">Đang tải và tổng hợp dữ liệu khóa học...</div>
             </div>
         </div>
         
@@ -467,8 +678,10 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Biến toàn cục lưu trữ thông tin user hiện tại (Để phục vụ cho check VIP ở Tab Khác)
+        // Biến toàn cục
         let currentUserData = null;
+        let allExamsData = []; // Mảng chứa dữ liệu tổng hợp để filter/sort
+        let currentView = 'grid'; // 'grid' hoặc 'list'
 
         // Hàm chuyển hướng an toàn
         function safeRedirect(path) {
@@ -481,18 +694,16 @@
         }
 
         // ==========================================
-        // 2. LOGIC UI: CHUYỂN TAB (Mượt mà bằng CSS class)
+        // 2. LOGIC UI: CHUYỂN TAB
         // ==========================================
         const menuItems = document.querySelectorAll('.sidebar-menu .menu-item[data-target]');
         const tabPanes = document.querySelectorAll('.tab-pane');
 
         menuItems.forEach(item => {
             item.addEventListener('click', () => {
-                // Remove active class from all menu items & panes
                 menuItems.forEach(m => m.classList.remove('active'));
                 tabPanes.forEach(pane => pane.classList.remove('active'));
                 
-                // Add active class to clicked item and corresponding pane
                 item.classList.add('active');
                 const targetId = item.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('active');
@@ -524,6 +735,8 @@
 
         // UI Danh Sách & Lịch sử
         const examListContainer = document.getElementById('examListContainer');
+        const sortFilter = document.getElementById('sortFilter');
+        const viewBtns = document.querySelectorAll('.view-btn');
         const historyTableBody = document.getElementById("historyTableBody");
         const btnLogout = document.getElementById("btnLogout");
 
@@ -532,23 +745,16 @@
         // ==========================================
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 4.1 Render Data Căn bản có sẵn
                 renderAuthInfo(user);
-                
-                // 4.2 Lấy Dữ liệu chuyên sâu từ Firestore (VIP, Banned, Ảnh Base64)
                 await fetchUserData(user); 
-                
-                // 4.3 Tải Danh sách đề thi (Yêu cầu biết VIP hay không)
-                await loadExamList();
-                
-                // 4.4 Tải Lịch sử làm bài
+                setupToolbarEvents(); // Khởi tạo event cho Toolbar
+                await loadAggregatedExamData(); // Tải và gom dữ liệu
                 await fetchHistory(user.email);
             } else {
                 safeRedirect('index.html');
             }
         });
 
-        // Hàm render thông tin cơ bản
         function renderAuthInfo(user) {
             const email = user.email;
             const name = user.displayName || "Người dùng ẩn danh";
@@ -561,29 +767,22 @@
             inputName.value = user.displayName || "";
         }
 
-        // Hàm Tải Dữ Liệu User (VIP, Banned)
         async function fetchUserData(user) {
             try {
-                // Lấy thông tin user bằng UID (theo chuẩn của Profile cũ)
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
 
                 if (userDocSnap.exists()) {
                     currentUserData = userDocSnap.data();
 
-                    // Check Banned
                     if (currentUserData.isBanned) {
                         alert("Tài khoản của bạn đã bị khóa hệ thống. Vui lòng liên hệ quản trị viên.");
                         await signOut(auth);
                         return;
                     }
-
-                    // Check Base64 Avatar
                     if (currentUserData.avatarBase64) {
                         userAvatar.src = currentUserData.avatarBase64;
                     }
-
-                    // Check VIP
                     if (currentUserData.isVip) {
                         vipStatusBadge.textContent = "Đã kích hoạt VIP";
                         vipStatusBadge.className = "status-badge status-active";
@@ -614,96 +813,204 @@
             vipEndDate.textContent = "Không xác định";
         }
 
-        // Hàm Tải Danh Sách Đề Thi
-        async function loadExamList() {
-            try {
-                // Lấy danh sách mã đề từ bộ câu hỏi
-                const questionsRef = collection(db, "questions");
-                const querySnapshot = await getDocs(questionsRef);
-                const uniqueExams = new Set();
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.examId) uniqueExams.add(data.examId);
-                });
-                const examsArray = Array.from(uniqueExams);
+        // ==========================================
+        // 5. NÂNG CẤP LOGIC: KHO ĐỀ THI
+        // ==========================================
+        
+        // Sự kiện Toolbar
+        function setupToolbarEvents() {
+            sortFilter.addEventListener('change', () => {
+                renderExams();
+            });
 
-                // Lấy cấu hình VIP của từng đề
-                const examsConfigRef = collection(db, "exams");
-                const configSnapshot = await getDocs(examsConfigRef);
-                const examConfigs = {};
-                configSnapshot.forEach((doc) => {
-                    examConfigs[doc.id] = doc.data(); 
-                });
-
-                examListContainer.innerHTML = ""; 
-
-                if (examsArray.length === 0) {
-                    examListContainer.innerHTML = '<li class="loading-text">Hiện tại chưa có đề thi nào trong kho.</li>';
-                    return;
-                }
-
-                // Xét quyền VIP của user
-                const isUserVip = currentUserData && currentUserData.isVip === true;
-
-                // Render
-                examsArray.forEach((examId) => {
-                    const li = document.createElement('li');
-                    li.className = 'exam-item';
-                    
-                    const examConfig = examConfigs[examId] || {};
-                    const isExamVip = examConfig.isVip === true;
-
-                    let nameHtml = `<span class="exam-name"><i class="fa-regular fa-file-lines"></i> Mã đề: ${examId} <span class="badge-free">Free</span></span>`;
-                    let buttonHtml = '';
-
-                    if (isExamVip) {
-                        nameHtml = `
-                            <span class="exam-name exam-vip-text">
-                                🌟 Mã đề: ${examId} 
-                                <span class="badge-vip">VIP</span>
-                            </span>`;
-
-                        if (!isUserVip) {
-                            buttonHtml = `<button class="btn-locked" onclick="goToUpgrade()">🔒 Đề VIP - Nạp để mở</button>`;
-                        } else {
-                            buttonHtml = `<button class="btn-primary" style="padding: 8px 15px;" onclick="goToQuiz('${examId}')">Vào Thi</button>`;
-                        }
-                    } else {
-                        buttonHtml = `<button class="btn-primary" style="padding: 8px 15px;" onclick="goToQuiz('${examId}')">Vào Thi</button>`;
+            viewBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const view = e.currentTarget.getAttribute('data-view');
+                    if (view !== currentView) {
+                        currentView = view;
+                        // Đổi active state của nút
+                        viewBtns.forEach(b => b.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        // Đổi class container
+                        examListContainer.className = currentView === 'grid' ? 'grid-view' : 'list-view';
+                        renderExams();
                     }
-                    
-                    li.innerHTML = `${nameHtml}${buttonHtml}`;
-                    examListContainer.appendChild(li);
                 });
+            });
+        }
+
+        // Fetch và gộp dữ liệu từ 3 collections
+        async function loadAggregatedExamData() {
+            try {
+                // 1. Fetch Questions (Lấy danh sách mã đề & Đếm số câu)
+                const questionsRef = collection(db, "questions");
+                const qSnap = await getDocs(questionsRef);
+                const examMap = {}; 
+                
+                qSnap.forEach((doc) => {
+                    const data = doc.data();
+                    const eId = data.examId;
+                    if (eId) {
+                        if (!examMap[eId]) examMap[eId] = { id: eId, questionCount: 0 };
+                        examMap[eId].questionCount++;
+                    }
+                });
+
+                // 2. Fetch Exams (Lấy isVip, timeLimit, attemptCount)
+                const examsConfigRef = collection(db, "exams");
+                const eSnap = await getDocs(examsConfigRef);
+                eSnap.forEach((doc) => {
+                    const eId = doc.id;
+                    if (examMap[eId]) {
+                        const conf = doc.data();
+                        examMap[eId].isVip = conf.isVip || false;
+                        examMap[eId].timeLimit = conf.timeLimit || 60; // Mặc định 60p
+                        examMap[eId].attemptCount = conf.attemptCount || 0;
+                        examMap[eId].createdAt = conf.createdAt ? conf.createdAt.toMillis() : 0;
+                    }
+                });
+
+                // 3. Fetch Feedbacks (Tính Rating)
+                const feedbacksRef = collection(db, "feedbacks");
+                const fSnap = await getDocs(feedbacksRef);
+                const ratingMap = {}; // { examId: { total: 0, count: 0 } }
+                
+                fSnap.forEach((doc) => {
+                    const data = doc.data();
+                    const eId = data.examId;
+                    const stars = data.rating || 5; // Mặc định 5 nếu lỗi
+                    if (eId) {
+                        if (!ratingMap[eId]) ratingMap[eId] = { total: 0, count: 0 };
+                        ratingMap[eId].total += stars;
+                        ratingMap[eId].count++;
+                    }
+                });
+
+                // Gộp rating vào examMap
+                Object.keys(examMap).forEach(eId => {
+                    if (ratingMap[eId]) {
+                        const avg = ratingMap[eId].total / ratingMap[eId].count;
+                        examMap[eId].rating = Math.round(avg * 10) / 10; // Làm tròn 1 chữ số
+                        examMap[eId].ratingCount = ratingMap[eId].count;
+                    } else {
+                        examMap[eId].rating = 5.0; // Chưa có đánh giá thì mặc định 5 sao
+                        examMap[eId].ratingCount = 0;
+                    }
+                });
+
+                // Chuyển Map thành Array để dễ filter/sort
+                allExamsData = Object.values(examMap);
+                
+                // Render lần đầu
+                renderExams();
 
             } catch (error) {
-                console.error("Lỗi khi tải danh sách đề thi:", error);
-                examListContainer.innerHTML = '<li class="loading-text" style="color:red;">Lỗi tải dữ liệu đề thi!</li>';
+                console.error("Lỗi khi tổng hợp dữ liệu đề thi:", error);
+                examListContainer.innerHTML = '<div class="loading-text" style="color:red;">Lỗi tải dữ liệu khóa học!</div>';
             }
         }
 
-        // Các Hàm Chuyển Hướng Gắn Trực Tiếp Vào Window
+        // Render ra giao diện HTML (Filter & Sort áp dụng ở đây)
+        function renderExams() {
+            if (allExamsData.length === 0) {
+                examListContainer.innerHTML = '<div class="loading-text">Hiện tại chưa có khóa học / đề thi nào.</div>';
+                return;
+            }
+
+            const filterType = sortFilter.value;
+            let displayData = [...allExamsData];
+
+            // Filter
+            if (filterType === 'only_vip') {
+                displayData = displayData.filter(exam => exam.isVip);
+            } else if (filterType === 'only_free') {
+                displayData = displayData.filter(exam => !exam.isVip);
+            }
+
+            // Sort
+            if (filterType === 'highest_rating') {
+                displayData.sort((a, b) => b.rating - a.rating);
+            } else if (filterType === 'most_attempts') {
+                displayData.sort((a, b) => b.attemptCount - a.attemptCount);
+            } else {
+                // newest (Mặc định)
+                displayData.sort((a, b) => b.createdAt - a.createdAt); 
+            }
+
+            // Render HTML
+            examListContainer.innerHTML = "";
+            const isUserVip = currentUserData && currentUserData.isVip === true;
+
+            displayData.forEach(exam => {
+                const isExamVip = exam.isVip;
+                const badgeHtml = isExamVip 
+                    ? `<span class="course-badge badge-vip"><i class="fa-solid fa-crown"></i> VIP</span>`
+                    : `<span class="course-badge badge-free">Free</span>`;
+                
+                let buttonHtml = '';
+                if (isExamVip && !isUserVip) {
+                    buttonHtml = `<button class="btn-locked" onclick="goToUpgrade()"><i class="fa-solid fa-lock"></i> Đề VIP - Nạp để mở</button>`;
+                } else {
+                    buttonHtml = `<button class="btn-primary" onclick="goToQuiz('${exam.id}')">Vào thi ngay</button>`;
+                }
+
+                // Cấu trúc Card HTML
+                const card = document.createElement('div');
+                card.className = 'course-card';
+                card.innerHTML = `
+                    ${badgeHtml}
+                    <div class="card-body">
+                        <div style="flex: 1;">
+                            <h3 class="card-title">${exam.id}</h3>
+                            <div class="card-stats">
+                                <div class="stat-item">
+                                    <i class="fa-solid fa-file-circle-question"></i> ${exam.questionCount} câu hỏi
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fa-solid fa-stopwatch"></i> ${exam.timeLimit} phút
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-meta">
+                            <div class="rating">
+                                ${exam.rating} <i class="fa-solid fa-star"></i> 
+                                <span class="attempts">(${exam.ratingCount})</span>
+                            </div>
+                            <div class="attempts">
+                                <i class="fa-solid fa-users"></i> ${exam.attemptCount} lượt thi
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        ${buttonHtml}
+                    </div>
+                `;
+                examListContainer.appendChild(card);
+            });
+
+            if (displayData.length === 0) {
+                examListContainer.innerHTML = '<div class="loading-text">Không tìm thấy khóa học nào phù hợp với bộ lọc.</div>';
+            }
+        }
+
+        // Chuyển Hướng An Toàn
         window.goToQuiz = function(examId) {
             safeRedirect(`quiz.html?examId=${examId}`);
         };
 
         window.goToUpgrade = function() {
-            // Chuyển sang Tab VIP thay vì điều hướng trang
             const vipTabButton = document.querySelector('.menu-item[data-target="tab-vip"]');
             if(vipTabButton) vipTabButton.click();
         };
 
-        // Hàm Tải Lịch Sử Làm Bài
+        // ==========================================
+        // 6. LỊCH SỬ LÀM BÀI & CÁC HÀM KHÁC
+        // ==========================================
         async function fetchHistory(userEmail) {
             try {
-                const examsRef = collection(db, "exams");
-                const examsSnapshot = await getDocs(examsRef);
+                // Tạo một bản đồ VIP để kiểm tra lịch sử
                 const examVipMap = {};
-                examsSnapshot.forEach(doc => {
-                    const examData = doc.data();
-                    const eId = examData.examId || examData.examCode || doc.id;
-                    examVipMap[eId] = examData.isVip || false;
-                });
+                allExamsData.forEach(e => examVipMap[e.id] = e.isVip);
 
                 const resultsRef = collection(db, "results");
                 const q = query(resultsRef, where("email", "==", userEmail));
@@ -719,7 +1026,6 @@
                     resultsArray.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Sắp xếp Mới nhất lên đầu
                 resultsArray.sort((a, b) => {
                     const dateA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp || a.submittedAt || 0);
                     const dateB = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp || b.submittedAt || 0);
@@ -735,7 +1041,9 @@
                     const correctAnswers = data.correctAnswers !== undefined ? data.correctAnswers : 0;
                     
                     const isVipExam = examVipMap[quizId] === true;
-                    const badgeHtml = isVipExam ? `<span class="badge-vip">VIP</span>` : `<span class="badge-free">Free</span>`;
+                    // Sử dụng class badge cũ cho table để gọn gàng
+                    const badgeHtml = isVipExam ? `<span style="background:#ffc107;color:#856404;padding:2px 5px;border-radius:4px;font-size:0.75rem;">VIP</span>` 
+                                                : `<span style="background:#e2e3e5;color:#383d41;padding:2px 5px;border-radius:4px;font-size:0.75rem;">Free</span>`;
 
                     let timeSpentStr = "Không rõ";
                     if (data.timeSpent !== undefined) {
@@ -774,7 +1082,6 @@
             }
         }
 
-        // Event Delegation Xóa Lịch Sử
         historyTableBody.addEventListener('click', async (e) => {
             const deleteBtn = e.target.closest('.btn-delete-history');
             if (deleteBtn) {
@@ -792,10 +1099,7 @@
             }
         });
 
-        // ==========================================
-        // 5. CÁC HÀM XỬ LÝ PROFILE
-        // ==========================================
-
+        // Hàm Date & Image processing
         function formatDate(dateData) {
             if (dateData && typeof dateData.toDate === 'function') {
                 return dateData.toDate().toLocaleString('vi-VN');
@@ -803,7 +1107,6 @@
             return new Date(dateData).toLocaleString('vi-VN');
         }
 
-        // Hàm Resize Ảnh Canvas
         function resizeImageToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -829,7 +1132,6 @@
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-
                         resolve(canvas.toDataURL('image/jpeg', 0.7));
                     };
                     img.onerror = (error) => reject(error);
@@ -838,7 +1140,6 @@
             });
         }
 
-        // Cập nhật Profile
         updateProfileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             btnUpdateProfile.textContent = "Đang lưu...";
@@ -849,7 +1150,6 @@
 
             try {
                 await updateProfile(auth.currentUser, { displayName: newName });
-
                 if (inputAvatarFile.files.length > 0) {
                     const file = inputAvatarFile.files[0];
                     newBase64Avatar = await resizeImageToBase64(file);
@@ -862,7 +1162,6 @@
                 displayName.textContent = newName;
                 if (newBase64Avatar) userAvatar.src = newBase64Avatar;
                 inputAvatarFile.value = ""; 
-
             } catch (error) {
                 console.error("Lỗi cập nhật hồ sơ:", error);
                 alert("Đã xảy ra lỗi: " + error.message);
@@ -872,7 +1171,6 @@
             }
         });
 
-        // Đổi Mật Khẩu
         changePasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const newPassword = inputNewPassword.value;
@@ -884,7 +1182,6 @@
                 await updatePassword(auth.currentUser, newPassword);
                 alert("Đổi mật khẩu thành công!");
                 inputNewPassword.value = ""; 
-                
             } catch (error) {
                 console.error("Lỗi đổi mật khẩu:", error);
                 if (error.code === 'auth/requires-recent-login') {
@@ -898,9 +1195,6 @@
             }
         });
 
-        // ==========================================
-        // 6. CÁC HÀM XỬ LÝ KHÁC
-        // ==========================================
         btnConfirmPayment.addEventListener("click", () => {
             alert("Hệ thống đã ghi nhận yêu cầu. Chúng tôi sẽ kiểm tra và kích hoạt VIP cho bạn trong thời gian sớm nhất!");
         });
