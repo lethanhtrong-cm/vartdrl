@@ -119,6 +119,54 @@
             flex: 1;
             padding: 30px 40px;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TOPBAR MỚI NÂNG CẤP */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .topbar-title {
+            margin: 0;
+            color: var(--primary-blue);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topbar-greeting {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .topbar-greeting b {
+            color: var(--text-main);
+        }
+
+        .topbar-user img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--light-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* KHU VỰC TABS */
+        .tab-content-container {
+            flex: 1;
         }
 
         .tab-pane {
@@ -195,9 +243,7 @@
            4. CSS RIÊNG TỪNG TAB
            ========================================= */
         
-        /* --- TAB 1: KHO ĐỀ THI (NÂNG CẤP) --- */
-        
-        /* Toolbar */
+        /* --- TAB 1: KHO ĐỀ THI --- */
         .toolbar {
             display: flex;
             justify-content: space-between;
@@ -245,21 +291,9 @@
             border-color: var(--primary-blue);
         }
 
-        /* Chế độ Grid View (Mặc định) */
-        .grid-view {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-        }
+        .grid-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
+        .list-view { display: flex; flex-direction: column; gap: 20px; }
 
-        /* Chế độ List View */
-        .list-view {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* Thẻ Đề Thi (Course Card) */
         .course-card {
             background: var(--white);
             border-radius: 12px;
@@ -278,158 +312,65 @@
         }
 
         .course-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #fff;
-            z-index: 2;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: absolute; top: 15px; right: 15px;
+            padding: 5px 12px; border-radius: 20px; font-size: 0.75rem;
+            font-weight: bold; color: #fff; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .badge-vip { background-color: var(--vip-color); }
         .badge-free { background-color: var(--free-color); }
 
-        .card-body {
-            padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
+        .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
         .card-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary-blue);
-            margin: 0 0 15px 0;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            padding-right: 50px; /* Nhường chỗ cho badge */
+            font-size: 1.2rem; font-weight: 700; color: var(--primary-blue);
+            margin: 0 0 15px 0; line-height: 1.4; display: -webkit-box;
+            -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding-right: 50px;
         }
 
-        .card-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-        
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .card-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
+        .stat-item { display: flex; align-items: center; gap: 6px; }
 
         .card-meta {
-            margin-top: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 1px dashed var(--border-color);
+            margin-top: auto; display: flex; justify-content: space-between; align-items: center;
+            padding-top: 15px; border-top: 1px dashed var(--border-color);
         }
-
-        .rating {
-            font-weight: bold;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .rating { font-weight: bold; color: var(--text-main); display: flex; align-items: center; gap: 5px; }
         .rating i { color: var(--star-color); }
         .attempts { font-size: 0.85rem; color: var(--text-muted); }
 
-        .card-footer {
-            padding: 15px 20px;
-            background-color: var(--gray-bg);
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .card-footer button {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-        }
+        .card-footer { padding: 15px 20px; background-color: var(--gray-bg); border-top: 1px solid var(--border-color); }
+        .card-footer button { width: 100%; padding: 12px; font-size: 1rem; }
 
-        /* Nút Khóa */
-        .btn-locked {
-            background-color: var(--locked-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+        .btn-locked { background-color: var(--locked-color); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-locked:hover { background-color: var(--locked-hover); }
 
-        /* CSS Tinh chỉnh cho List View */
-        .list-view .course-card {
-            flex-direction: row;
-            align-items: center;
+        .list-view .course-card { flex-direction: row; align-items: center; }
+        .list-view .card-body { flex-direction: row; align-items: center; justify-content: space-between; gap: 20px; }
+        .list-view .card-title { margin: 0; padding-right: 0; flex: 1.5; }
+        .list-view .card-stats { grid-template-columns: 1fr; margin: 0; flex: 1; }
+        .list-view .card-meta { border-top: none; padding-top: 0; flex-direction: column; align-items: flex-start; gap: 5px; flex: 1; }
+        .list-view .course-badge { position: relative; top: 0; right: 0; margin-left: 15px; box-shadow: none; }
+        .list-view .card-footer { border-top: none; border-left: 1px solid var(--border-color); background: transparent; min-width: 200px; }
+
+
+        /* --- TAB 2: HỒ SƠ (CẤU TRÚC LẠI GRID) --- */
+        .profile-grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            align-items: start;
         }
-        .list-view .card-body {
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-        }
-        .list-view .card-title {
-            margin: 0;
-            padding-right: 0;
-            flex: 1.5;
-        }
-        .list-view .card-stats {
-            grid-template-columns: 1fr;
-            margin: 0;
-            flex: 1;
-        }
-        .list-view .card-meta {
-            border-top: none;
-            padding-top: 0;
+
+        .profile-column {
+            display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            gap: 5px;
-            flex: 1;
-        }
-        .list-view .course-badge {
-            position: relative;
-            top: 0;
-            right: 0;
-            margin-left: 15px;
-            box-shadow: none;
-        }
-        .list-view .card-footer {
-            border-top: none;
-            border-left: 1px solid var(--border-color);
-            background: transparent;
-            min-width: 200px;
+            gap: 25px;
         }
 
-        /* Responsive */
-        @media (max-width: 1100px) {
-            .grid-view { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 768px) {
-            .grid-view { grid-template-columns: 1fr; }
-            .list-view .course-card { flex-direction: column; align-items: stretch; }
-            .list-view .card-body { flex-direction: column; align-items: flex-start; }
-            .list-view .card-footer { border-left: none; border-top: 1px solid var(--border-color); }
-            .list-view .course-badge { position: absolute; top: 15px; right: 15px; }
-            .sidebar { width: 60px; }
-            .menu-item span, .sidebar-header h2 { display: none; }
-            .menu-item { justify-content: center; padding: 15px; }
+        /* Bỏ margin-bottom của card khi nằm trong grid/column để giao diện đều nhau */
+        .profile-grid-layout .card {
+            margin-bottom: 0;
         }
 
-
-        /* --- TAB 2: HỒ SƠ --- */
         .profile-container { display: flex; gap: 30px; align-items: flex-start; }
         .profile-avatar { text-align: center; }
         .profile-avatar img {
@@ -446,7 +387,7 @@
             width: 100%; padding: 10px; border: 1px solid var(--border-color);
             border-radius: 5px; box-sizing: border-box; font-size: 1rem;
         }
-        input[type="file"] { padding: 7px; background-color: var(--light-blue); cursor: pointer; }
+        input[type="file"] { padding: 7px; background-color: var(--light-blue); cursor: pointer; border-radius: 5px; width: 100%; box-sizing: border-box;}
 
         /* --- TAB 3: LỊCH SỬ --- */
         table { width: 100%; border-collapse: collapse; }
@@ -475,6 +416,26 @@
         .instruction {
             background-color: var(--light-blue); padding: 15px; border-radius: 5px;
             line-height: 1.5; text-align: center; margin-bottom: 15px;
+        }
+
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 1100px) {
+            .grid-view { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .grid-view { grid-template-columns: 1fr; }
+            .list-view .course-card { flex-direction: column; align-items: stretch; }
+            .list-view .card-body { flex-direction: column; align-items: flex-start; }
+            .list-view .card-footer { border-left: none; border-top: 1px solid var(--border-color); }
+            .list-view .course-badge { position: absolute; top: 15px; right: 15px; }
+            
+            .profile-grid-layout { grid-template-columns: 1fr; } /* Ép hồ sơ về 1 cột trên mobile */
+            .profile-container { flex-direction: column; align-items: center; text-align: center; }
+
+            .sidebar { width: 60px; }
+            .menu-item span, .sidebar-header h2 { display: none; }
+            .menu-item { justify-content: center; padding: 15px; }
+            .topbar { flex-direction: column; gap: 15px; align-items: flex-start; }
         }
     </style>
 </head>
@@ -513,141 +474,160 @@
          ========================================= -->
     <div class="main-content">
         
-        <!-- TAB 1: KHO ĐỀ THI (ĐÃ NÂNG CẤP) -->
-        <div id="tab-exams" class="tab-pane active">
-            <h2 style="margin-top: 0; color: var(--primary-blue);">Khám Phá Kho Đề Thi</h2>
+        <!-- TOPBAR MỚI (Hiện ở mọi tab) -->
+        <div class="topbar">
+            <h2 id="currentTabTitle" class="topbar-title">Khám Phá Kho Đề Thi</h2>
+            <div class="topbar-user">
+                <span class="topbar-greeting">Xin chào, <b id="topbarName">Đang tải...</b></span>
+                <img id="topbarAvatar" src="https://ui-avatars.com/api/?name=User&background=0056b3&color=fff" alt="Avatar User">
+            </div>
+        </div>
+
+        <div class="tab-content-container">
+            <!-- TAB 1: KHO ĐỀ THI -->
+            <div id="tab-exams" class="tab-pane active">
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="toolbar-group">
+                        <label for="sortFilter"><i class="fa-solid fa-filter"></i> Sắp xếp & Lọc:</label>
+                        <select id="sortFilter">
+                            <option value="newest">Mới nhất (Mặc định)</option>
+                            <option value="highest_rating">Đánh giá cao nhất</option>
+                            <option value="most_attempts">Lượt thi nhiều nhất</option>
+                            <option value="only_vip">Chỉ hiện đề VIP</option>
+                            <option value="only_free">Chỉ hiện đề Miễn phí</option>
+                        </select>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="view-btn active" data-view="grid" title="Hiển thị dạng lưới">
+                            <i class="fa-solid fa-border-all"></i>
+                        </button>
+                        <button class="view-btn" data-view="list" title="Hiển thị dạng danh sách">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Container Đề Thi -->
+                <div id="examListContainer" class="grid-view">
+                    <div class="loading-text">Đang tải và tổng hợp dữ liệu khóa học...</div>
+                </div>
+            </div>
             
-            <!-- Toolbar -->
-            <div class="toolbar">
-                <div class="toolbar-group">
-                    <label for="sortFilter"><i class="fa-solid fa-filter"></i> Sắp xếp & Lọc:</label>
-                    <select id="sortFilter">
-                        <option value="newest">Mới nhất (Mặc định)</option>
-                        <option value="highest_rating">Đánh giá cao nhất</option>
-                        <option value="most_attempts">Lượt thi nhiều nhất</option>
-                        <option value="only_vip">Chỉ hiện đề VIP</option>
-                        <option value="only_free">Chỉ hiện đề Miễn phí</option>
-                    </select>
-                </div>
-                
-                <div class="toolbar-group">
-                    <button class="view-btn active" data-view="grid" title="Hiển thị dạng lưới">
-                        <i class="fa-solid fa-border-all"></i>
-                    </button>
-                    <button class="view-btn" data-view="list" title="Hiển thị dạng danh sách">
-                        <i class="fa-solid fa-list"></i>
-                    </button>
+            <!-- TAB 2: HỒ SƠ CÁ NHÂN (GRID CSS MỚI) -->
+            <div id="tab-profile" class="tab-pane">
+                <div class="profile-grid-layout">
+                    
+                    <!-- Cột Trái: Thông tin chung & Đổi mật khẩu -->
+                    <div class="profile-column">
+                        <div class="card">
+                            <h3><i class="fa-solid fa-address-card"></i> Thông tin chung</h3>
+                            <div class="profile-container">
+                                <div class="profile-avatar">
+                                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=0056b3&color=fff" alt="Avatar">
+                                </div>
+                                <div class="profile-info">
+                                    <p><strong>Tên hiển thị:</strong> <span id="displayName">Đang tải...</span></p>
+                                    <p><strong>Email:</strong> <span id="displayEmail">Đang tải...</span></p>
+                                    <p>
+                                        <strong>Trạng thái VIP:</strong> 
+                                        <span id="vipStatusBadge" class="status-badge status-unactive">Đang kiểm tra...</span>
+                                    </p>
+                                    <p><strong>Ngày kích hoạt:</strong> <span id="vipStartDate">Không xác định</span></p>
+                                    <p><strong>Ngày hết hạn:</strong> <span id="vipEndDate">Không xác định</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>🔒 Đổi Mật Khẩu</h3>
+                            <form id="changePasswordForm">
+                                <div class="form-group">
+                                    <label for="inputNewPassword">Mật khẩu mới:</label>
+                                    <input type="password" id="inputNewPassword" placeholder="Nhập mật khẩu mới..." required minlength="6">
+                                </div>
+                                <button type="submit" id="btnChangePassword" class="btn-primary">Cập nhật mật khẩu</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Cột Phải: Cập nhật hồ sơ -->
+                    <div class="profile-column">
+                        <div class="card" style="height: 100%;">
+                            <h3><i class="fa-solid fa-pen-to-square"></i> Cập nhật hồ sơ</h3>
+                            <form id="updateProfileForm">
+                                <div class="form-group">
+                                    <label for="inputName">Tên hiển thị mới:</label>
+                                    <input type="text" id="inputName" placeholder="Nhập tên của bạn...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputAvatarFile">Tải lên ảnh đại diện:</label>
+                                    <input type="file" id="inputAvatarFile" accept="image/*">
+                                    <small style="display: block; color: #666; margin-top: 5px;">Ảnh sẽ được nén tự động xuống 200x200 pixel để tiết kiệm dung lượng.</small>
+                                </div>
+                                <button type="submit" id="btnUpdateProfile" class="btn-primary">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            <!-- Container Đề Thi -->
-            <div id="examListContainer" class="grid-view">
-                <div class="loading-text">Đang tải và tổng hợp dữ liệu khóa học...</div>
+            <!-- TAB 3: LỊCH SỬ LÀM BÀI -->
+            <div id="tab-history" class="tab-pane">
+                <div class="card">
+                    <h3><i class="fa-solid fa-list-check"></i> Lịch sử các lần thi</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã đề</th>
+                                <th>Thời gian làm bài</th>
+                                <th>Thời gian nộp</th>
+                                <th>Số câu đúng</th>
+                                <th>Điểm số</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr>
+                                <td colspan="6" class="loading-text">Đang tải lịch sử thi...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        
-        <!-- TAB 2: HỒ SƠ CÁ NHÂN -->
-        <div id="tab-profile" class="tab-pane">
-            <div class="card">
-                <h3><i class="fa-solid fa-address-card"></i> Thông tin chung</h3>
-                <div class="profile-container">
-                    <div class="profile-avatar">
-                        <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=0056b3&color=fff" alt="Avatar">
-                    </div>
-                    <div class="profile-info">
-                        <p><strong>Tên hiển thị:</strong> <span id="displayName">Đang tải...</span></p>
-                        <p><strong>Email:</strong> <span id="displayEmail">Đang tải...</span></p>
-                        <p>
-                            <strong>Trạng thái VIP:</strong> 
-                            <span id="vipStatusBadge" class="status-badge status-unactive">Đang kiểm tra...</span>
+
+            <!-- TAB 4: NÂNG CẤP VIP -->
+            <div id="tab-vip" class="tab-pane">
+                <div class="vip-layout">
+                    <div class="card vip-card-box">
+                        <h3><i class="fa-solid fa-star"></i> Gói cước của bạn</h3>
+                        <p style="font-size: 1.1rem;">
+                            Tình trạng hiện tại:<br><br>
+                            <span id="vipStatusTab3" class="status-badge status-unactive" style="font-size: 1rem; padding: 10px 15px;">Chưa kích hoạt VIP</span>
                         </p>
-                        <p><strong>Ngày kích hoạt:</strong> <span id="vipStartDate">Không xác định</span></p>
-                        <p><strong>Ngày hết hạn:</strong> <span id="vipEndDate">Không xác định</span></p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <ul style="line-height: 1.8; padding-left: 20px;">
+                            <li>Truy cập toàn bộ kho đề thi VIP độc quyền.</li>
+                            <li>Xem giải thích chi tiết đáp án.</li>
+                            <li>Lưu lại lịch sử làm bài không giới hạn.</li>
+                            <li>Hỗ trợ học tập 24/7.</li>
+                        </ul>
                     </div>
-                </div>
-            </div>
 
-            <div class="card">
-                <h3><i class="fa-solid fa-pen-to-square"></i> Cập nhật hồ sơ</h3>
-                <form id="updateProfileForm">
-                    <div class="form-group">
-                        <label for="inputName">Tên hiển thị mới:</label>
-                        <input type="text" id="inputName" placeholder="Nhập tên của bạn...">
+                    <div class="card vip-card-box" style="text-align: center;">
+                        <h3><i class="fa-solid fa-qrcode"></i> Thanh toán qua QR Code</h3>
+                        <div class="qr-placeholder">
+                            <img src="https://via.placeholder.com/200?text=QR+Code+Demo" alt="Mã QR Chuyển khoản">
+                        </div>
+                        <div class="instruction">
+                            Vui lòng chuyển khoản <strong>100.000đ</strong> với nội dung:<br><br>
+                            <span style="font-weight: bold; color: var(--primary-blue); font-size: 1.2rem;">NAP <span id="paymentEmail">[Email của bạn]</span></span><br><br>
+                            để được hệ thống mở khóa tự động.
+                        </div>
+                        <button id="btnConfirmPayment" class="btn-primary" style="width: 100%;">Tôi đã chuyển khoản</button>
                     </div>
-                    <div class="form-group">
-                        <label for="inputAvatarFile">Tải lên ảnh đại diện:</label>
-                        <input type="file" id="inputAvatarFile" accept="image/*">
-                        <small style="display: block; color: #666; margin-top: 5px;">Ảnh sẽ được nén tự động xuống 200x200 pixel.</small>
-                    </div>
-                    <button type="submit" id="btnUpdateProfile" class="btn-primary">Lưu thay đổi</button>
-                </form>
-            </div>
-
-            <div class="card">
-                <h3>🔒 Đổi Mật Khẩu</h3>
-                <form id="changePasswordForm">
-                    <div class="form-group">
-                        <label for="inputNewPassword">Mật khẩu mới:</label>
-                        <input type="password" id="inputNewPassword" placeholder="Nhập mật khẩu mới..." required minlength="6">
-                    </div>
-                    <button type="submit" id="btnChangePassword" class="btn-primary">Cập nhật mật khẩu</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- TAB 3: LỊCH SỬ LÀM BÀI -->
-        <div id="tab-history" class="tab-pane">
-            <div class="card">
-                <h3><i class="fa-solid fa-list-check"></i> Lịch sử các lần thi</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mã đề</th>
-                            <th>Thời gian làm bài</th>
-                            <th>Thời gian nộp</th>
-                            <th>Số câu đúng</th>
-                            <th>Điểm số</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody">
-                        <tr>
-                            <td colspan="6" class="loading-text">Đang tải lịch sử thi...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- TAB 4: NÂNG CẤP VIP -->
-        <div id="tab-vip" class="tab-pane">
-            <div class="vip-layout">
-                <div class="card vip-card-box">
-                    <h3><i class="fa-solid fa-star"></i> Gói cước của bạn</h3>
-                    <p style="font-size: 1.1rem;">
-                        Tình trạng hiện tại:<br><br>
-                        <span id="vipStatusTab3" class="status-badge status-unactive" style="font-size: 1rem; padding: 10px 15px;">Chưa kích hoạt VIP</span>
-                    </p>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                    <ul style="line-height: 1.8; padding-left: 20px;">
-                        <li>Truy cập toàn bộ kho đề thi VIP độc quyền.</li>
-                        <li>Xem giải thích chi tiết đáp án.</li>
-                        <li>Lưu lại lịch sử làm bài không giới hạn.</li>
-                        <li>Hỗ trợ học tập 24/7.</li>
-                    </ul>
-                </div>
-
-                <div class="card vip-card-box" style="text-align: center;">
-                    <h3><i class="fa-solid fa-qrcode"></i> Thanh toán qua QR Code</h3>
-                    <div class="qr-placeholder">
-                        <img src="https://via.placeholder.com/200?text=QR+Code+Demo" alt="Mã QR Chuyển khoản">
-                    </div>
-                    <div class="instruction">
-                        Vui lòng chuyển khoản <strong>100.000đ</strong> với nội dung:<br><br>
-                        <span style="font-weight: bold; color: var(--primary-blue); font-size: 1.2rem;">NAP <span id="paymentEmail">[Email của bạn]</span></span><br><br>
-                        để được hệ thống mở khóa tự động.
-                    </div>
-                    <button id="btnConfirmPayment" class="btn-primary" style="width: 100%;">Tôi đã chuyển khoản</button>
                 </div>
             </div>
         </div>
@@ -680,8 +660,8 @@
 
         // Biến toàn cục
         let currentUserData = null;
-        let allExamsData = []; // Mảng chứa dữ liệu tổng hợp để filter/sort
-        let currentView = 'grid'; // 'grid' hoặc 'list'
+        let allExamsData = []; 
+        let currentView = 'grid'; 
 
         // Hàm chuyển hướng an toàn
         function safeRedirect(path) {
@@ -694,10 +674,19 @@
         }
 
         // ==========================================
-        // 2. LOGIC UI: CHUYỂN TAB
+        // 2. LOGIC UI: CHUYỂN TAB VÀ ĐỔI TOPBAR TITLE
         // ==========================================
         const menuItems = document.querySelectorAll('.sidebar-menu .menu-item[data-target]');
         const tabPanes = document.querySelectorAll('.tab-pane');
+        const currentTabTitle = document.getElementById("currentTabTitle");
+
+        // Map Tiêu đề tương ứng với ID Tab
+        const tabTitleMap = {
+            'tab-exams': 'Khám Phá Kho Đề Thi',
+            'tab-profile': 'Hồ Sơ Cá Nhân',
+            'tab-history': 'Lịch Sử Làm Bài',
+            'tab-vip': 'Quản Lý Gói VIP'
+        };
 
         menuItems.forEach(item => {
             item.addEventListener('click', () => {
@@ -707,12 +696,19 @@
                 item.classList.add('active');
                 const targetId = item.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('active');
+
+                // Thay đổi tiêu đề trên Topbar tương ứng với Menu đang chọn
+                currentTabTitle.textContent = tabTitleMap[targetId] || 'Bảng Điều Khiển';
             });
         });
 
         // ==========================================
         // 3. DOM ELEMENTS
         // ==========================================
+        // UI Topbar
+        const topbarName = document.getElementById("topbarName");
+        const topbarAvatar = document.getElementById("topbarAvatar");
+
         // UI Auth/Profile
         const displayEmail = document.getElementById("displayEmail");
         const displayName = document.getElementById("displayName");
@@ -747,8 +743,8 @@
             if (user) {
                 renderAuthInfo(user);
                 await fetchUserData(user); 
-                setupToolbarEvents(); // Khởi tạo event cho Toolbar
-                await loadAggregatedExamData(); // Tải và gom dữ liệu
+                setupToolbarEvents(); 
+                await loadAggregatedExamData(); 
                 await fetchHistory(user.email);
             } else {
                 safeRedirect('index.html');
@@ -759,6 +755,10 @@
             const email = user.email;
             const name = user.displayName || "Người dùng ẩn danh";
             const fallbackPhotoUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0056b3&color=fff`;
+
+            // Đồng bộ Topbar
+            topbarName.textContent = name;
+            topbarAvatar.src = fallbackPhotoUrl;
 
             displayEmail.textContent = email;
             paymentEmail.textContent = email; 
@@ -780,9 +780,13 @@
                         await signOut(auth);
                         return;
                     }
+
+                    // Ưu tiên hiển thị Avatar từ Base64 trên cả Topbar và Profile
                     if (currentUserData.avatarBase64) {
                         userAvatar.src = currentUserData.avatarBase64;
+                        topbarAvatar.src = currentUserData.avatarBase64; 
                     }
+
                     if (currentUserData.isVip) {
                         vipStatusBadge.textContent = "Đã kích hoạt VIP";
                         vipStatusBadge.className = "status-badge status-active";
@@ -816,8 +820,6 @@
         // ==========================================
         // 5. NÂNG CẤP LOGIC: KHO ĐỀ THI
         // ==========================================
-        
-        // Sự kiện Toolbar
         function setupToolbarEvents() {
             sortFilter.addEventListener('change', () => {
                 renderExams();
@@ -828,10 +830,8 @@
                     const view = e.currentTarget.getAttribute('data-view');
                     if (view !== currentView) {
                         currentView = view;
-                        // Đổi active state của nút
                         viewBtns.forEach(b => b.classList.remove('active'));
                         e.currentTarget.classList.add('active');
-                        // Đổi class container
                         examListContainer.className = currentView === 'grid' ? 'grid-view' : 'list-view';
                         renderExams();
                     }
@@ -839,10 +839,8 @@
             });
         }
 
-        // Fetch và gộp dữ liệu từ 3 collections
         async function loadAggregatedExamData() {
             try {
-                // 1. Fetch Questions (Lấy danh sách mã đề & Đếm số câu hoàn toàn ĐỘNG)
                 const questionsRef = collection(db, "questions");
                 const qSnap = await getDocs(questionsRef);
                 const examMap = {}; 
@@ -852,12 +850,10 @@
                     const eId = data.examId;
                     if (eId) {
                         if (!examMap[eId]) examMap[eId] = { id: eId, questionCount: 0 };
-                        // Số câu hỏi được tự động cộng dồn theo thực tế của database
                         examMap[eId].questionCount++;
                     }
                 });
 
-                // 2. Fetch Exams (Lấy isVip, timeLimit, attemptCount)
                 const examsConfigRef = collection(db, "exams");
                 const eSnap = await getDocs(examsConfigRef);
                 eSnap.forEach((doc) => {
@@ -865,24 +861,20 @@
                     if (examMap[eId]) {
                         const conf = doc.data();
                         examMap[eId].isVip = conf.isVip || false;
-                        
-                        // ĐÃ FIX: Lấy timeLimit từ db, nếu bằng 0 hoặc trống thì gán mặc định là 15 phút
                         examMap[eId].timeLimit = conf.timeLimit ? parseInt(conf.timeLimit) : 15;
-                        
                         examMap[eId].attemptCount = conf.attemptCount || 0;
                         examMap[eId].createdAt = conf.createdAt ? (typeof conf.createdAt.toMillis === 'function' ? conf.createdAt.toMillis() : new Date(conf.createdAt).getTime()) : 0;
                     }
                 });
 
-                // 3. Fetch Feedbacks (Tính Rating)
                 const feedbacksRef = collection(db, "feedbacks");
                 const fSnap = await getDocs(feedbacksRef);
-                const ratingMap = {}; // { examId: { total: 0, count: 0 } }
+                const ratingMap = {}; 
                 
                 fSnap.forEach((doc) => {
                     const data = doc.data();
                     const eId = data.examId;
-                    const stars = data.rating || 5; // Mặc định 5 nếu lỗi
+                    const stars = data.rating || 5; 
                     if (eId) {
                         if (!ratingMap[eId]) ratingMap[eId] = { total: 0, count: 0 };
                         ratingMap[eId].total += stars;
@@ -890,9 +882,7 @@
                     }
                 });
 
-                // Gộp rating và ĐẢM BẢO DỮ LIỆU DỰ PHÒNG cho mọi mã đề (Tránh undefined)
                 Object.keys(examMap).forEach(eId => {
-                    // Nếu đề thi chỉ có trong `questions` mà bạn quên chưa cài đặt vào trong bảng `exams`
                     if (examMap[eId].timeLimit === undefined) examMap[eId].timeLimit = 15;
                     if (examMap[eId].isVip === undefined) examMap[eId].isVip = false;
                     if (examMap[eId].attemptCount === undefined) examMap[eId].attemptCount = 0;
@@ -900,18 +890,15 @@
 
                     if (ratingMap[eId]) {
                         const avg = ratingMap[eId].total / ratingMap[eId].count;
-                        examMap[eId].rating = Math.round(avg * 10) / 10; // Làm tròn 1 chữ số
+                        examMap[eId].rating = Math.round(avg * 10) / 10; 
                         examMap[eId].ratingCount = ratingMap[eId].count;
                     } else {
-                        examMap[eId].rating = 5.0; // Chưa có đánh giá thì mặc định 5 sao
+                        examMap[eId].rating = 5.0; 
                         examMap[eId].ratingCount = 0;
                     }
                 });
 
-                // Chuyển Map thành Array để dễ filter/sort
                 allExamsData = Object.values(examMap);
-                
-                // Render lần đầu
                 renderExams();
 
             } catch (error) {
@@ -920,7 +907,6 @@
             }
         }
 
-        // Render ra giao diện HTML (Filter & Sort áp dụng ở đây)
         function renderExams() {
             if (allExamsData.length === 0) {
                 examListContainer.innerHTML = '<div class="loading-text">Hiện tại chưa có khóa học / đề thi nào.</div>';
@@ -930,24 +916,13 @@
             const filterType = sortFilter.value;
             let displayData = [...allExamsData];
 
-            // Filter
-            if (filterType === 'only_vip') {
-                displayData = displayData.filter(exam => exam.isVip);
-            } else if (filterType === 'only_free') {
-                displayData = displayData.filter(exam => !exam.isVip);
-            }
+            if (filterType === 'only_vip') displayData = displayData.filter(exam => exam.isVip);
+            else if (filterType === 'only_free') displayData = displayData.filter(exam => !exam.isVip);
 
-            // Sort
-            if (filterType === 'highest_rating') {
-                displayData.sort((a, b) => b.rating - a.rating);
-            } else if (filterType === 'most_attempts') {
-                displayData.sort((a, b) => b.attemptCount - a.attemptCount);
-            } else {
-                // newest (Mặc định)
-                displayData.sort((a, b) => b.createdAt - a.createdAt); 
-            }
+            if (filterType === 'highest_rating') displayData.sort((a, b) => b.rating - a.rating);
+            else if (filterType === 'most_attempts') displayData.sort((a, b) => b.attemptCount - a.attemptCount);
+            else displayData.sort((a, b) => b.createdAt - a.createdAt); 
 
-            // Render HTML
             examListContainer.innerHTML = "";
             const isUserVip = currentUserData && currentUserData.isVip === true;
 
@@ -964,7 +939,6 @@
                     buttonHtml = `<button class="btn-primary" onclick="goToQuiz('${exam.id}')">Vào thi ngay</button>`;
                 }
 
-                // Cấu trúc Card HTML: Đã đưa các biến Động ${exam.questionCount} và ${exam.timeLimit} vào đúng vị trí
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 card.innerHTML = `
@@ -973,37 +947,23 @@
                         <div style="flex: 1;">
                             <h3 class="card-title">${exam.id}</h3>
                             <div class="card-stats">
-                                <div class="stat-item">
-                                    <i class="fa-solid fa-file-circle-question"></i> ${exam.questionCount} câu hỏi
-                                </div>
-                                <div class="stat-item">
-                                    <i class="fa-solid fa-stopwatch"></i> ${exam.timeLimit} phút
-                                </div>
+                                <div class="stat-item"><i class="fa-solid fa-file-circle-question"></i> ${exam.questionCount} câu hỏi</div>
+                                <div class="stat-item"><i class="fa-solid fa-stopwatch"></i> ${exam.timeLimit} phút</div>
                             </div>
                         </div>
                         <div class="card-meta">
-                            <div class="rating">
-                                ${exam.rating} <i class="fa-solid fa-star"></i> 
-                                <span class="attempts">(${exam.ratingCount})</span>
-                            </div>
-                            <div class="attempts">
-                                <i class="fa-solid fa-users"></i> ${exam.attemptCount} lượt thi
-                            </div>
+                            <div class="rating">${exam.rating} <i class="fa-solid fa-star"></i> <span class="attempts">(${exam.ratingCount})</span></div>
+                            <div class="attempts"><i class="fa-solid fa-users"></i> ${exam.attemptCount} lượt thi</div>
                         </div>
                     </div>
-                    <div class="card-footer">
-                        ${buttonHtml}
-                    </div>
+                    <div class="card-footer">${buttonHtml}</div>
                 `;
                 examListContainer.appendChild(card);
             });
 
-            if (displayData.length === 0) {
-                examListContainer.innerHTML = '<div class="loading-text">Không tìm thấy khóa học nào phù hợp với bộ lọc.</div>';
-            }
+            if (displayData.length === 0) examListContainer.innerHTML = '<div class="loading-text">Không tìm thấy khóa học nào phù hợp với bộ lọc.</div>';
         }
 
-        // Chuyển Hướng An Toàn
         window.goToQuiz = function(examId) {
             safeRedirect(`quiz.html?examId=${examId}`);
         };
@@ -1018,7 +978,6 @@
         // ==========================================
         async function fetchHistory(userEmail) {
             try {
-                // Tạo một bản đồ VIP để kiểm tra lịch sử
                 const examVipMap = {};
                 allExamsData.forEach(e => examVipMap[e.id] = e.isVip);
 
@@ -1051,7 +1010,6 @@
                     const correctAnswers = data.correctAnswers !== undefined ? data.correctAnswers : 0;
                     
                     const isVipExam = examVipMap[quizId] === true;
-                    // Sử dụng class badge cũ cho table để gọn gàng
                     const badgeHtml = isVipExam ? `<span style="background:#ffc107;color:#856404;padding:2px 5px;border-radius:4px;font-size:0.75rem;">VIP</span>` 
                                                 : `<span style="background:#e2e3e5;color:#383d41;padding:2px 5px;border-radius:4px;font-size:0.75rem;">Free</span>`;
 
@@ -1109,7 +1067,6 @@
             }
         });
 
-        // Hàm Date & Image processing
         function formatDate(dateData) {
             if (dateData && typeof dateData.toDate === 'function') {
                 return dateData.toDate().toLocaleString('vi-VN');
@@ -1169,8 +1126,15 @@
                 }
 
                 alert("Cập nhật hồ sơ thành công!");
+                
+                // Đồng bộ thay đổi UI ngay lập tức
                 displayName.textContent = newName;
-                if (newBase64Avatar) userAvatar.src = newBase64Avatar;
+                topbarName.textContent = newName; // Cập nhật cả trên Topbar
+                if (newBase64Avatar) {
+                    userAvatar.src = newBase64Avatar;
+                    topbarAvatar.src = newBase64Avatar; // Đồng bộ Ảnh sang Topbar
+                }
+                
                 inputAvatarFile.value = ""; 
             } catch (error) {
                 console.error("Lỗi cập nhật hồ sơ:", error);
