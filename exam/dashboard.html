@@ -842,7 +842,7 @@
         // Fetch và gộp dữ liệu từ 3 collections
         async function loadAggregatedExamData() {
             try {
-                // 1. Fetch Questions (Lấy danh sách mã đề & Đếm số câu)
+                // 1. Fetch Questions (Lấy danh sách mã đề & Đếm số câu hoàn toàn ĐỘNG)
                 const questionsRef = collection(db, "questions");
                 const qSnap = await getDocs(questionsRef);
                 const examMap = {}; 
@@ -852,6 +852,7 @@
                     const eId = data.examId;
                     if (eId) {
                         if (!examMap[eId]) examMap[eId] = { id: eId, questionCount: 0 };
+                        // Số câu hỏi được tự động cộng dồn theo thực tế của database
                         examMap[eId].questionCount++;
                     }
                 });
@@ -864,9 +865,12 @@
                     if (examMap[eId]) {
                         const conf = doc.data();
                         examMap[eId].isVip = conf.isVip || false;
-                        examMap[eId].timeLimit = conf.timeLimit || 60; // Mặc định 60p
+                        
+                        // ĐÃ FIX: Lấy timeLimit từ db, nếu bằng 0 hoặc trống thì gán mặc định là 15 phút
+                        examMap[eId].timeLimit = conf.timeLimit ? parseInt(conf.timeLimit) : 15;
+                        
                         examMap[eId].attemptCount = conf.attemptCount || 0;
-                        examMap[eId].createdAt = conf.createdAt ? conf.createdAt.toMillis() : 0;
+                        examMap[eId].createdAt = conf.createdAt ? (typeof conf.createdAt.toMillis === 'function' ? conf.createdAt.toMillis() : new Date(conf.createdAt).getTime()) : 0;
                     }
                 });
 
@@ -886,8 +890,14 @@
                     }
                 });
 
-                // Gộp rating vào examMap
+                // Gộp rating và ĐẢM BẢO DỮ LIỆU DỰ PHÒNG cho mọi mã đề (Tránh undefined)
                 Object.keys(examMap).forEach(eId => {
+                    // Nếu đề thi chỉ có trong `questions` mà bạn quên chưa cài đặt vào trong bảng `exams`
+                    if (examMap[eId].timeLimit === undefined) examMap[eId].timeLimit = 15;
+                    if (examMap[eId].isVip === undefined) examMap[eId].isVip = false;
+                    if (examMap[eId].attemptCount === undefined) examMap[eId].attemptCount = 0;
+                    if (examMap[eId].createdAt === undefined) examMap[eId].createdAt = 0;
+
                     if (ratingMap[eId]) {
                         const avg = ratingMap[eId].total / ratingMap[eId].count;
                         examMap[eId].rating = Math.round(avg * 10) / 10; // Làm tròn 1 chữ số
@@ -954,7 +964,7 @@
                     buttonHtml = `<button class="btn-primary" onclick="goToQuiz('${exam.id}')">Vào thi ngay</button>`;
                 }
 
-                // Cấu trúc Card HTML
+                // Cấu trúc Card HTML: Đã đưa các biến Động ${exam.questionCount} và ${exam.timeLimit} vào đúng vị trí
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 card.innerHTML = `
