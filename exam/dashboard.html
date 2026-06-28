@@ -3,156 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phòng Chờ Thi Trắc Nghiệm</title>
+    <title>Dashboard Đa Năng - Hệ Thống Trắc Nghiệm Y Khoa</title>
+    <!-- Thêm Font Awesome để dùng Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* =========================================
-           CSS GIAO DIỆN HIỆN ĐẠI (THUẦN CSS)
+           1. CƠ BẢN & MÀU SẮC (THEME Y KHOA)
            ========================================= */
         :root {
-            --primary-color: #2563eb; /* Xanh dương đậm */
-            --primary-hover: #1d4ed8;
-            --danger-color: #ef4444; /* Đỏ */
-            --danger-hover: #dc2626;
-            --locked-color: #9ca3af; /* Xám cho nút khóa */
-            --locked-hover: #6b7280;
-            --vip-color: #d97706; /* Vàng nghệ cho VIP */
-            --bg-color: #f3f4f6;
-            --card-bg: #ffffff;
-            --text-main: #1f2937;
+            --primary-blue: #0056b3; 
+            --light-blue: #e3f2fd;
+            --white: #ffffff;
+            --gray-bg: #f4f7f6;
+            --text-main: #333333;
             --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            --warning-orange: #f57c00;
+            --success-green: #28a745;
+            --border-color: #ddd;
+            --danger-red: #ef4444;
+            --locked-color: #9ca3af;
+            --locked-hover: #6b7280;
+            --vip-color: #d97706;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gray-bg);
             color: var(--text-main);
-            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* Khu vực 1: Navbar / Thông tin tài khoản */
-        .navbar {
-            background-color: var(--card-bg);
-            padding: 1rem 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        /* =========================================
+           2. BỐ CỤC 2 CỘT
+           ========================================= */
+        /* SIDEBAR (MENU BÊN TRÁI) */
+        .sidebar {
+            width: 260px;
+            background-color: var(--primary-blue);
+            color: var(--white);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             z-index: 10;
         }
 
-        .brand-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--primary-color);
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-        .user-info {
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            line-height: 1.5;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .menu-item {
+            padding: 15px 25px;
+            color: var(--light-blue);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
             display: flex;
             align-items: center;
             gap: 15px;
+            border-left: 4px solid transparent;
         }
 
-        .user-email {
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(255,255,255,0.1);
+            color: var(--white);
+            border-left-color: var(--warning-orange);
         }
 
-        .vip-badge {
-            background-color: #fef3c7;
-            color: var(--vip-color);
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-weight: bold;
-            border: 1px solid #fde68a;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
 
         .btn-logout {
-            background-color: var(--danger-color);
-            color: white;
+            width: 100%;
+            padding: 10px;
+            background-color: transparent;
+            color: var(--white);
+            border: 1px solid var(--white);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
         }
 
         .btn-logout:hover {
-            background-color: var(--danger-hover);
+            background-color: var(--danger-red);
+            border-color: var(--danger-red);
         }
+
+        /* MAIN CONTENT (NỘI DUNG BÊN PHẢI) */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+        }
+
+        .tab-pane {
+            display: none; /* Ẩn các tab mặc định */
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-pane.active {
+            display: block; /* Chỉ hiện tab đang active */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================
+           3. THÀNH PHẦN CHUNG (CARDS, BADGES, BUTTONS)
+           ========================================= */
+        .card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--primary-blue);
+            margin-bottom: 25px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary-blue);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-unactive { background-color: #ffe0b2; color: #e65100; }
+        .status-active { background-color: #d4edda; color: var(--success-green); }
 
         .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-            text-decoration: none;
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
             display: inline-block;
             text-align: center;
         }
+        .btn-primary:hover { background-color: #004494; }
+        .btn-primary:disabled { background-color: #999; cursor: not-allowed; }
 
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn-locked {
-            background-color: var(--locked-color);
-            color: white;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-locked:hover {
-            background-color: var(--locked-hover);
-        }
-
-        /* Layout Container */
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-
-        @media (min-width: 768px) {
-            .container {
-                grid-template-columns: 1fr 2fr; /* Chia cột: Danh sách đề 1 phần, Lịch sử 2 phần */
-            }
-        }
-
-        /* Card chung cho Khu vực 2 và 3 */
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-
-        .card-header {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--bg-color);
-        }
-
-        /* Trạng thái đang tải (Loading) */
         .loading-text {
             color: var(--text-muted);
             font-style: italic;
@@ -160,51 +185,26 @@
             padding: 1rem;
         }
 
-        /* Bảng hiển thị (Table) */
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 0.5rem;
-        }
-
-        th, td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f9fafb;
-            font-weight: 600;
-            color: var(--text-muted);
-            white-space: nowrap;
-        }
-
-        tr:hover {
-            background-color: #f9fafb;
-        }
-
-        /* Danh sách đề thi (Khu vực 2) */
+        /* =========================================
+           4. CSS RIÊNG TỪNG TAB
+           ========================================= */
+        
+        /* TAB 1: KHO ĐỀ THI */
         .exam-list {
             list-style: none;
+            padding: 0;
+            margin: 0;
         }
-
         .exam-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
+            padding: 15px 0;
             border-bottom: 1px solid var(--border-color);
         }
-
         .exam-item:last-child {
             border-bottom: none;
         }
-
         .exam-name {
             font-weight: 600;
             font-size: 1.1rem;
@@ -212,70 +212,246 @@
             align-items: center;
             gap: 8px;
         }
+        .exam-vip-text { color: var(--vip-color); }
+        .badge-vip {
+            background-color: #ffc107;
+            color: #856404;
+            font-size: 0.75rem;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .badge-free {
+            background-color: #e2e3e5;
+            color: #383d41;
+            font-size: 0.75rem;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .btn-locked {
+            background-color: var(--locked-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-locked:hover { background-color: var(--locked-hover); }
 
-        .exam-vip-text {
-            color: var(--vip-color);
+        /* TAB 2: HỒ SƠ */
+        .profile-container { display: flex; gap: 30px; align-items: flex-start; }
+        .profile-avatar { text-align: center; }
+        .profile-avatar img {
+            width: 120px; height: 120px; border-radius: 50%;
+            object-fit: cover; border: 3px solid var(--light-blue);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .profile-info { flex: 1; }
+        .profile-info p { margin: 10px 0; font-size: 1.05rem; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input {
+            width: 100%; padding: 10px; border: 1px solid var(--border-color);
+            border-radius: 5px; box-sizing: border-box; font-size: 1rem;
+        }
+        input[type="file"] { padding: 7px; background-color: var(--light-blue); cursor: pointer; }
+
+        /* TAB 3: LỊCH SỬ */
+        table { width: 100%; border-collapse: collapse; }
+        table th, table td { border: 1px solid var(--border-color); padding: 12px; text-align: center; }
+        table th { background-color: var(--light-blue); color: var(--primary-blue); }
+        .btn-review {
+            background-color: var(--warning-orange); color: white; border: none;
+            padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;
+        }
+        .btn-review:hover { background-color: #e65100; }
+        .btn-delete-history {
+            background-color: var(--danger-red); color: white; border: none;
+            padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; margin-left: 5px;
+        }
+        .btn-delete-history:hover { background-color: #dc2626; }
+
+        /* TAB 4: VIP */
+        .vip-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+        .vip-card-box { flex: 1; min-width: 300px; }
+        .qr-placeholder {
+            width: 200px; height: 200px; background-color: #eee;
+            margin: 20px auto; display: flex; align-items: center; justify-content: center;
+            border: 2px dashed #ccc; border-radius: 8px;
+        }
+        .qr-placeholder img { max-width: 100%; border-radius: 8px; }
+        .instruction {
+            background-color: var(--light-blue); padding: 15px; border-radius: 5px;
+            line-height: 1.5; text-align: center; margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Khu vực 1: Header / Thông tin tài khoản -->
-    <nav class="navbar">
-        <div class="brand-title">Hệ Thống Thi Trắc Nghiệm</div>
-        <div class="user-info">
-            <span id="userEmailDisplay" class="user-email">Đang tải...</span>
-            <button id="btnLogout" class="btn btn-logout">Đăng Xuất</button>
+    <!-- =========================================
+         1. SIDEBAR (MENU BÊN TRÁI)
+         ========================================= -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Hệ Thống<br>Trắc Nghiệm Y Khoa</h2>
         </div>
-    </nav>
-
-    <!-- Nội dung chính -->
-    <div class="container">
         
-        <!-- Khu vực 2: Danh sách đề thi -->
-        <div class="card">
-            <div class="card-header">Danh Sách Đề Thi</div>
-            <ul id="examListContainer" class="exam-list">
-                <li class="loading-text">Đang tải danh sách đề thi...</li>
-            </ul>
+        <div class="sidebar-menu">
+            <div class="menu-item active" data-target="tab-exams">
+                <i class="fa-solid fa-book"></i> Kho Đề Thi
+            </div>
+            <div class="menu-item" data-target="tab-profile">
+                <i class="fa-solid fa-user"></i> Hồ sơ cá nhân
+            </div>
+            <div class="menu-item" data-target="tab-history">
+                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử làm bài
+            </div>
+            <div class="menu-item" data-target="tab-vip">
+                <i class="fa-solid fa-gem"></i> Nâng cấp VIP
+            </div>
         </div>
 
-        <!-- Khu vực 3: Lịch sử làm bài -->
-        <div class="card">
-            <div class="card-header">Lịch Sử Làm Bài Của Bạn</div>
-            <div class="table-responsive">
+        <div class="sidebar-footer">
+            <button id="btnLogout" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         2. MAIN CONTENT (NỘI DUNG BÊN PHẢI)
+         ========================================= -->
+    <div class="main-content">
+        
+        <!-- TAB 1: KHO ĐỀ THI (ACTIVE MẶC ĐỊNH) -->
+        <div id="tab-exams" class="tab-pane active">
+            <div class="card">
+                <h3><i class="fa-solid fa-list-ul"></i> Danh Sách Đề Thi</h3>
+                <ul id="examListContainer" class="exam-list">
+                    <li class="loading-text">Đang tải danh sách đề thi...</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- TAB 2: HỒ SƠ CÁ NHÂN -->
+        <div id="tab-profile" class="tab-pane">
+            <div class="card">
+                <h3><i class="fa-solid fa-address-card"></i> Thông tin chung</h3>
+                <div class="profile-container">
+                    <div class="profile-avatar">
+                        <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=0056b3&color=fff" alt="Avatar">
+                    </div>
+                    <div class="profile-info">
+                        <p><strong>Tên hiển thị:</strong> <span id="displayName">Đang tải...</span></p>
+                        <p><strong>Email:</strong> <span id="displayEmail">Đang tải...</span></p>
+                        <p>
+                            <strong>Trạng thái VIP:</strong> 
+                            <span id="vipStatusBadge" class="status-badge status-unactive">Đang kiểm tra...</span>
+                        </p>
+                        <p><strong>Ngày kích hoạt:</strong> <span id="vipStartDate">Không xác định</span></p>
+                        <p><strong>Ngày hết hạn:</strong> <span id="vipEndDate">Không xác định</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fa-solid fa-pen-to-square"></i> Cập nhật hồ sơ</h3>
+                <form id="updateProfileForm">
+                    <div class="form-group">
+                        <label for="inputName">Tên hiển thị mới:</label>
+                        <input type="text" id="inputName" placeholder="Nhập tên của bạn...">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputAvatarFile">Tải lên ảnh đại diện:</label>
+                        <input type="file" id="inputAvatarFile" accept="image/*">
+                        <small style="display: block; color: #666; margin-top: 5px;">Ảnh sẽ được nén tự động xuống 200x200 pixel.</small>
+                    </div>
+                    <button type="submit" id="btnUpdateProfile" class="btn-primary">Lưu thay đổi</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>🔒 Đổi Mật Khẩu</h3>
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="inputNewPassword">Mật khẩu mới:</label>
+                        <input type="password" id="inputNewPassword" placeholder="Nhập mật khẩu mới..." required minlength="6">
+                    </div>
+                    <button type="submit" id="btnChangePassword" class="btn-primary">Cập nhật mật khẩu</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 3: LỊCH SỬ LÀM BÀI -->
+        <div id="tab-history" class="tab-pane">
+            <div class="card">
+                <h3><i class="fa-solid fa-list-check"></i> Lịch sử các lần thi</h3>
                 <table>
                     <thead>
                         <tr>
-                            <th>STT</th>
-                            <th>Mã Đề</th>
-                            <th>Số Câu Đúng</th>
-                            <th>Điểm Số</th>
-                            <th>Thời Gian Nộp</th>
+                            <th>Mã đề</th>
+                            <th>Thời gian làm bài</th>
+                            <th>Thời gian nộp</th>
+                            <th>Số câu đúng</th>
+                            <th>Điểm số</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody">
                         <tr>
-                            <td colspan="5" class="loading-text">Đang tải lịch sử thi...</td>
+                            <td colspan="6" class="loading-text">Đang tải lịch sử thi...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- TAB 4: NÂNG CẤP VIP -->
+        <div id="tab-vip" class="tab-pane">
+            <div class="vip-layout">
+                <div class="card vip-card-box">
+                    <h3><i class="fa-solid fa-star"></i> Gói cước của bạn</h3>
+                    <p style="font-size: 1.1rem;">
+                        Tình trạng hiện tại:<br><br>
+                        <span id="vipStatusTab3" class="status-badge status-unactive" style="font-size: 1rem; padding: 10px 15px;">Chưa kích hoạt VIP</span>
+                    </p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <ul style="line-height: 1.8; padding-left: 20px;">
+                        <li>Truy cập toàn bộ kho đề thi VIP độc quyền.</li>
+                        <li>Xem giải thích chi tiết đáp án.</li>
+                        <li>Lưu lại lịch sử làm bài không giới hạn.</li>
+                        <li>Hỗ trợ học tập 24/7.</li>
+                    </ul>
+                </div>
+
+                <div class="card vip-card-box" style="text-align: center;">
+                    <h3><i class="fa-solid fa-qrcode"></i> Thanh toán qua QR Code</h3>
+                    <div class="qr-placeholder">
+                        <img src="https://via.placeholder.com/200?text=QR+Code+Demo" alt="Mã QR Chuyển khoản">
+                    </div>
+                    <div class="instruction">
+                        Vui lòng chuyển khoản <strong>100.000đ</strong> với nội dung:<br><br>
+                        <span style="font-weight: bold; color: var(--primary-blue); font-size: 1.2rem;">NAP <span id="paymentEmail">[Email của bạn]</span></span><br><br>
+                        để được hệ thống mở khóa tự động.
+                    </div>
+                    <button id="btnConfirmPayment" class="btn-primary" style="width: 100%;">Tôi đã chuyển khoản</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- =========================================
-         JAVASCRIPT LOGIC (Firebase v11.6.1)
+         JAVASCRIPT LOGIC TÍCH HỢP
          ========================================= -->
     <script type="module">
-        // 1. Nhúng các module cần thiết từ CDN Firebase v11.6.1
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // Thêm getDoc và doc để lấy thông tin user từ Firestore
-        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // 2. Cấu hình Firebase thực tế của bạn
+        import { getAuth, onAuthStateChanged, signOut, updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // 1. Cấu hình Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
             authDomain: "rt-examination.firebaseapp.com",
@@ -286,94 +462,162 @@
             appId: "1:920482699854:web:44f9b0d735bdc001c6c11f",
             measurementId: "G-8N7RTTREQM"
         };
-        
-        // Khởi tạo Firebase App, Auth và Firestore
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Các phần tử DOM cần thao tác
-        const userEmailDisplay = document.getElementById('userEmailDisplay');
-        const btnLogout = document.getElementById('btnLogout');
-        const examListContainer = document.getElementById('examListContainer');
-        const historyTableBody = document.getElementById('historyTableBody');
-
-        // Biến lưu trữ thông tin
-        let currentUser = null;
-        let currentUserData = null; // Lưu trạng thái VIP, Banned của user
+        // Biến toàn cục lưu trữ thông tin user hiện tại (Để phục vụ cho check VIP ở Tab Khác)
+        let currentUserData = null;
 
         // Hàm chuyển hướng an toàn
         function safeRedirect(path) {
             if (window.location.protocol === 'blob:') {
-                console.warn("Đang ở môi trường Preview, không thể chuyển hướng tới:", path);
-                document.body.innerHTML = `
-                    <div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#f3f4f6; flex-direction:column;">
-                        <div style="background:white; padding:2rem; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-align:center;">
-                            <h2 style="color:#ef4444; margin-bottom:1rem;">Yêu cầu chuyển trang</h2>
-                            <p>Hệ thống muốn chuyển hướng đến: <b>${path}</b></p>
-                        </div>
-                    </div>`;
+                console.warn("Đang ở môi trường Preview, giả lập chuyển hướng tới:", path);
+                alert(`Chuyển hướng đến: ${path}`);
             } else {
                 window.location.href = path;
             }
         }
 
         // ==========================================
-        // LOGIC 1: BẢO VỆ ROUTE, QUẢN LÝ ĐĂNG NHẬP & LẤY QUYỀN USER
+        // 2. LOGIC UI: CHUYỂN TAB (Mượt mà bằng CSS class)
+        // ==========================================
+        const menuItems = document.querySelectorAll('.sidebar-menu .menu-item[data-target]');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all menu items & panes
+                menuItems.forEach(m => m.classList.remove('active'));
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                
+                // Add active class to clicked item and corresponding pane
+                item.classList.add('active');
+                const targetId = item.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // ==========================================
+        // 3. DOM ELEMENTS
+        // ==========================================
+        // UI Auth/Profile
+        const displayEmail = document.getElementById("displayEmail");
+        const displayName = document.getElementById("displayName");
+        const userAvatar = document.getElementById("userAvatar");
+        const inputName = document.getElementById("inputName");
+        const inputAvatarFile = document.getElementById("inputAvatarFile");
+        const updateProfileForm = document.getElementById("updateProfileForm");
+        const btnUpdateProfile = document.getElementById("btnUpdateProfile");
+        const changePasswordForm = document.getElementById("changePasswordForm");
+        const inputNewPassword = document.getElementById("inputNewPassword");
+        const btnChangePassword = document.getElementById("btnChangePassword");
+
+        // UI VIP
+        const vipStatusBadge = document.getElementById("vipStatusBadge");
+        const vipStartDate = document.getElementById("vipStartDate");
+        const vipEndDate = document.getElementById("vipEndDate");
+        const vipStatusTab3 = document.getElementById("vipStatusTab3");
+        const paymentEmail = document.getElementById("paymentEmail");
+        const btnConfirmPayment = document.getElementById("btnConfirmPayment");
+
+        // UI Danh Sách & Lịch sử
+        const examListContainer = document.getElementById('examListContainer');
+        const historyTableBody = document.getElementById("historyTableBody");
+        const btnLogout = document.getElementById("btnLogout");
+
+        // ==========================================
+        // 4. LUỒNG XỬ LÝ CHÍNH KHI ĐĂNG NHẬP
         // ==========================================
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                currentUser = user;
+                // 4.1 Render Data Căn bản có sẵn
+                renderAuthInfo(user);
                 
-                try {
-                    // Lấy thông tin chi tiết của user (isBanned, isVip) từ collection 'users'
-                    // Giả định collection user được lưu với ID là email của user
-                    const userDocRef = doc(db, "users", user.email);
-                    const userDocSnap = await getDoc(userDocRef);
-                    
-                    if (userDocSnap.exists()) {
-                        currentUserData = userDocSnap.data();
-                        
-                        // Kiểm tra tài khoản bị khóa
-                        if (currentUserData.isBanned === true) {
-                            alert("Tài khoản của bạn đã bị khóa hệ thống. Vui lòng liên hệ quản trị viên.");
-                            await signOut(auth);
-                            return; // Dừng thực thi
-                        }
-                    } else {
-                        currentUserData = { isVip: false, isBanned: false };
-                    }
-                } catch (error) {
-                    console.error("Lỗi khi tải thông tin user:", error);
-                    currentUserData = { isVip: false, isBanned: false };
-                }
-
-                // Cập nhật UI Navbar
-                let emailHtml = user.email || "Người dùng ẩn danh";
-                if (currentUserData.isVip) {
-                    emailHtml += ` <span class="vip-badge">Tài Khoản VIP</span>`;
-                }
-                userEmailDisplay.innerHTML = emailHtml;
+                // 4.2 Lấy Dữ liệu chuyên sâu từ Firestore (VIP, Banned, Ảnh Base64)
+                await fetchUserData(user); 
                 
-                // Sau khi xác định đã đăng nhập và lấy xong quyền, tiến hành tải dữ liệu
-                loadExamList();
-                loadHistory(user);
+                // 4.3 Tải Danh sách đề thi (Yêu cầu biết VIP hay không)
+                await loadExamList();
+                
+                // 4.4 Tải Lịch sử làm bài
+                await fetchHistory(user.email);
             } else {
                 safeRedirect('index.html');
             }
         });
 
-        // Xử lý sự kiện nút Đăng xuất
-        btnLogout.addEventListener('click', () => {
-            signOut(auth).catch((error) => console.error("Lỗi đăng xuất:", error));
-        });
+        // Hàm render thông tin cơ bản
+        function renderAuthInfo(user) {
+            const email = user.email;
+            const name = user.displayName || "Người dùng ẩn danh";
+            const fallbackPhotoUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0056b3&color=fff`;
 
-        // ==========================================
-        // LOGIC 2: TẢI DANH SÁCH MÃ ĐỀ & TRẠNG THÁI VIP (Khu vực 2)
-        // ==========================================
+            displayEmail.textContent = email;
+            paymentEmail.textContent = email; 
+            displayName.textContent = name;
+            userAvatar.src = fallbackPhotoUrl;
+            inputName.value = user.displayName || "";
+        }
+
+        // Hàm Tải Dữ Liệu User (VIP, Banned)
+        async function fetchUserData(user) {
+            try {
+                // Lấy thông tin user bằng UID (theo chuẩn của Profile cũ)
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    currentUserData = userDocSnap.data();
+
+                    // Check Banned
+                    if (currentUserData.isBanned) {
+                        alert("Tài khoản của bạn đã bị khóa hệ thống. Vui lòng liên hệ quản trị viên.");
+                        await signOut(auth);
+                        return;
+                    }
+
+                    // Check Base64 Avatar
+                    if (currentUserData.avatarBase64) {
+                        userAvatar.src = currentUserData.avatarBase64;
+                    }
+
+                    // Check VIP
+                    if (currentUserData.isVip) {
+                        vipStatusBadge.textContent = "Đã kích hoạt VIP";
+                        vipStatusBadge.className = "status-badge status-active";
+                        vipStatusTab3.textContent = "VIP Hoạt động";
+                        vipStatusTab3.className = "status-badge status-active";
+                        vipStartDate.textContent = currentUserData.vipStart ? formatDate(currentUserData.vipStart) : "Không xác định";
+                        vipEndDate.textContent = currentUserData.vipEnd ? formatDate(currentUserData.vipEnd) : "Không xác định";
+                    } else {
+                        setVipInactive();
+                    }
+                } else {
+                    currentUserData = { isVip: false, isBanned: false };
+                    setVipInactive(); 
+                }
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu user:", error);
+                currentUserData = { isVip: false, isBanned: false };
+                setVipInactive();
+            }
+        }
+
+        function setVipInactive() {
+            vipStatusBadge.textContent = "Chưa kích hoạt";
+            vipStatusBadge.className = "status-badge status-unactive";
+            vipStatusTab3.textContent = "Chưa kích hoạt VIP";
+            vipStatusTab3.className = "status-badge status-unactive";
+            vipStartDate.textContent = "Không xác định";
+            vipEndDate.textContent = "Không xác định";
+        }
+
+        // Hàm Tải Danh Sách Đề Thi
         async function loadExamList() {
             try {
-                // 2.1 Truy vấn bộ câu hỏi để lấy các mã đề duy nhất
+                // Lấy danh sách mã đề từ bộ câu hỏi
                 const questionsRef = collection(db, "questions");
                 const querySnapshot = await getDocs(questionsRef);
                 const uniqueExams = new Set();
@@ -383,25 +627,25 @@
                 });
                 const examsArray = Array.from(uniqueExams);
 
-                // 2.2 Truy vấn collection 'exams' để lấy cấu hình VIP của từng đề
+                // Lấy cấu hình VIP của từng đề
                 const examsConfigRef = collection(db, "exams");
                 const configSnapshot = await getDocs(examsConfigRef);
                 const examConfigs = {};
                 configSnapshot.forEach((doc) => {
-                    examConfigs[doc.id] = doc.data(); // Key là examId
+                    examConfigs[doc.id] = doc.data(); 
                 });
 
-                // Clear UI
                 examListContainer.innerHTML = ""; 
 
                 if (examsArray.length === 0) {
-                    examListContainer.innerHTML = '<li class="loading-text">Hiện tại chưa có đề thi nào.</li>';
+                    examListContainer.innerHTML = '<li class="loading-text">Hiện tại chưa có đề thi nào trong kho.</li>';
                     return;
                 }
 
+                // Xét quyền VIP của user
                 const isUserVip = currentUserData && currentUserData.isVip === true;
 
-                // 2.3 Render danh sách kết hợp trạng thái VIP
+                // Render
                 examsArray.forEach((examId) => {
                     const li = document.createElement('li');
                     li.className = 'exam-item';
@@ -409,28 +653,23 @@
                     const examConfig = examConfigs[examId] || {};
                     const isExamVip = examConfig.isVip === true;
 
-                    let nameHtml = `<span class="exam-name">Mã đề: ${examId}</span>`;
+                    let nameHtml = `<span class="exam-name"><i class="fa-regular fa-file-lines"></i> Mã đề: ${examId} <span class="badge-free">Free</span></span>`;
                     let buttonHtml = '';
 
-                    // Kiểm tra logic VIP
                     if (isExamVip) {
-                        // Trang trí tên đề VIP
                         nameHtml = `
                             <span class="exam-name exam-vip-text">
                                 🌟 Mã đề: ${examId} 
-                                <span class="vip-badge">VIP</span>
+                                <span class="badge-vip">VIP</span>
                             </span>`;
 
                         if (!isUserVip) {
-                            // User chưa nâng cấp -> Hiện nút Xám khóa
-                            buttonHtml = `<button class="btn btn-locked" onclick="goToUpgrade()">🔒 Đề VIP - Nạp để mở</button>`;
+                            buttonHtml = `<button class="btn-locked" onclick="goToUpgrade()">🔒 Đề VIP - Nạp để mở</button>`;
                         } else {
-                            // User đã VIP -> Vào thi bình thường
-                            buttonHtml = `<button class="btn btn-primary" onclick="goToQuiz('${examId}')">Vào Thi</button>`;
+                            buttonHtml = `<button class="btn-primary" style="padding: 8px 15px;" onclick="goToQuiz('${examId}')">Vào Thi</button>`;
                         }
                     } else {
-                        // Đề thường -> Vào thi bình thường
-                        buttonHtml = `<button class="btn btn-primary" onclick="goToQuiz('${examId}')">Vào Thi</button>`;
+                        buttonHtml = `<button class="btn-primary" style="padding: 8px 15px;" onclick="goToQuiz('${examId}')">Vào Thi</button>`;
                     }
                     
                     li.innerHTML = `${nameHtml}${buttonHtml}`;
@@ -443,74 +682,236 @@
             }
         }
 
-        // Hàm chuyển hướng
+        // Các Hàm Chuyển Hướng Gắn Trực Tiếp Vào Window
         window.goToQuiz = function(examId) {
             safeRedirect(`quiz.html?examId=${examId}`);
         };
 
         window.goToUpgrade = function() {
-            safeRedirect(`profile.html`);
+            // Chuyển sang Tab VIP thay vì điều hướng trang
+            const vipTabButton = document.querySelector('.menu-item[data-target="tab-vip"]');
+            if(vipTabButton) vipTabButton.click();
         };
 
-        // ==========================================
-        // LOGIC 3: TẢI LỊCH SỬ LÀM BÀI (Khu vực 3)
-        // ==========================================
-        async function loadHistory(user) {
+        // Hàm Tải Lịch Sử Làm Bài
+        async function fetchHistory(userEmail) {
             try {
-                const q = query(collection(db, "results"), where("email", "==", user.email));
+                const examsRef = collection(db, "exams");
+                const examsSnapshot = await getDocs(examsRef);
+                const examVipMap = {};
+                examsSnapshot.forEach(doc => {
+                    const examData = doc.data();
+                    const eId = examData.examId || examData.examCode || doc.id;
+                    examVipMap[eId] = examData.isVip || false;
+                });
+
+                const resultsRef = collection(db, "results");
+                const q = query(resultsRef, where("email", "==", userEmail));
                 const querySnapshot = await getDocs(q);
-                
-                let historyData = [];
-                querySnapshot.forEach((doc) => {
-                    historyData.push(doc.data());
-                });
 
-                historyData.sort((a, b) => {
-                    const timeA = new Date(a.submittedAt || 0).getTime();
-                    const timeB = new Date(b.submittedAt || 0).getTime();
-                    return timeB - timeA; 
-                });
-
-                historyTableBody.innerHTML = "";
-
-                if (historyData.length === 0) {
-                    historyTableBody.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="loading-text">Bạn chưa thực hiện bài thi nào.</td>
-                        </tr>
-                    `;
+                if (querySnapshot.empty) {
+                    historyTableBody.innerHTML = `<tr><td colspan="6" class="loading-text">Bạn chưa hoàn thành bài thi nào.</td></tr>`;
                     return;
                 }
 
-                historyData.forEach((result, index) => {
-                    let formattedTime = "N/A";
-                    if (result.submittedAt) {
-                        const dateObj = new Date(result.submittedAt);
-                        formattedTime = dateObj.toLocaleString('vi-VN');
+                const resultsArray = [];
+                querySnapshot.forEach((doc) => {
+                    resultsArray.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sắp xếp Mới nhất lên đầu
+                resultsArray.sort((a, b) => {
+                    const dateA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp || a.submittedAt || 0);
+                    const dateB = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp || b.submittedAt || 0);
+                    return dateB - dateA;
+                });
+
+                historyTableBody.innerHTML = ""; 
+                
+                resultsArray.forEach((data) => {
+                    const tr = document.createElement("tr");
+                    const quizId = data.examId || data.examCode || "Không rõ";
+                    const score = data.score !== undefined ? data.score : 0;
+                    const correctAnswers = data.correctAnswers !== undefined ? data.correctAnswers : 0;
+                    
+                    const isVipExam = examVipMap[quizId] === true;
+                    const badgeHtml = isVipExam ? `<span class="badge-vip">VIP</span>` : `<span class="badge-free">Free</span>`;
+
+                    let timeSpentStr = "Không rõ";
+                    if (data.timeSpent !== undefined) {
+                        const totalSeconds = parseInt(data.timeSpent, 10);
+                        const m = Math.floor(totalSeconds / 60);
+                        const s = totalSeconds % 60;
+                        timeSpentStr = `${m}p ${s}s`;
+                    }
+                    
+                    let submitTime = "Không xác định";
+                    if (data.timestamp || data.submittedAt) {
+                        submitTime = formatDate(data.timestamp || data.submittedAt);
                     }
 
-                    const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td><strong>${result.examId || "N/A"}</strong></td>
-                        <td>${result.correctAnswers || 0} / ${result.totalQuestions || "?"}</td>
-                        <td style="color: var(--primary-color); font-weight: bold;">
-                            ${result.score || 0}
+                        <td><strong>${quizId}</strong> ${badgeHtml}</td>
+                        <td>${timeSpentStr}</td>
+                        <td>${submitTime}</td>
+                        <td>${correctAnswers} câu</td>
+                        <td style="color: var(--primary-blue); font-weight: bold;">${score}</td>
+                        <td>
+                            <button class="btn-review" onclick="safeRedirect('quiz.html?resultId=${data.id}')">
+                                <i class="fa-solid fa-eye"></i> Xem lại
+                            </button>
+                            <button class="btn-delete-history" data-id="${data.id}">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>
                         </td>
-                        <td>${formattedTime}</td>
                     `;
                     historyTableBody.appendChild(tr);
                 });
 
             } catch (error) {
-                console.error("Lỗi khi tải lịch sử:", error);
-                historyTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="loading-text" style="color:red;">Lỗi tải lịch sử. Kiểm tra quyền truy cập Firebase!</td>
-                    </tr>
-                `;
+                console.error("Lỗi khi lấy lịch sử:", error);
+                historyTableBody.innerHTML = `<tr><td colspan="6" class="loading-text" style="color: red;">Lỗi khi tải dữ liệu lịch sử!</td></tr>`;
             }
         }
+
+        // Event Delegation Xóa Lịch Sử
+        historyTableBody.addEventListener('click', async (e) => {
+            const deleteBtn = e.target.closest('.btn-delete-history');
+            if (deleteBtn) {
+                const docId = deleteBtn.getAttribute('data-id');
+                if (confirm("Bạn có chắc chắn muốn xóa kết quả bài thi này khỏi lịch sử?")) {
+                    try {
+                        await deleteDoc(doc(db, "results", docId));
+                        alert("Đã xóa kết quả bài thi thành công!");
+                        if (auth.currentUser) fetchHistory(auth.currentUser.email);
+                    } catch (error) {
+                        console.error("Lỗi khi xóa kết quả:", error);
+                        alert("Đã xảy ra lỗi khi xóa: " + error.message);
+                    }
+                }
+            }
+        });
+
+        // ==========================================
+        // 5. CÁC HÀM XỬ LÝ PROFILE
+        // ==========================================
+
+        function formatDate(dateData) {
+            if (dateData && typeof dateData.toDate === 'function') {
+                return dateData.toDate().toLocaleString('vi-VN');
+            }
+            return new Date(dateData).toLocaleString('vi-VN');
+        }
+
+        // Hàm Resize Ảnh Canvas
+        function resizeImageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file); 
+                
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 200;
+                        const MAX_HEIGHT = 200;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        } else {
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        }
+
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                    img.onerror = (error) => reject(error);
+                };
+                reader.onerror = (error) => reject(error);
+            });
+        }
+
+        // Cập nhật Profile
+        updateProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            btnUpdateProfile.textContent = "Đang lưu...";
+            btnUpdateProfile.disabled = true;
+
+            const newName = inputName.value.trim();
+            let newBase64Avatar = null;
+
+            try {
+                await updateProfile(auth.currentUser, { displayName: newName });
+
+                if (inputAvatarFile.files.length > 0) {
+                    const file = inputAvatarFile.files[0];
+                    newBase64Avatar = await resizeImageToBase64(file);
+                    
+                    const userDocRef = doc(db, "users", auth.currentUser.uid);
+                    await setDoc(userDocRef, { avatarBase64: newBase64Avatar }, { merge: true });
+                }
+
+                alert("Cập nhật hồ sơ thành công!");
+                displayName.textContent = newName;
+                if (newBase64Avatar) userAvatar.src = newBase64Avatar;
+                inputAvatarFile.value = ""; 
+
+            } catch (error) {
+                console.error("Lỗi cập nhật hồ sơ:", error);
+                alert("Đã xảy ra lỗi: " + error.message);
+            } finally {
+                btnUpdateProfile.textContent = "Lưu thay đổi";
+                btnUpdateProfile.disabled = false;
+            }
+        });
+
+        // Đổi Mật Khẩu
+        changePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = inputNewPassword.value;
+            
+            btnChangePassword.textContent = "Đang xử lý...";
+            btnChangePassword.disabled = true;
+
+            try {
+                await updatePassword(auth.currentUser, newPassword);
+                alert("Đổi mật khẩu thành công!");
+                inputNewPassword.value = ""; 
+                
+            } catch (error) {
+                console.error("Lỗi đổi mật khẩu:", error);
+                if (error.code === 'auth/requires-recent-login') {
+                    alert("Vì lý do bảo mật, phiên đăng nhập đã hết hạn. Vui lòng Đăng xuất và Đăng nhập lại để đổi mật khẩu.");
+                } else {
+                    alert("Lỗi: " + error.message);
+                }
+            } finally {
+                btnChangePassword.textContent = "Cập nhật mật khẩu";
+                btnChangePassword.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // 6. CÁC HÀM XỬ LÝ KHÁC
+        // ==========================================
+        btnConfirmPayment.addEventListener("click", () => {
+            alert("Hệ thống đã ghi nhận yêu cầu. Chúng tôi sẽ kiểm tra và kích hoạt VIP cho bạn trong thời gian sớm nhất!");
+        });
+
+        btnLogout.addEventListener("click", () => {
+            signOut(auth).catch((error) => {
+                console.error("Lỗi đăng xuất:", error);
+                alert("Đã xảy ra lỗi khi đăng xuất!");
+            });
+        });
+
     </script>
 </body>
 </html>
