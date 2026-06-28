@@ -252,6 +252,25 @@
         
         .btn-review:hover { background-color: #e65100; }
 
+        /* Badge hiển thị loại Đề thi */
+        .exam-badge {
+            font-size: 0.75rem;
+            padding: 3px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .badge-vip {
+            background-color: #ffc107;
+            color: #856404;
+        }
+        .badge-free {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
         /* Tab VIP Layout */
         .vip-layout {
             display: flex;
@@ -338,7 +357,6 @@
                     </div>
                     <div class="form-group">
                         <label for="inputAvatarFile">Tải lên ảnh đại diện (Lưu an toàn vào cơ sở dữ liệu):</label>
-                        <!-- Ô input để chọn file ảnh, hỗ trợ nén Base64 -->
                         <input type="file" id="inputAvatarFile" accept="image/*">
                         <small style="display: block; color: #666; margin-top: 5px;">Ảnh sẽ được nén và tối ưu hóa xuống 200x200 pixel.</small>
                     </div>
@@ -367,6 +385,7 @@
                     <thead>
                         <tr>
                             <th>Mã đề</th>
+                            <th>Thời gian làm bài</th>
                             <th>Thời gian nộp</th>
                             <th>Số câu đúng</th>
                             <th>Điểm số</th>
@@ -375,7 +394,7 @@
                     </thead>
                     <tbody id="historyTableBody">
                         <tr>
-                            <td colspan="5" style="text-align: center; color: #777;">Đang tải dữ liệu...</td>
+                            <td colspan="6" style="text-align: center; color: #777;">Đang tải dữ liệu...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -422,7 +441,6 @@
         // 1. Import các hàm Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // Đã thêm setDoc vào import
         import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // 2. Cấu hình Firebase
@@ -484,7 +502,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 renderAuthInfo(user);
-                await fetchUserData(user); // Đã đổi tên hàm từ fetchVipStatus sang fetchUserData
+                await fetchUserData(user); 
                 await fetchHistory(user.email);
             } else {
                 window.location.href = 'index.html';
@@ -495,8 +513,6 @@
             const email = user.email;
             const name = user.displayName || "Người dùng ẩn danh";
             
-            // Gán tạm ảnh mặc định hoặc ảnh từ Google (nếu có)
-            // Lát nữa fetchUserData chạy xong sẽ ghi đè nếu có ảnh Base64 trong Firestore
             const fallbackPhotoUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0056b3&color=fff`;
 
             displayEmail.textContent = email;
@@ -507,7 +523,6 @@
             inputName.value = user.displayName || "";
         }
 
-        // Lấy dữ liệu người dùng từ Firestore (Bao gồm trạng thái VIP và Ảnh Avatar Base64)
         async function fetchUserData(user) {
             try {
                 const userDocRef = doc(db, "users", user.uid);
@@ -516,12 +531,10 @@
                 if (userDocSnap.exists()) {
                     const data = userDocSnap.data();
 
-                    // --- Ưu tiên cập nhật Ảnh Đại Diện từ Firestore ---
                     if (data.avatarBase64) {
                         userAvatar.src = data.avatarBase64;
                     }
 
-                    // --- Cập nhật Trạng thái VIP ---
                     const isVip = data.isVip || false;
                     if (isVip) {
                         vipStatusBadge.textContent = "Đã kích hoạt VIP";
@@ -554,32 +567,64 @@
 
         async function fetchHistory(userEmail) {
             try {
+                // Bước 1: Lấy thông tin các Đề thi để tạo Map Trạng thái VIP (examId -> isVip)
+                const examsRef = collection(db, "exams");
+                const examsSnapshot = await getDocs(examsRef);
+                const examVipMap = {};
+                
+                examsSnapshot.forEach(doc => {
+                    const examData = doc.data();
+                    // Lưu ý: Tùy cách bạn cấu trúc db, id đề thi có thể lưu ở doc.id hoặc trường examId/examCode
+                    const eId = examData.examId || examData.examCode || doc.id;
+                    examVipMap[eId] = examData.isVip || false;
+                });
+
+                // Bước 2: Lấy dữ liệu Lịch sử thi (results)
                 const resultsRef = collection(db, "results");
                 const q = query(resultsRef, where("email", "==", userEmail));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    historyTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #777;">Bạn chưa hoàn thành bài thi nào.</td></tr>`;
+                    historyTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #777;">Bạn chưa hoàn thành bài thi nào.</td></tr>`;
                     return;
                 }
 
                 historyTableBody.innerHTML = ""; 
                 
+                // Bước 3: Render từng dòng lịch sử thi
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     const tr = document.createElement("tr");
 
+                    // Trích xuất mã đề và các thông số
                     const quizId = data.examId || data.examCode || "Không rõ";
                     const score = data.score !== undefined ? data.score : 0;
                     const correctAnswers = data.correctAnswers !== undefined ? data.correctAnswers : 0;
                     
+                    // Xử lý badge VIP/Free
+                    const isVipExam = examVipMap[quizId] === true;
+                    const badgeHtml = isVipExam 
+                        ? `<span class="exam-badge badge-vip">VIP</span>` 
+                        : `<span class="exam-badge badge-free">Free</span>`;
+
+                    // Format Thời gian làm bài (nếu có dữ liệu timeSpent tính bằng giây)
+                    let timeSpentStr = "Không rõ";
+                    if (data.timeSpent !== undefined) {
+                        const totalSeconds = parseInt(data.timeSpent, 10);
+                        const m = Math.floor(totalSeconds / 60);
+                        const s = totalSeconds % 60;
+                        timeSpentStr = `${m}p ${s}s`;
+                    }
+                    
+                    // Format Thời gian nộp (nếu có submitTime timestamp)
                     let submitTime = "Không xác định";
                     if (data.submitTime) {
                         submitTime = formatDate(data.submitTime);
                     }
 
                     tr.innerHTML = `
-                        <td><strong>${quizId}</strong></td>
+                        <td><strong>${quizId}</strong> ${badgeHtml}</td>
+                        <td>${timeSpentStr}</td>
                         <td>${submitTime}</td>
                         <td>${correctAnswers} câu</td>
                         <td style="color: var(--primary-blue); font-weight: bold;">${score}</td>
@@ -594,7 +639,7 @@
 
             } catch (error) {
                 console.error("Lỗi khi lấy lịch sử:", error);
-                historyTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Lỗi khi tải dữ liệu lịch sử!</td></tr>`;
+                historyTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Lỗi khi tải dữ liệu lịch sử!</td></tr>`;
             }
         }
 
@@ -659,18 +704,14 @@
             let newBase64Avatar = null;
 
             try {
-                // Bước 1: Chỉ cập nhật displayName vào Firebase Auth
                 await updateProfile(auth.currentUser, {
                     displayName: newName
-                    // BỎ photoURL đi để không bị lỗi auth/invalid-profile-attribute
                 });
 
-                // Bước 2: Nếu có chọn ảnh mới -> Convert Base64 -> Lưu vào Firestore
                 if (inputAvatarFile.files.length > 0) {
                     const file = inputAvatarFile.files[0];
                     newBase64Avatar = await resizeImageToBase64(file);
                     
-                    // Lưu dữ liệu vào collection "users", merge:true để giữ nguyên trạng thái VIP
                     const userDocRef = doc(db, "users", auth.currentUser.uid);
                     await setDoc(userDocRef, { 
                         avatarBase64: newBase64Avatar 
@@ -679,13 +720,12 @@
 
                 alert("Cập nhật hồ sơ thành công!");
                 
-                // Cập nhật lại UI ngay lập tức
                 displayName.textContent = newName;
                 if (newBase64Avatar) {
                     userAvatar.src = newBase64Avatar;
                 }
 
-                inputAvatarFile.value = ""; // Xóa input file
+                inputAvatarFile.value = ""; 
 
             } catch (error) {
                 console.error("Lỗi cập nhật hồ sơ:", error);
