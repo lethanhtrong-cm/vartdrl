@@ -38,25 +38,26 @@
         }
 
         .title-line-1 {
-            color: #e2e8f0; /* Màu xám sáng */
+            color: #e0f2fe; /* Xanh nhạt sáng */
             font-size: 18px;
             font-weight: 500;
             margin-bottom: 10px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8); /* Đổ bóng tách nền */
         }
 
         .title-line-2 {
-            font-size: 34px;
-            font-weight: 800;
+            color: #ffffff; /* Trắng tinh khiết */
+            font-size: 36px; /* Kích thước chữ lớn hơn */
+            font-weight: 900; /* Đậm tối đa */
             text-transform: uppercase;
             letter-spacing: 1px;
-            /* Đổ màu gradient cho chữ */
-            background: linear-gradient(135deg, #60a5fa 0%, #ffffff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            /* Hiệu ứng đổ bóng viền mờ cho container */
-            filter: drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.5));
+            /* Hiệu ứng Phát sáng (Neon Glow) màu xanh dương */
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 
+                         0 0 20px rgba(59, 130, 246, 0.6), 
+                         0 0 30px rgba(96, 165, 250, 0.4), 
+                         0 2px 5px rgba(0,0,0,0.8);
         }
 
         /* Hộp chứa form đăng nhập/đăng ký (Card) */
@@ -257,8 +258,13 @@
 
         /* --- RESPONSIVE MOBILE --- */
         @media (max-width: 600px) {
-            .title-line-1 { font-size: 14px; }
-            .title-line-2 { font-size: 24px; }
+            .title-line-1 { 
+                font-size: 14px; 
+                letter-spacing: 1px;
+            }
+            .title-line-2 { 
+                font-size: 26px; 
+            }
             .auth-container {
                 padding: 35px 25px;
             }
