@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý tài khoản & Thanh toán</title>
+    <title>Dashboard Cá Nhân - Hệ Thống Trắc Nghiệm Y Khoa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* === CƠ BẢN & MÀU SẮC (THEME Y KHOA) === */
         :root {
-            --primary-blue: #0056b3; /* Xanh dương đậm y khoa */
+            --primary-blue: #0056b3; 
             --light-blue: #e3f2fd;
             --white: #ffffff;
             --gray-bg: #f4f7f6;
             --text-main: #333333;
             --warning-orange: #f57c00;
+            --success-green: #28a745;
+            --border-color: #ddd;
         }
 
         body {
@@ -21,58 +24,112 @@
             color: var(--text-main);
             margin: 0;
             padding: 0;
-        }
-
-        /* === NAVBAR === */
-        .navbar {
-            background-color: var(--primary-blue);
-            padding: 15px 30px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* === BỐ CỤC 2 CỘT === */
+        /* 1. SIDEBAR (MENU BÊN TRÁI) */
+        .sidebar {
+            width: 260px;
+            background-color: var(--primary-blue);
             color: var(--white);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .navbar h2 {
-            margin: 0;
-            font-size: 1.2rem;
-        }
-
-        .nav-buttons a, .nav-buttons button {
-            text-decoration: none;
-            background-color: var(--white);
-            color: var(--primary-blue);
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            margin-left: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: 0.3s;
-        }
-
-        .nav-buttons a:hover, .nav-buttons button:hover {
-            background-color: var(--light-blue);
-        }
-
-        /* === BỐ CỤC CHÍNH (CARD LAYOUT) === */
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px; /* Khoảng cách giữa các Card */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
 
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            line-height: 1.5;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .menu-item {
+            padding: 15px 25px;
+            color: var(--light-blue);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 4px solid transparent;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(255,255,255,0.1);
+            color: var(--white);
+            border-left-color: var(--warning-orange);
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            background-color: transparent;
+            color: var(--white);
+            border: 1px solid var(--white);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--white);
+            color: var(--primary-blue);
+        }
+
+        /* 2. MAIN CONTENT (NỘI DUNG BÊN PHẢI) */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+        }
+
+        .tab-pane {
+            display: none; /* Ẩn các tab mặc định */
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-pane.active {
+            display: block; /* Chỉ hiện tab đang active */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === CÁC THÀNH PHẦN TRONG TAB === */
         .card {
             background: var(--white);
             border-radius: 8px;
             padding: 25px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             border-top: 4px solid var(--primary-blue);
+            margin-bottom: 25px;
         }
 
         .card h3 {
@@ -80,46 +137,93 @@
             color: var(--primary-blue);
             border-bottom: 1px solid #eee;
             padding-bottom: 10px;
+            margin-bottom: 20px;
         }
 
-        /* KHU VỰC 2: GÓI CƯỚC */
-        .status-vip {
-            font-size: 1.1rem;
-            font-weight: bold;
+        /* Profile Layout */
+        .profile-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .profile-avatar {
+            text-align: center;
+        }
+
+        .profile-avatar img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--light-blue);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info p {
+            margin: 10px 0;
+            font-size: 1.05rem;
+        }
+
+        /* Form Controls */
+        .form-group {
             margin-bottom: 15px;
         }
 
-        .status-unactive {
-            color: var(--warning-orange);
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-main);
         }
 
-        .btn-upgrade {
-            background-color: var(--warning-orange);
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
             color: var(--white);
             border: none;
             padding: 10px 20px;
-            font-size: 1rem;
-            font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
+            font-weight: bold;
             transition: 0.3s;
         }
 
-        .btn-upgrade:hover {
-            background-color: #e65100;
-        }
+        .btn-primary:hover { background-color: #004494; }
 
-        /* KHU VỰC 3: BẢNG LỊCH SỬ */
+        /* Nút VIP & Status */
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-unactive { background-color: #ffe0b2; color: #e65100; }
+        .status-active { background-color: #d4edda; color: var(--success-green); }
+
+        /* Bảng Lịch sử */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
         }
 
         table th, table td {
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             padding: 12px;
-            text-align: left;
+            text-align: center;
         }
 
         table th {
@@ -127,150 +231,169 @@
             color: var(--primary-blue);
         }
 
-        /* === MODAL THANH TOÁN === */
-        .modal {
-            display: none; /* Ẩn mặc định */
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
+        .btn-review {
+            background-color: var(--warning-orange);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
         }
+        
+        .btn-review:hover { background-color: #e65100; }
 
-        .modal-content {
-            background-color: var(--white);
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        /* Tab VIP Layout */
+        .vip-layout {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
         }
-
-        .modal-content h3 {
-            color: var(--primary-blue);
-            margin-top: 0;
-        }
-
+        .vip-card-box { flex: 1; min-width: 300px; }
+        
         .qr-placeholder {
-            width: 200px;
-            height: 200px;
+            width: 200px; height: 200px;
             background-color: #eee;
             margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px dashed #ccc; border-radius: 8px;
         }
-
-        .qr-placeholder img {
-            max-width: 100%;
-            border-radius: 8px;
-        }
-
+        .qr-placeholder img { max-width: 100%; border-radius: 8px; }
         .instruction {
             background-color: var(--light-blue);
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
-        .highlight {
-            font-weight: bold;
-            color: var(--primary-blue);
-        }
-
-        .btn-confirm {
-            background-color: var(--primary-blue);
-            color: var(--white);
-            border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .btn-confirm:hover {
-            background-color: #004494;
+            padding: 15px; border-radius: 5px;
+            line-height: 1.5; text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <h2>Hệ Thống Trắc Nghiệm Y Khoa</h2>
-        <div class="nav-buttons">
-            <a href="dashboard.html">Về Phòng Chờ</a>
-            <button id="btnLogout">Đăng xuất</button>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Hệ Thống<br>Trắc Nghiệm Y Khoa</h2>
         </div>
-    </nav>
-
-    <div class="container">
         
-        <div class="card">
-            <h3>Thông tin tài khoản</h3>
-            <p><strong>Email đăng nhập:</strong> <span id="displayEmail">Đang tải...</span></p>
-        </div>
-
-        <div class="card">
-            <h3>Gói cước của bạn</h3>
-            <div class="status-vip">
-                Tình trạng: <span class="status-unactive">Chưa kích hoạt VIP</span>
+        <div class="sidebar-menu">
+            <div class="menu-item active" data-target="tab-profile">
+                <i class="fa-solid fa-user"></i> Hồ sơ cá nhân
             </div>
-            <button id="btnOpenModal" class="btn-upgrade">🚀 Nâng cấp VIP ngay</button>
+            <div class="menu-item" data-target="tab-history">
+                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử làm bài
+            </div>
+            <div class="menu-item" data-target="tab-vip">
+                <i class="fa-solid fa-gem"></i> Nâng cấp VIP
+            </div>
+            <a href="dashboard.html" class="menu-item">
+                <i class="fa-solid fa-door-open"></i> Về Phòng chờ
+            </a>
         </div>
 
-        <div class="card">
-            <h3>Lịch sử thanh toán</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Ngày/Giờ</th>
-                        <th>Số tiền (VNĐ)</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody id="billingHistory">
-                    <tr>
-                        <td colspan="3" style="text-align: center; color: #777;">Chưa có giao dịch nào</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="sidebar-footer">
+            <button id="btnLogout" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
         </div>
     </div>
 
-    <div id="paymentModal" class="modal">
-        <div class="modal-content">
-            <h3>Thanh toán qua QR Code</h3>
-            
-            <div class="qr-placeholder">
-                <img src="https://via.placeholder.com/200?text=QR+Code+Demo" alt="Mã QR Chuyển khoản">
+    <div class="main-content">
+        
+        <div id="tab-profile" class="tab-pane active">
+            <div class="card">
+                <h3><i class="fa-solid fa-address-card"></i> Thông tin chung</h3>
+                <div class="profile-container">
+                    <div class="profile-avatar">
+                        <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=0056b3&color=fff" alt="Avatar">
+                    </div>
+                    <div class="profile-info">
+                        <p><strong>Tên hiển thị:</strong> <span id="displayName">Đang tải...</span></p>
+                        <p><strong>Email:</strong> <span id="displayEmail">Đang tải...</span></p>
+                        <p>
+                            <strong>Trạng thái VIP:</strong> 
+                            <span id="vipStatusBadge" class="status-badge status-unactive">Đang kiểm tra...</span>
+                        </p>
+                        <p><strong>Ngày kích hoạt:</strong> <span id="vipStartDate">Không xác định</span></p>
+                        <p><strong>Ngày hết hạn:</strong> <span id="vipEndDate">Không xác định</span></p>
+                    </div>
+                </div>
             </div>
 
-            <div class="instruction">
-                Vui lòng chuyển khoản <strong>100.000đ</strong> với nội dung:<br><br>
-                <span class="highlight">NAP <span id="modalEmail">[Email của bạn]</span></span><br><br>
-                để được mở khóa toàn bộ đề thi.
+            <div class="card">
+                <h3><i class="fa-solid fa-pen-to-square"></i> Cập nhật hồ sơ</h3>
+                <form id="updateProfileForm">
+                    <div class="form-group">
+                        <label for="inputName">Tên hiển thị mới:</label>
+                        <input type="text" id="inputName" placeholder="Nhập tên của bạn...">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputAvatarUrl">Đường dẫn ảnh đại diện (URL):</label>
+                        <input type="url" id="inputAvatarUrl" placeholder="https://domain.com/anh-cua-ban.jpg">
+                    </div>
+                    <button type="submit" id="btnUpdateProfile" class="btn-primary">Lưu thay đổi</button>
+                </form>
             </div>
-
-            <button id="btnConfirmPayment" class="btn-confirm">Tôi đã chuyển khoản</button>
         </div>
+
+        <div id="tab-history" class="tab-pane">
+            <div class="card">
+                <h3><i class="fa-solid fa-list-check"></i> Lịch sử các lần thi</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã đề</th>
+                            <th>Thời gian nộp</th>
+                            <th>Số câu đúng</th>
+                            <th>Điểm số</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #777;">Đang tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-vip" class="tab-pane">
+            <div class="vip-layout">
+                <div class="card vip-card-box">
+                    <h3><i class="fa-solid fa-star"></i> Gói cước của bạn</h3>
+                    <p style="font-size: 1.1rem;">
+                        Tình trạng hiện tại:<br><br>
+                        <span id="vipStatusTab3" class="status-badge status-unactive" style="font-size: 1rem; padding: 10px 15px;">Chưa kích hoạt VIP</span>
+                    </p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <ul style="line-height: 1.8; padding-left: 20px;">
+                        <li>Truy cập toàn bộ kho đề thi Y Khoa.</li>
+                        <li>Xem giải thích chi tiết đáp án.</li>
+                        <li>Lưu lại lịch sử làm bài không giới hạn.</li>
+                        <li>Hỗ trợ học tập 24/7.</li>
+                    </ul>
+                </div>
+
+                <div class="card vip-card-box" style="text-align: center;">
+                    <h3><i class="fa-solid fa-qrcode"></i> Thanh toán qua QR Code</h3>
+                    <div class="qr-placeholder">
+                        <img src="https://via.placeholder.com/200?text=QR+Code+Demo" alt="Mã QR Chuyển khoản">
+                    </div>
+                    <div class="instruction">
+                        Vui lòng chuyển khoản <strong>100.000đ</strong> với nội dung:<br><br>
+                        <span style="font-weight: bold; color: var(--primary-blue); font-size: 1.2rem;">NAP <span id="paymentEmail">[Email của bạn]</span></span><br><br>
+                        để được hệ thống mở khóa tự động.
+                    </div>
+                    <button id="btnConfirmPayment" class="btn-primary" style="width: 100%;">Tôi đã chuyển khoản</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script type="module">
         // 1. Import các hàm cần thiết từ Firebase v11.6.1
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // Cấu hình Firebase (Sử dụng config bạn đã cung cấp)
+        // 2. Cấu hình Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
             authDomain: "rt-examination.firebaseapp.com",
@@ -282,64 +405,224 @@
             measurementId: "G-8N7RTTREQM"
         };
 
-        // 2. Khởi tạo Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app); // Khởi tạo sẵn Firestore cho việc lưu lịch sử sau này
+        const db = getFirestore(app);
 
-        // Các DOM Element
+        // 3. Logic Chuyển Tab (Sidebar)
+        const menuItems = document.querySelectorAll('.sidebar-menu .menu-item[data-target]');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Xóa active khỏi tất cả menu
+                menuItems.forEach(m => m.classList.remove('active'));
+                // Thêm active vào menu vừa click
+                item.classList.add('active');
+
+                // Ẩn tất cả tab nội dung
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                // Hiện tab nội dung tương ứng
+                const targetId = item.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // 4. Các DOM Elements cần thao tác
+        // Profile
         const displayEmail = document.getElementById("displayEmail");
-        const modalEmail = document.getElementById("modalEmail");
-        const btnLogout = document.getElementById("btnLogout");
+        const displayName = document.getElementById("displayName");
+        const userAvatar = document.getElementById("userAvatar");
+        const inputName = document.getElementById("inputName");
+        const inputAvatarUrl = document.getElementById("inputAvatarUrl");
+        const updateProfileForm = document.getElementById("updateProfileForm");
+        const btnUpdateProfile = document.getElementById("btnUpdateProfile");
         
-        // DOM Element cho Modal
-        const modal = document.getElementById("paymentModal");
-        const btnOpenModal = document.getElementById("btnOpenModal");
+        // VIP
+        const vipStatusBadge = document.getElementById("vipStatusBadge");
+        const vipStartDate = document.getElementById("vipStartDate");
+        const vipEndDate = document.getElementById("vipEndDate");
+        const vipStatusTab3 = document.getElementById("vipStatusTab3");
+        const paymentEmail = document.getElementById("paymentEmail");
         const btnConfirmPayment = document.getElementById("btnConfirmPayment");
 
-        // 3. Bảo vệ Route bằng onAuthStateChanged
-        onAuthStateChanged(auth, (user) => {
+        // History
+        const historyTableBody = document.getElementById("historyTableBody");
+        
+        // Global
+        const btnLogout = document.getElementById("btnLogout");
+
+        // 5. Kiểm tra đăng nhập
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Nếu đã đăng nhập, hiển thị email lên giao diện
-                const userEmail = user.email;
-                displayEmail.textContent = userEmail;
-                modalEmail.textContent = userEmail; // Điền sẵn email vào cú pháp nạp tiền
+                // 5.1 Render thông tin Auth cơ bản
+                renderAuthInfo(user);
+
+                // 5.2 Lấy thông tin VIP từ Firestore (collection 'users')
+                await fetchVipStatus(user.uid);
+
+                // 5.3 Lấy Lịch sử làm bài (collection 'results')
+                await fetchHistory(user.email);
+
             } else {
-                // Chưa đăng nhập thì đá về trang chủ (index.html)
+                // Chưa đăng nhập thì đuổi về trang chủ
                 window.location.href = 'index.html';
             }
         });
 
-        // 4. Xử lý Đăng xuất
+        // Hàm render thông tin từ Firebase Auth
+        function renderAuthInfo(user) {
+            const email = user.email;
+            const name = user.displayName || "Người dùng ẩn danh";
+            // Dùng UI-Avatars nếu chưa có ảnh
+            const photoUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0056b3&color=fff`;
+
+            displayEmail.textContent = email;
+            paymentEmail.textContent = email; // Gắn email vào cú pháp chuyển khoản
+            displayName.textContent = name;
+            userAvatar.src = photoUrl;
+
+            // Điền sẵn vào form cập nhật
+            inputName.value = user.displayName || "";
+            inputAvatarUrl.value = user.photoURL || "";
+        }
+
+        // Hàm lấy trạng thái VIP từ Firestore
+        async function fetchVipStatus(uid) {
+            try {
+                const userDocRef = doc(db, "users", uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    const data = userDocSnap.data();
+                    const isVip = data.isVip || false;
+
+                    if (isVip) {
+                        // Giao diện: Kích hoạt VIP
+                        vipStatusBadge.textContent = "Đã kích hoạt VIP";
+                        vipStatusBadge.className = "status-badge status-active";
+                        vipStatusTab3.textContent = "VIP Hoạt động";
+                        vipStatusTab3.className = "status-badge status-active";
+
+                        // Hiển thị ngày tháng (Giả sử bạn lưu dạng string hoặc timestamp trong field 'vipStart' và 'vipEnd')
+                        vipStartDate.textContent = data.vipStart ? formatDate(data.vipStart) : "Không xác định";
+                        vipEndDate.textContent = data.vipEnd ? formatDate(data.vipEnd) : "Không xác định";
+                    } else {
+                        setVipInactive();
+                    }
+                } else {
+                    setVipInactive(); // Document chưa tồn tại
+                }
+            } catch (error) {
+                console.error("Lỗi khi lấy trạng thái VIP:", error);
+                setVipInactive();
+            }
+        }
+
+        function setVipInactive() {
+            vipStatusBadge.textContent = "Chưa kích hoạt";
+            vipStatusBadge.className = "status-badge status-unactive";
+            vipStatusTab3.textContent = "Chưa kích hoạt VIP";
+            vipStatusTab3.className = "status-badge status-unactive";
+            vipStartDate.textContent = "Không xác định";
+            vipEndDate.textContent = "Không xác định";
+        }
+
+        // Hàm lấy Lịch sử từ Firestore
+        async function fetchHistory(userEmail) {
+            try {
+                const resultsRef = collection(db, "results");
+                const q = query(resultsRef, where("email", "==", userEmail));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    historyTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #777;">Bạn chưa hoàn thành bài thi nào.</td></tr>`;
+                    return;
+                }
+
+                historyTableBody.innerHTML = ""; // Xóa dòng "Đang tải..."
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const tr = document.createElement("tr");
+
+                    // Trích xuất dữ liệu, kiểm tra nếu rỗng thì để mặc định
+                    const quizId = data.quizId || "Không rõ";
+                    const score = data.score !== undefined ? data.score : 0;
+                    const correctAnswers = data.correctAnswers !== undefined ? data.correctAnswers : 0;
+                    
+                    // Xử lý thời gian nộp (Firebase Timestamp -> String)
+                    let submitTime = "Không xác định";
+                    if (data.submitTime) {
+                        submitTime = formatDate(data.submitTime);
+                    }
+
+                    tr.innerHTML = `
+                        <td><strong>${quizId}</strong></td>
+                        <td>${submitTime}</td>
+                        <td>${correctAnswers} câu</td>
+                        <td style="color: var(--primary-blue); font-weight: bold;">${score}</td>
+                        <td><button class="btn-review" onclick="alert('Tính năng xem lại bài sẽ chuyển hướng sang trang quiz với mode=review')"><i class="fa-solid fa-eye"></i> Xem lại</button></td>
+                    `;
+                    historyTableBody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Lỗi khi lấy lịch sử:", error);
+                historyTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Lỗi khi tải dữ liệu lịch sử!</td></tr>`;
+            }
+        }
+
+        // Helper format ngày tháng (Hỗ trợ Firebase Timestamp hoặc Date string)
+        function formatDate(dateData) {
+            if (dateData && typeof dateData.toDate === 'function') {
+                return dateData.toDate().toLocaleString('vi-VN');
+            }
+            // Fallback nếu lưu bằng string
+            return new Date(dateData).toLocaleString('vi-VN');
+        }
+
+        // 6. Xử lý Cập nhật Hồ sơ cá nhân (Firebase Auth)
+        updateProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            btnUpdateProfile.textContent = "Đang lưu...";
+            btnUpdateProfile.disabled = true;
+
+            const newName = inputName.value.trim();
+            const newPhotoUrl = inputAvatarUrl.value.trim();
+
+            try {
+                await updateProfile(auth.currentUser, {
+                    displayName: newName,
+                    photoURL: newPhotoUrl
+                });
+
+                alert("Cập nhật hồ sơ thành công!");
+                // Gọi lại hàm render để cập nhật UI ngay lập tức
+                renderAuthInfo(auth.currentUser);
+
+            } catch (error) {
+                console.error("Lỗi cập nhật hồ sơ:", error);
+                alert("Đã xảy ra lỗi: " + error.message);
+            } finally {
+                btnUpdateProfile.textContent = "Lưu thay đổi";
+                btnUpdateProfile.disabled = false;
+            }
+        });
+
+        // 7. Xử lý Nút Xác nhận chuyển khoản (Tab VIP)
+        btnConfirmPayment.addEventListener("click", () => {
+            alert("Hệ thống đã ghi nhận yêu cầu. Chúng tôi sẽ kiểm tra và kích hoạt VIP cho bạn trong thời gian sớm nhất!");
+        });
+
+        // 8. Đăng xuất
         btnLogout.addEventListener("click", () => {
-            signOut(auth).then(() => {
-                // Đăng xuất thành công, hàm onAuthStateChanged ở trên sẽ tự động bắt sự kiện 
-                // và chuyển hướng người dùng về index.html
-            }).catch((error) => {
+            signOut(auth).catch((error) => {
                 console.error("Lỗi đăng xuất:", error);
                 alert("Đã xảy ra lỗi khi đăng xuất!");
             });
         });
 
-        // 5. Xử lý Modal Thanh toán
-        // Mở Modal
-        btnOpenModal.addEventListener("click", () => {
-            modal.style.display = "block";
-        });
-
-        // Đóng Modal khi bấm "Tôi đã chuyển khoản"
-        btnConfirmPayment.addEventListener("click", () => {
-            modal.style.display = "none";
-            alert("Hệ thống đã ghi nhận yêu cầu. Chúng tôi sẽ kiểm tra và kích hoạt VIP cho bạn trong thời gian sớm nhất!");
-        });
-
-        // (Tuỳ chọn) Bấm ra ngoài vùng Modal để đóng
-        window.addEventListener("click", (event) => {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        });
     </script>
-
 </body>
 </html>
