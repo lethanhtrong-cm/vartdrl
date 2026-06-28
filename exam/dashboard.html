@@ -91,28 +91,6 @@
             border-left-color: var(--warning-orange);
         }
 
-        .sidebar-footer {
-            padding: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .btn-logout {
-            width: 100%;
-            padding: 10px;
-            background-color: transparent;
-            color: var(--white);
-            border: 1px solid var(--white);
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-            font-weight: bold;
-        }
-
-        .btn-logout:hover {
-            background-color: var(--danger-red);
-            border-color: var(--danger-red);
-        }
-
         /* MAIN CONTENT (NỘI DUNG BÊN PHẢI) */
         .main-content {
             flex: 1;
@@ -139,10 +117,20 @@
             font-weight: 700;
         }
 
+        /* AREA PROFILE & DROPDOWN */
         .topbar-user {
             display: flex;
             align-items: center;
             gap: 15px;
+            cursor: pointer;
+            position: relative;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+        
+        .topbar-user:hover {
+            background-color: rgba(0, 86, 179, 0.05);
         }
 
         .topbar-greeting {
@@ -161,6 +149,56 @@
             object-fit: cover;
             border: 2px solid var(--light-blue);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* DROPDOWN MENU */
+        .dropdown-menu {
+            position: absolute;
+            top: 110%; /* Hiển thị ngay dưới User Profile */
+            right: 0;
+            background: var(--white);
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: none; /* Mặc định ẩn */
+            flex-direction: column;
+            z-index: 100;
+            overflow: hidden;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        .dropdown-menu.show {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+        }
+
+        .dropdown-item.danger-text {
+            border-top: 1px solid var(--border-color);
+        }
+
+        .dropdown-item.danger-text:hover {
+            background-color: #fee2e2;
+            color: var(--danger-red);
         }
 
         /* KHU VỰC TABS */
@@ -574,9 +612,6 @@
             <div class="menu-item active" data-target="tab-exams">
                 <i class="fa-solid fa-book"></i> <span>Kho Đề Thi</span>
             </div>
-            <div class="menu-item" data-target="tab-profile">
-                <i class="fa-solid fa-user"></i> <span>Hồ sơ cá nhân</span>
-            </div>
             <div class="menu-item" data-target="tab-history">
                 <i class="fa-solid fa-clock-rotate-left"></i> <span>Lịch sử làm bài</span>
             </div>
@@ -584,19 +619,25 @@
                 <i class="fa-solid fa-gem"></i> <span>Nâng cấp VIP</span>
             </div>
         </div>
-
-        <div class="sidebar-footer">
-            <button id="btnLogout" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
         </div>
-    </div>
 
     <div class="main-content">
         
         <div class="topbar">
             <h2 id="currentTabTitle" class="topbar-title">Khám Phá Kho Đề Thi</h2>
-            <div class="topbar-user">
+            
+            <div class="topbar-user" id="userMenuToggle">
                 <span class="topbar-greeting">Xin chào, <b id="topbarName">Đang tải...</b></span>
                 <img id="topbarAvatar" src="https://ui-avatars.com/api/?name=User&background=0056b3&color=fff" alt="Avatar User">
+                
+                <div class="dropdown-menu" id="userDropdown">
+                    <div class="dropdown-item" id="btnManageProfile">
+                        <i class="fa-solid fa-user-pen"></i> Quản lý Hồ Sơ
+                    </div>
+                    <div class="dropdown-item danger-text" id="btnLogout">
+                        <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                    </div>
+                </div>
             </div>
         </div>
 
