@@ -117,7 +117,50 @@
             font-weight: 700;
         }
 
-        /* AREA PROFILE & DROPDOWN */
+        /* ACTIONS: VIP & PROFILE */
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* KHU VỰC CHỨA NÚT/BADGE VIP TRÊN TOPBAR */
+        .topbar-vip-badge {
+            background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
+            color: #5c3a21;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+            user-select: none;
+            border: 1px solid #ffca28;
+        }
+
+        .topbar-vip-btn {
+            background: linear-gradient(135deg, #ff9a44 0%, #fc6076 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(252, 96, 118, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .topbar-vip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(252, 96, 118, 0.4);
+        }
+
         .topbar-user {
             display: flex;
             align-items: center;
@@ -154,14 +197,14 @@
         /* DROPDOWN MENU */
         .dropdown-menu {
             position: absolute;
-            top: 110%; /* Hiển thị ngay dưới User Profile */
+            top: 110%;
             right: 0;
             background: var(--white);
             min-width: 200px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             border-radius: 8px;
             border: 1px solid var(--border-color);
-            display: none; /* Mặc định ẩn */
+            display: none;
             flex-direction: column;
             z-index: 100;
             overflow: hidden;
@@ -280,7 +323,6 @@
            4. CSS RIÊNG TỪNG TAB & TÍNH NĂNG NÂNG CAO
            ========================================= */
         
-        /* --- THỐNG KÊ NHANH (QUICK STATS GRID) --- */
         .quick-stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -333,7 +375,6 @@
             line-height: 1.2;
         }
 
-        /* Thiết kế 3 thẻ màu sắc pastel nổi bật có viền trái */
         .stat-card-completed {
             background: linear-gradient(135deg, #e0f2fe, #bae6fd);
             color: #0369a1;
@@ -355,7 +396,6 @@
         }
         .stat-card-account .stat-icon { color: #d97706; background: rgba(217, 119, 6, 0.12); }
 
-        /* --- HIỆU ỨNG TẢI KHUNG XƯƠNG (SKELETON LOADING) --- */
         .skeleton-loader {
             background: #e5e7eb;
             background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
@@ -370,11 +410,7 @@
             100% { background-position: -200% 0; }
         }
 
-        .stat-skeleton-text {
-            width: 60px;
-            height: 24px;
-            vertical-align: middle;
-        }
+        .stat-skeleton-text { width: 60px; height: 24px; vertical-align: middle; }
 
         .course-card-skeleton {
             background: var(--white);
@@ -392,7 +428,6 @@
         .course-card-skeleton .sk-meta { height: 16px; width: 90%; }
         .course-card-skeleton .sk-button { height: 42px; width: 100%; border-radius: 6px; margin-top: 10px; }
 
-        /* --- TAB 1: KHO ĐỀ THI --- */
         .toolbar {
             display: flex;
             justify-content: space-between;
@@ -406,14 +441,8 @@
             gap: 15px;
         }
 
-        .toolbar-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .toolbar-group { display: flex; align-items: center; gap: 10px; }
         .toolbar label { font-weight: 600; color: var(--text-main); }
-        
         .toolbar select {
             padding: 8px 12px;
             border: 1px solid var(--border-color);
@@ -434,11 +463,7 @@
             color: var(--text-muted);
             transition: 0.2s;
         }
-        .view-btn.active {
-            background-color: var(--primary-blue);
-            color: var(--white);
-            border-color: var(--primary-blue);
-        }
+        .view-btn.active { background-color: var(--primary-blue); color: var(--white); border-color: var(--primary-blue); }
 
         .grid-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
         .list-view { display: flex; flex-direction: column; gap: 20px; }
@@ -454,12 +479,7 @@
             border: 1px solid var(--border-color);
             position: relative;
         }
-
-        .course-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
+        .course-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
         .course-badge {
             position: absolute; top: 15px; right: 15px;
             padding: 5px 12px; border-radius: 20px; font-size: 0.75rem;
@@ -478,17 +498,13 @@
         .card-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
         .stat-item { display: flex; align-items: center; gap: 6px; }
 
-        .card-meta {
-            margin-top: auto; display: flex; justify-content: space-between; align-items: center;
-            padding-top: 15px; border-top: 1px dashed var(--border-color);
-        }
+        .card-meta { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px dashed var(--border-color); }
         .rating { font-weight: bold; color: var(--text-main); display: flex; align-items: center; gap: 5px; }
         .rating i { color: var(--star-color); }
         .attempts { font-size: 0.85rem; color: var(--text-muted); }
 
         .card-footer { padding: 15px 20px; background-color: var(--gray-bg); border-top: 1px solid var(--border-color); }
         .card-footer button { width: 100%; padding: 12px; font-size: 1rem; }
-
         .btn-locked { background-color: var(--locked-color); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-locked:hover { background-color: var(--locked-hover); }
 
@@ -500,82 +516,40 @@
         .list-view .course-badge { position: relative; top: 0; right: 0; margin-left: 15px; box-shadow: none; }
         .list-view .card-footer { border-top: none; border-left: 1px solid var(--border-color); background: transparent; min-width: 200px; }
 
-        /* Kiểu hiển thị Khung xương cho List View */
-        .list-view .course-card-skeleton {
-            flex-direction: row; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 20px;
-        }
+        .list-view .course-card-skeleton { flex-direction: row; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 20px; }
         .list-view .course-card-skeleton .sk-badge { order: 4; align-self: center; }
         .list-view .course-card-skeleton .sk-title { flex: 1.5; margin: 0; }
         .list-view .course-card-skeleton .sk-text { flex: 1; margin: 0; }
         .list-view .course-card-skeleton .sk-meta { flex: 1; margin: 0; }
         .list-view .course-card-skeleton .sk-button { width: 200px; margin: 0; }
 
-        /* --- TAB 2: HỒ SƠ --- */
-        .profile-grid-layout {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 25px;
-            align-items: start;
-        }
-
-        .profile-column {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .profile-grid-layout .card {
-            margin-bottom: 0;
-        }
-
+        .profile-grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; align-items: start; }
+        .profile-column { display: flex; flex-direction: column; gap: 25px; }
+        .profile-grid-layout .card { margin-bottom: 0; }
         .profile-container { display: flex; gap: 30px; align-items: flex-start; }
         .profile-avatar { text-align: center; }
-        .profile-avatar img {
-            width: 120px; height: 120px; border-radius: 50%;
-            object-fit: cover; border: 3px solid var(--light-blue);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        .profile-avatar img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--light-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .profile-info { flex: 1; }
         .profile-info p { margin: 10px 0; font-size: 1.05rem; }
-        
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
-        .form-group input {
-            width: 100%; padding: 10px; border: 1px solid var(--border-color);
-            border-radius: 5px; box-sizing: border-box; font-size: 1rem;
-        }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; box-sizing: border-box; font-size: 1rem; }
         input[type="file"] { padding: 7px; background-color: var(--light-blue); cursor: pointer; border-radius: 5px; width: 100%; box-sizing: border-box;}
 
-        /* --- TAB 3: LỊCH SỬ --- */
         table { width: 100%; border-collapse: collapse; }
         table th, table td { border: 1px solid var(--border-color); padding: 12px; text-align: center; }
         table th { background-color: var(--light-blue); color: var(--primary-blue); }
-        .btn-review {
-            background-color: var(--warning-orange); color: white; border: none;
-            padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;
-        }
+        .btn-review { background-color: var(--warning-orange); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
         .btn-review:hover { background-color: #e65100; }
-        .btn-delete-history {
-            background-color: var(--danger-red); color: white; border: none;
-            padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; margin-left: 5px;
-        }
+        .btn-delete-history { background-color: var(--danger-red); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; margin-left: 5px; }
         .btn-delete-history:hover { background-color: #dc2626; }
 
-        /* --- TAB 4: VIP --- */
         .vip-layout { display: flex; gap: 20px; flex-wrap: wrap; }
         .vip-card-box { flex: 1; min-width: 300px; }
-        .qr-placeholder {
-            width: 200px; height: 200px; background-color: #eee;
-            margin: 20px auto; display: flex; align-items: center; justify-content: center;
-            border: 2px dashed #ccc; border-radius: 8px;
-        }
+        .qr-placeholder { width: 200px; height: 200px; background-color: #eee; margin: 20px auto; display: flex; align-items: center; justify-content: center; border: 2px dashed #ccc; border-radius: 8px; }
         .qr-placeholder img { max-width: 100%; border-radius: 8px; }
-        .instruction {
-            background-color: var(--light-blue); padding: 15px; border-radius: 5px;
-            line-height: 1.5; text-align: center; margin-bottom: 15px;
-        }
+        .instruction { background-color: var(--light-blue); padding: 15px; border-radius: 5px; line-height: 1.5; text-align: center; margin-bottom: 15px; }
 
-        /* --- RESPONSIVE MEDIA QUERIES --- */
         @media (max-width: 1100px) {
             .grid-view { grid-template-columns: repeat(2, 1fr); }
         }
@@ -586,7 +560,6 @@
             .list-view .card-body { flex-direction: column; align-items: flex-start; }
             .list-view .card-footer { border-left: none; border-top: 1px solid var(--border-color); }
             .list-view .course-badge { position: absolute; top: 15px; right: 15px; }
-            
             .list-view .course-card-skeleton { flex-direction: column; align-items: stretch; }
             .list-view .course-card-skeleton .sk-badge { align-self: flex-end; }
             .list-view .course-card-skeleton .sk-button { width: 100%; }
@@ -597,7 +570,9 @@
             .sidebar { width: 60px; }
             .menu-item span, .sidebar-header h2 { display: none; }
             .menu-item { justify-content: center; padding: 15px; }
+            
             .topbar { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .topbar-actions { width: 100%; justify-content: space-between; }
         }
     </style>
 </head>
@@ -615,29 +590,32 @@
             <div class="menu-item" data-target="tab-history">
                 <i class="fa-solid fa-clock-rotate-left"></i> <span>Lịch sử làm bài</span>
             </div>
-            <div class="menu-item" data-target="tab-vip">
-                <i class="fa-solid fa-gem"></i> <span>Nâng cấp VIP</span>
             </div>
-        </div>
-        </div>
+    </div>
 
     <div class="main-content">
         
         <div class="topbar">
             <h2 id="currentTabTitle" class="topbar-title">Khám Phá Kho Đề Thi</h2>
             
-            <div class="topbar-user" id="userMenuToggle">
-                <span class="topbar-greeting">Xin chào, <b id="topbarName">Đang tải...</b></span>
-                <img id="topbarAvatar" src="https://ui-avatars.com/api/?name=User&background=0056b3&color=fff" alt="Avatar User">
+            <div class="topbar-actions">
                 
-                <div class="dropdown-menu" id="userDropdown">
-                    <div class="dropdown-item" id="btnManageProfile">
-                        <i class="fa-solid fa-user-pen"></i> Quản lý Hồ Sơ
-                    </div>
-                    <div class="dropdown-item danger-text" id="btnLogout">
-                        <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                <div id="topbar-vip-container"></div>
+                
+                <div class="topbar-user" id="userMenuToggle">
+                    <span class="topbar-greeting">Xin chào, <b id="topbarName">Đang tải...</b></span>
+                    <img id="topbarAvatar" src="https://ui-avatars.com/api/?name=User&background=0056b3&color=fff" alt="Avatar User">
+                    
+                    <div class="dropdown-menu" id="userDropdown">
+                        <div class="dropdown-item" id="btnManageProfile">
+                            <i class="fa-solid fa-user-pen"></i> Quản lý Hồ Sơ
+                        </div>
+                        <div class="dropdown-item danger-text" id="btnLogout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                        </div>
                     </div>
                 </div>
+                
             </div>
         </div>
 
