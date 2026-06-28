@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Đa Năng - Hệ Thống Câu Hỏi Trắc Nghiệm</title>
-    <!-- Thêm Font Awesome để dùng Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* =========================================
@@ -240,9 +239,121 @@
         }
 
         /* =========================================
-           4. CSS RIÊNG TỪNG TAB
+           4. CSS RIÊNG TỪNG TAB & TÍNH NĂNG NÂNG CAO
            ========================================= */
         
+        /* --- THỐNG KÊ NHANH (QUICK STATS GRID) --- */
+        .quick-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .quick-stat-card {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .quick-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        }
+
+        .quick-stat-card .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+        }
+
+        .quick-stat-card .stat-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .quick-stat-card .stat-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .quick-stat-card .stat-value {
+            margin: 0;
+            font-size: 1.45rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        /* Thiết kế 3 thẻ màu sắc pastel nổi bật có viền trái */
+        .stat-card-completed {
+            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+            color: #0369a1;
+            border-left: 5px solid #0284c7;
+        }
+        .stat-card-completed .stat-icon { color: #0284c7; background: rgba(2, 132, 199, 0.12); }
+
+        .stat-card-avg {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #15803d;
+            border-left: 5px solid #16a34a;
+        }
+        .stat-card-avg .stat-icon { color: #16a34a; background: rgba(22, 163, 74, 0.12); }
+
+        .stat-card-account {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #b45309;
+            border-left: 5px solid #d97706;
+        }
+        .stat-card-account .stat-icon { color: #d97706; background: rgba(217, 119, 6, 0.12); }
+
+        /* --- HIỆU ỨNG TẢI KHUNG XƯƠNG (SKELETON LOADING) --- */
+        .skeleton-loader {
+            background: #e5e7eb;
+            background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+            background-size: 200% 100%;
+            animation: shimmerEffect 1.5s infinite linear;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        @keyframes shimmerEffect {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .stat-skeleton-text {
+            width: 60px;
+            height: 24px;
+            vertical-align: middle;
+        }
+
+        .course-card-skeleton {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        .course-card-skeleton .sk-badge { height: 22px; width: 60px; border-radius: 20px; align-self: flex-end; }
+        .course-card-skeleton .sk-title { height: 24px; width: 75%; margin-top: 5px; }
+        .course-card-skeleton .sk-text { height: 16px; width: 50%; }
+        .course-card-skeleton .sk-meta { height: 16px; width: 90%; }
+        .course-card-skeleton .sk-button { height: 42px; width: 100%; border-radius: 6px; margin-top: 10px; }
+
         /* --- TAB 1: KHO ĐỀ THI --- */
         .toolbar {
             display: flex;
@@ -351,6 +462,15 @@
         .list-view .course-badge { position: relative; top: 0; right: 0; margin-left: 15px; box-shadow: none; }
         .list-view .card-footer { border-top: none; border-left: 1px solid var(--border-color); background: transparent; min-width: 200px; }
 
+        /* Đồng bộ kiểu hiển thị Khung xương cho List View */
+        .list-view .course-card-skeleton {
+            flex-direction: row; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 20px;
+        }
+        .list-view .course-card-skeleton .sk-badge { order: 4; align-self: center; }
+        .list-view .course-card-skeleton .sk-title { flex: 1.5; margin: 0; }
+        .list-view .course-card-skeleton .sk-text { flex: 1; margin: 0; }
+        .list-view .course-card-skeleton .sk-meta { flex: 1; margin: 0; }
+        .list-view .course-card-skeleton .sk-button { width: 200px; margin: 0; }
 
         /* --- TAB 2: HỒ SƠ (CẤU TRÚC LẠI GRID) --- */
         .profile-grid-layout {
@@ -423,12 +543,17 @@
             .grid-view { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 768px) {
+            .quick-stats-grid { grid-template-columns: 1fr; gap: 15px; }
             .grid-view { grid-template-columns: 1fr; }
             .list-view .course-card { flex-direction: column; align-items: stretch; }
             .list-view .card-body { flex-direction: column; align-items: flex-start; }
             .list-view .card-footer { border-left: none; border-top: 1px solid var(--border-color); }
             .list-view .course-badge { position: absolute; top: 15px; right: 15px; }
             
+            .list-view .course-card-skeleton { flex-direction: column; align-items: stretch; }
+            .list-view .course-card-skeleton .sk-badge { align-self: flex-end; }
+            .list-view .course-card-skeleton .sk-button { width: 100%; }
+
             .profile-grid-layout { grid-template-columns: 1fr; } /* Ép hồ sơ về 1 cột trên mobile */
             .profile-container { flex-direction: column; align-items: center; text-align: center; }
 
@@ -441,9 +566,6 @@
 </head>
 <body>
 
-    <!-- =========================================
-         1. SIDEBAR
-         ========================================= -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>Hệ Thống<br>Câu hỏi Trắc Nghiệm</h2>
@@ -469,12 +591,8 @@
         </div>
     </div>
 
-    <!-- =========================================
-         2. MAIN CONTENT
-         ========================================= -->
     <div class="main-content">
         
-        <!-- TOPBAR MỚI (Hiện ở mọi tab) -->
         <div class="topbar">
             <h2 id="currentTabTitle" class="topbar-title">Khám Phá Kho Đề Thi</h2>
             <div class="topbar-user">
@@ -484,9 +602,38 @@
         </div>
 
         <div class="tab-content-container">
-            <!-- TAB 1: KHO ĐỀ THI -->
             <div id="tab-exams" class="tab-pane active">
-                <!-- Toolbar -->
+                
+                <div class="quick-stats-grid">
+                    <div class="quick-stat-card stat-card-completed">
+                        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Đã hoàn thành</span>
+                            <h3 id="statCompletedExams" class="stat-value">
+                                <span class="skeleton-loader stat-skeleton-text"></span>
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="quick-stat-card stat-card-avg">
+                        <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Điểm trung bình</span>
+                            <h3 id="statAvgScore" class="stat-value">
+                                <span class="skeleton-loader stat-skeleton-text"></span>
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="quick-stat-card stat-card-account">
+                        <div class="stat-icon"><i class="fa-solid fa-user-shield"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Trạng thái tài khoản</span>
+                            <h3 id="statAccountStatus" class="stat-value">
+                                <span class="skeleton-loader stat-skeleton-text"></span>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="toolbar">
                     <div class="toolbar-group">
                         <label for="sortFilter"><i class="fa-solid fa-filter"></i> Sắp xếp & Lọc:</label>
@@ -509,17 +656,34 @@
                     </div>
                 </div>
 
-                <!-- Container Đề Thi -->
                 <div id="examListContainer" class="grid-view">
-                    <div class="loading-text">Đang tải và tổng hợp dữ liệu khóa học...</div>
+                    <div class="course-card-skeleton">
+                        <div class="skeleton-loader sk-badge"></div>
+                        <div class="skeleton-loader sk-title"></div>
+                        <div class="skeleton-loader sk-text" style="width: 45%;"></div>
+                        <div class="skeleton-loader sk-meta"></div>
+                        <div class="skeleton-loader sk-button"></div>
+                    </div>
+                    <div class="course-card-skeleton">
+                        <div class="skeleton-loader sk-badge"></div>
+                        <div class="skeleton-loader sk-title"></div>
+                        <div class="skeleton-loader sk-text" style="width: 60%;"></div>
+                        <div class="skeleton-loader sk-meta"></div>
+                        <div class="skeleton-loader sk-button"></div>
+                    </div>
+                    <div class="course-card-skeleton">
+                        <div class="skeleton-loader sk-badge"></div>
+                        <div class="skeleton-loader sk-title"></div>
+                        <div class="skeleton-loader sk-text" style="width: 35%;"></div>
+                        <div class="skeleton-loader sk-meta"></div>
+                        <div class="skeleton-loader sk-button"></div>
+                    </div>
                 </div>
             </div>
             
-            <!-- TAB 2: HỒ SƠ CÁ NHÂN (GRID CSS MỚI) -->
             <div id="tab-profile" class="tab-pane">
                 <div class="profile-grid-layout">
                     
-                    <!-- Cột Trái: Thông tin chung & Đổi mật khẩu -->
                     <div class="profile-column">
                         <div class="card">
                             <h3><i class="fa-solid fa-address-card"></i> Thông tin chung</h3>
@@ -552,7 +716,6 @@
                         </div>
                     </div>
                     
-                    <!-- Cột Phải: Cập nhật hồ sơ -->
                     <div class="profile-column">
                         <div class="card" style="height: 100%;">
                             <h3><i class="fa-solid fa-pen-to-square"></i> Cập nhật hồ sơ</h3>
@@ -574,7 +737,6 @@
                 </div>
             </div>
 
-            <!-- TAB 3: LỊCH SỬ LÀM BÀI -->
             <div id="tab-history" class="tab-pane">
                 <div class="card">
                     <h3><i class="fa-solid fa-list-check"></i> Lịch sử các lần thi</h3>
@@ -598,7 +760,6 @@
                 </div>
             </div>
 
-            <!-- TAB 4: NÂNG CẤP VIP -->
             <div id="tab-vip" class="tab-pane">
                 <div class="vip-layout">
                     <div class="card vip-card-box">
@@ -634,9 +795,6 @@
 
     </div>
 
-    <!-- =========================================
-         JAVASCRIPT LOGIC TÍCH HỢP
-         ========================================= -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -794,6 +952,9 @@
                         vipStatusTab3.className = "status-badge status-active";
                         vipStartDate.textContent = currentUserData.vipStart ? formatDate(currentUserData.vipStart) : "Không xác định";
                         vipEndDate.textContent = currentUserData.vipEnd ? formatDate(currentUserData.vipEnd) : "Không xác định";
+                        
+                        // Cập nhật Thẻ Thống kê nhanh trạng thái tài khoản
+                        document.getElementById("statAccountStatus").textContent = "VIP";
                     } else {
                         setVipInactive();
                     }
@@ -815,10 +976,14 @@
             vipStatusTab3.className = "status-badge status-unactive";
             vipStartDate.textContent = "Không xác định";
             vipEndDate.textContent = "Không xác định";
+            
+            // Cập nhật Thẻ Thống kê nhanh trạng thái tài khoản
+            const statAccount = document.getElementById("statAccountStatus");
+            if (statAccount) statAccount.textContent = "Thường";
         }
 
         // ==========================================
-        // 5. NÂNG CẤP LOGIC: KHO ĐỀ THI
+        // 5. NÂNG CẤP LOGIC: KHO ĐỀ THI & KHUNG XƯƠNG
         // ==========================================
         function setupToolbarEvents() {
             sortFilter.addEventListener('change', () => {
@@ -837,6 +1002,19 @@
                     }
                 });
             });
+        }
+
+        // Tạo hàm render Khung xương động khi tải lại dữ liệu nếu cần
+        function injectSkeletonLoaders() {
+            examListContainer.innerHTML = Array(3).fill(0).map(() => `
+                <div class="course-card-skeleton">
+                    <div class="skeleton-loader sk-badge"></div>
+                    <div class="skeleton-loader sk-title"></div>
+                    <div class="skeleton-loader sk-text" style="width: 50%;"></div>
+                    <div class="skeleton-loader sk-meta"></div>
+                    <div class="skeleton-loader sk-button"></div>
+                </div>
+            `).join('');
         }
 
         async function loadAggregatedExamData() {
@@ -974,7 +1152,7 @@
         };
 
         // ==========================================
-        // 6. LỊCH SỬ LÀM BÀI & CÁC HÀM KHÁC
+        // 6. LỊCH SỬ LÀM BÀI & THỐNG KÊ QUICK STATS
         // ==========================================
         async function fetchHistory(userEmail) {
             try {
@@ -985,15 +1163,34 @@
                 const q = query(resultsRef, where("email", "==", userEmail));
                 const querySnapshot = await getDocs(q);
 
+                const statCompletedExams = document.getElementById("statCompletedExams");
+                const statAvgScore = document.getElementById("statAvgScore");
+
                 if (querySnapshot.empty) {
                     historyTableBody.innerHTML = `<tr><td colspan="6" class="loading-text">Bạn chưa hoàn thành bài thi nào.</td></tr>`;
+                    if (statCompletedExams) statCompletedExams.textContent = "0";
+                    if (statAvgScore) statAvgScore.textContent = "0.0";
                     return;
                 }
 
                 const resultsArray = [];
+                let totalScoreSum = 0;
+
                 querySnapshot.forEach((doc) => {
-                    resultsArray.push({ id: doc.id, ...doc.data() });
+                    const data = doc.data();
+                    resultsArray.push({ id: doc.id, ...data });
+                    
+                    // Tính tổng điểm phục vụ cho điểm trung bình
+                    const currentScore = data.score !== undefined ? parseFloat(data.score) : 0;
+                    totalScoreSum += currentScore;
                 });
+
+                // --- HÀM TÍNH TOÁN & ĐỔ DỮ LIỆU THỐNG KÊ NHANH ---
+                const totalSubmitted = resultsArray.length;
+                const averageScoreResult = totalSubmitted > 0 ? (totalScoreSum / totalSubmitted).toFixed(1) : "0.0";
+
+                if (statCompletedExams) statCompletedExams.textContent = totalSubmitted;
+                if (statAvgScore) statAvgScore.textContent = averageScoreResult;
 
                 resultsArray.sort((a, b) => {
                     const dateA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp || a.submittedAt || 0);
