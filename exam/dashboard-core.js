@@ -40,7 +40,7 @@ export function formatDate(dateData) {
 }
 
 // =========================================================================
-// 3. LOGIC UI: ĐIỀU HƯỚNG TAB & ĐỔI TIÊU ĐỀ TOPBAR
+// 3. LOGIC UI: ĐIỀU HƯỚNG TAB, DROPDOWN & ĐỔI TIÊU ĐỀ TOPBAR
 // =========================================================================
 const menuItems = document.querySelectorAll('.sidebar-menu .menu-item[data-target]');
 const tabPanes = document.querySelectorAll('.tab-pane');
@@ -53,6 +53,7 @@ const tabTitleMap = {
     'tab-vip': 'Quản Lý Gói VIP'
 };
 
+// Logic chuyển tab chung từ Sidebar
 menuItems.forEach(item => {
     item.addEventListener('click', () => {
         menuItems.forEach(m => m.classList.remove('active'));
@@ -65,6 +66,36 @@ menuItems.forEach(item => {
         // Thay đổi tiêu đề trên Topbar tương ứng với Menu đang chọn
         currentTabTitle.textContent = tabTitleMap[targetId] || 'Bảng Điều Khiển';
     });
+});
+
+// Xử lý Logic Dropdown Menu ở Topbar
+const userMenuToggle = document.getElementById('userMenuToggle');
+const userDropdown = document.getElementById('userDropdown');
+const btnManageProfile = document.getElementById('btnManageProfile');
+
+// Bấm vào khu vực Profile để mở/đóng menu
+userMenuToggle.addEventListener('click', (e) => {
+    e.stopPropagation(); // Ngăn sự kiện lan truyền lên document
+    userDropdown.classList.toggle('show');
+});
+
+// Đóng menu khi bấm ra ngoài
+document.addEventListener('click', (e) => {
+    if (!userMenuToggle.contains(e.target)) {
+        userDropdown.classList.remove('show');
+    }
+});
+
+// Khi bấm "Quản lý Hồ Sơ" trong Dropdown Menu
+btnManageProfile.addEventListener('click', () => {
+    // Xóa active của tất cả các Tab bên Sidebar
+    menuItems.forEach(m => m.classList.remove('active'));
+    // Ẩn tất cả nội dung Tab
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+    
+    // Kích hoạt hiển thị Tab Profile
+    document.getElementById('tab-profile').classList.add('active');
+    currentTabTitle.textContent = tabTitleMap['tab-profile'] || 'Hồ Sơ Cá Nhân';
 });
 
 // =========================================================================
