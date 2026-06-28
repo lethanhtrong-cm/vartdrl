@@ -138,10 +138,10 @@
 <body>
 
     <header class="quiz-header">
-        <div class="quiz-title" id="quiz-title-display">Bài thi: Đang tải...</div>
-        <div class="timer-container"><span id="countdown">15:00</span></div>
+        <div class="quiz-title" id="quiz-title-display">Đang tải...</div>
+        <div class="timer-container" id="timer-container-box"><span id="countdown">15:00</span></div>
         
-        <!-- YÊU CẦU 1: Cụm Nút Điều Hướng Header -->
+        <!-- Cụm Nút Điều Hướng Header -->
         <div class="header-actions">
             <button id="btn-back-dashboard" class="btn-logout" title="Quay về Dashboard">Về phòng chờ</button>
             <button id="btn-logout" class="btn-logout">Đăng xuất</button>
@@ -254,11 +254,14 @@
             }
         }
 
+        // BIẾN TOÀN CỤC MỚI: Phân biệt tham số URL
         const urlParams = new URLSearchParams(window.location.search);
-        const currentExamId = urlParams.get('examId');
+        let currentExamId = urlParams.get('examId'); // Chế độ Exam
+        const currentResultId = urlParams.get('resultId'); // Chế độ Review
 
-        if (!currentExamId) {
-            alert("Lỗi: Không tìm thấy mã đề thi! Đang chuyển hướng về phòng chờ...");
+        // KIỂM TRA ĐIỀU KIỆN TRUY CẬP TRƯỚC TIÊN
+        if (!currentExamId && !currentResultId) {
+            alert("Lỗi: Không tìm thấy mã đề thi hay mã bài làm! Đang chuyển hướng về phòng chờ...");
             redirect('dashboard.html');
         }
 
@@ -267,11 +270,18 @@
                 redirect('index.html');
             } else {
                 currentUser = user;
-                document.getElementById('quiz-title-display').innerText = `Bài thi: ${currentExamId}`;
-                loadExamDataAndQuestions();
+                
+                // KIỂM SOÁT "NHÂN CÁCH" BÀI THI DỰA TRÊN URL
+                if (currentResultId) {
+                    loadReviewMode(currentResultId);
+                } else if (currentExamId) {
+                    document.getElementById('quiz-title-display').innerText = `Bài thi: ${currentExamId}`;
+                    loadExamDataAndQuestions();
+                }
             }
         });
 
+        // ================= NHÂN CÁCH 1: PHÒNG THI (EXAM MODE) =================
         async function loadExamDataAndQuestions() {
             document.getElementById('question-text').innerText = "Đang tải đề thi từ hệ thống...";
             
@@ -282,13 +292,75 @@
                 if (examDoc.exists() && examDoc.data().timeLimit) {
                     examDuration = examDoc.data().timeLimit * 60; 
                 }
+                
                 await fetchQuestionsFromFirestore();
+                initExamState(); // Chỉ kích hoạt State thi khi tải xong câu hỏi
+                
             } catch (error) {
                 console.error("Lỗi khi tải dữ liệu đề thi:", error);
                 document.getElementById('question-text').innerText = `Lỗi tải đề thi: ${error.message}`;
             }
         }
 
+        function initExamState() {
+            currentIndex = 0;
+            userAnswers = {};
+            isSubmitted = false;
+            isShowExplanation = false;
+            
+            const btnSubmit = document.getElementById('btn-submit-exam');
+            btnSubmit.disabled = false; 
+            btnSubmit.innerText = "Nộp bài ngay"; 
+            
+            // Xử lý sự kiện nộp bài chuẩn của phòng thi
+            btnSubmit.onclick = () => submitExam(false);
+
+            renderAll();
+            startTimer();
+        }
+
+        // ================= NHÂN CÁCH 2: XEM LẠI BÀI (REVIEW MODE) =================
+        async function loadReviewMode(resultId) {
+            document.getElementById('question-text').innerText = "Đang tải dữ liệu bài làm...";
+            try {
+                const resultDocRef = doc(db, "results", resultId);
+                const resultDoc = await getDoc(resultDocRef);
+
+                if (!resultDoc.exists()) {
+                    throw new Error("Không tìm thấy kết quả bài làm trên hệ thống.");
+                }
+
+                const resultData = resultDoc.data();
+                
+                // Gán ngược dữ liệu bài thi cũ để tái tạo
+                currentExamId = resultData.examId;
+                userAnswers = resultData.savedAnswers || {}; 
+                isSubmitted = true;
+                isShowExplanation = true;
+
+                // Tùy chỉnh UI cho Review Mode
+                document.getElementById('quiz-title-display').innerText = `Xem lại bài thi: ${currentExamId}`;
+                document.getElementById('timer-container-box').style.display = 'none'; // Ẩn đồng hồ
+                
+                const btnSubmit = document.getElementById('btn-submit-exam');
+                btnSubmit.innerText = "Quay lại Profile";
+                btnSubmit.disabled = false; // Phải enable để bấm được
+                btnSubmit.style.backgroundColor = "#3b82f6"; // Đổi màu khác nút nộp bài
+                btnSubmit.onclick = () => redirect('profile.html'); // Logic mới cho nút
+
+                // Kéo câu hỏi về
+                await fetchQuestionsFromFirestore();
+                
+                currentIndex = 0;
+                renderAll(); // Vẽ lại giao diện, màu sẽ tự đổ Xanh/Đỏ
+
+            } catch (error) {
+                console.error("Lỗi tải Review Mode:", error);
+                document.getElementById('question-text').innerText = `Lỗi hệ thống: ${error.message}`;
+            }
+        }
+
+        // ================= LẤY CÂU HỎI (DÙNG CHUNG CẢ 2 CHẾ ĐỘ) =================
         async function fetchQuestionsFromFirestore() {
             document.getElementById('options-container').innerHTML = ''; 
 
@@ -303,27 +375,12 @@
             
             if (fetched.length > 0) {
                 questions = fetched;
-                initExamState();
             } else {
                 throw new Error(`Không tìm thấy câu hỏi nào cho mã đề: ${currentExamId}`);
             }
         }
 
-        // ================= LOGIC QUẢN LÝ TRẠNG THÁI & TIMER =================
-        function initExamState() {
-            currentIndex = 0;
-            userAnswers = {};
-            isSubmitted = false;
-            isShowExplanation = false;
-            
-            const btnSubmit = document.getElementById('btn-submit-exam');
-            btnSubmit.disabled = false; 
-            btnSubmit.innerText = "Nộp bài ngay"; 
-
-            renderAll();
-            startTimer();
-        }
-
+        // ================= LOGIC QUẢN LÝ TIMER =================
         function startTimer() {
             clearInterval(timerInterval);
             timeRemaining = examDuration; 
@@ -371,6 +428,7 @@
             const btnSubmit = document.getElementById('btn-submit-exam');
             btnSubmit.disabled = true; 
             btnSubmit.innerText = "Đang xử lý..."; 
+            btnSubmit.style.backgroundColor = ""; // Reset về màu default để ăn css disable
 
             let correctCount = 0;
             questions.forEach((question, idx) => {
@@ -386,12 +444,14 @@
             btnSubmit.innerText = "Đã nộp bài";
 
             try {
+                // YÊU CẦU 1: LƯU SAVED_ANSWERS VÀO DB ĐỂ SAU NÀY REVIEW MODE DÙNG
                 await addDoc(collection(db, "results"), {
                     email: currentUser.email,
                     examId: currentExamId,
                     score: score,
                     correctCount: correctCount,
                     totalQuestions: total,
+                    savedAnswers: userAnswers, 
                     timestamp: new Date().toISOString() 
                 });
 
@@ -413,7 +473,6 @@
             }
         }
 
-        document.getElementById('btn-submit-exam').onclick = () => submitExam(false);
 
         // ================= LOGIC FEEDBACK RATING =================
         let selectedStars = 0;
@@ -491,7 +550,6 @@
             document.getElementById('result-modal').classList.remove('active');
         }
 
-        // Đổi ID để không trùng lặp (trên Header cũng có nút về Dashboard)
         document.getElementById('btn-modal-dashboard-modal').onclick = () => redirect('dashboard.html');
         document.getElementById('btn-back-dashboard').onclick = () => redirect('dashboard.html');
 
@@ -504,34 +562,35 @@
             closeModal();
             isShowExplanation = true; 
             renderAll(); 
+            
+            // Đổi chức năng nút nộp bài thành Về phòng chờ (khi xem giải xong)
+            const btnSubmit = document.getElementById('btn-submit-exam');
+            btnSubmit.disabled = false;
+            btnSubmit.style.backgroundColor = "#3b82f6";
+            btnSubmit.innerText = "Về phòng chờ";
+            btnSubmit.onclick = () => redirect('dashboard.html');
         };
 
-        // ================= YÊU CẦU 2 & 3: LOGIC CHỌN ĐÁP ÁN, AUTO-ADVANCE & AUTO-LOOP =================
+        // ================= CHỌN ĐÁP ÁN & ĐIỀU HƯỚNG TỰ ĐỘNG =================
         function handleOptionSelect(idx) {
-            if (isSubmitted || isShowExplanation) return; // Chặn nếu đã nộp bài hoặc đang xem giải
+            if (isSubmitted || isShowExplanation) return; // Review Mode tự động chặn ở đây
             
             userAnswers[currentIndex] = idx; 
-            renderQuestion(); // Render ngay lập tức để tô màu tùy chọn (visual feedback)
+            renderQuestion(); 
             renderPalette();  
             
-            // Auto-advance sau 300ms
             setTimeout(() => {
-                // Kiểm tra xem đã kết thúc bài (isSubmitted) bất ngờ chưa (ví dụ: hết giờ)
                 if (isSubmitted || isShowExplanation) return; 
 
                 if (currentIndex < questions.length - 1) {
-                    // Nếu chưa đến câu cuối -> Tiến thêm 1 câu
                     currentIndex++; 
                     renderAll();
                 } else {
-                    // YÊU CẦU 3: Nếu ở câu cuối cùng -> Tìm câu chưa làm để Loop
                     const firstUnansweredIdx = questions.findIndex((_, i) => userAnswers[i] === undefined);
-                    
                     if (firstUnansweredIdx !== -1) {
-                        currentIndex = firstUnansweredIdx; // Nhảy về câu chưa làm đầu tiên
+                        currentIndex = firstUnansweredIdx; 
                         renderAll();
                     }
-                    // Nếu firstUnansweredIdx === -1 (đã làm hết), không làm gì cả, giữ nguyên câu cuối.
                 }
             }, 300);
         }
@@ -575,7 +634,6 @@
                 div.className = 'option-item' + extraClasses;
                 div.innerHTML = `<div class="option-label">${['A','B','C','D'][idx]}</div><div>${opt}</div>`;
                 
-                // Gọi hàm handleOptionSelect thay vì xử lý trực tiếp
                 div.onclick = () => handleOptionSelect(idx);
                 container.appendChild(div);
             });
@@ -608,7 +666,7 @@
                 if (isShowExplanation) {
                     if (userAnswers[idx] === q.correctAnswer) {
                         btnClasses += ' correct-ans';
-                    } else {
+                    } else if (userAnswers[idx] !== undefined) {
                         btnClasses += ' wrong-ans';
                     }
                 } else {
@@ -642,27 +700,23 @@
             });
         });
 
-        // ================= YÊU CẦU 4: PHÍM TẮT ĐIỀU HƯỚNG (KEYBOARD SHORTCUTS) =================
+        // ================= PHÍM TẮT ĐIỀU HƯỚNG =================
         document.addEventListener('keydown', (e) => {
-            // Chỉ bắt phím tắt khi dữ liệu đã tải xong và không phải đang focus vào textarea góp ý
             if (questions.length === 0 || document.activeElement.tagName === 'TEXTAREA') return;
 
             const key = e.key;
             
-            // Điều hướng bằng mũi tên
             if (key === 'ArrowLeft') {
                 if(currentIndex > 0) { currentIndex--; renderAll(); } 
             } else if (key === 'ArrowRight') {
                 if(currentIndex < questions.length - 1) { currentIndex++; renderAll(); } 
             } 
-            // Chọn đáp án bằng phím A, B, C, D (áp dụng nếu chưa nộp bài)
             else if (!isSubmitted && !isShowExplanation) {
                 const keyMap = { 'a': 0, 'A': 0, 'b': 1, 'B': 1, 'c': 2, 'C': 2, 'd': 3, 'D': 3 };
                 const optionIndex = keyMap[key];
                 
-                // Nếu phím bấm thuộc A-D và đáp án đó có tồn tại cho câu hỏi hiện tại
                 if (optionIndex !== undefined && questions[currentIndex].options && optionIndex < questions[currentIndex].options.length) {
-                    handleOptionSelect(optionIndex); // Sử dụng lại toàn bộ luồng xử lý chuẩn
+                    handleOptionSelect(optionIndex); 
                 }
             }
         });
