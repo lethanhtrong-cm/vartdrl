@@ -12,6 +12,9 @@
         .quiz-header { background-color: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); position: sticky; top: 0; z-index: 100; }
         .quiz-title { font-size: 20px; font-weight: bold; color: #1f2937; }
         .timer-container { display: flex; align-items: center; gap: 10px; background-color: #fee2e2; color: #ef4444; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; }
+        
+        /* Cập nhật CSS Navbar Actions */
+        .header-actions { display: flex; gap: 12px; }
         .btn-logout { padding: 8px 16px; background-color: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
         .btn-logout:hover { background-color: #e5e7eb; color: #1f2937; }
         
@@ -33,7 +36,7 @@
         .option-label { font-weight: bold; margin-right: 15px; background-color: #f3f4f6; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; color: #4b5563; }
         .option-item.selected:not(.correct):not(.wrong) .option-label { background-color: #3b82f6; color: white; }
 
-        /* CSS khi nộp bài xong (Đúng/Sai) - Chỉ kích hoạt khi xem giải thích */
+        /* CSS khi nộp bài xong (Đúng/Sai) */
         .option-item.correct { background-color: #d1fae5; border-color: #059669; }
         .option-item.correct .option-label { background-color: #059669; color: white; }
         
@@ -112,12 +115,12 @@
         .modal-stats { font-size: 16px; color: #4b5563; margin-bottom: 25px; }
         .modal-stats strong { color: #111827; font-size: 18px; }
 
-        /* TÍNH NĂNG 3: CSS Khu vực Đánh giá */
+        /* Khu vực Đánh giá */
         .feedback-section { margin-bottom: 25px; text-align: left; background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; }
         .feedback-section h4 { margin-bottom: 10px; color: #374151; font-size: 15px; text-align: center; font-weight: bold;}
         .stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; cursor: pointer; font-size: 28px; color: #d1d5db; }
         .stars span { transition: color 0.2s; }
-        .stars span:hover, .stars span.active { color: #fbbf24; } /* Màu vàng sao */
+        .stars span:hover, .stars span.active { color: #fbbf24; } 
         .feedback-section textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; resize: none; height: 70px; font-family: inherit; font-size: 14px; outline: none;}
         .feedback-section textarea:focus { border-color: #3b82f6; }
         .feedback-thankyou { display: none; color: #10b981; font-weight: bold; font-size: 16px; margin-bottom: 25px; text-align: center; background: #d1fae5; padding: 10px; border-radius: 8px; }
@@ -137,7 +140,12 @@
     <header class="quiz-header">
         <div class="quiz-title" id="quiz-title-display">Bài thi: Đang tải...</div>
         <div class="timer-container"><span id="countdown">15:00</span></div>
-        <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+        
+        <!-- YÊU CẦU 1: Cụm Nút Điều Hướng Header -->
+        <div class="header-actions">
+            <button id="btn-back-dashboard" class="btn-logout" title="Quay về Dashboard">Về phòng chờ</button>
+            <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+        </div>
     </header>
 
     <main class="quiz-body">
@@ -155,8 +163,8 @@
             </div>
             <footer class="quiz-footer">
                 <div class="nav-buttons">
-                    <button id="btn-prev" class="btn-nav">Câu trước</button>
-                    <button id="btn-next" class="btn-nav">Câu sau</button>
+                    <button id="btn-prev" class="btn-nav" title="Phím tắt: Mũi tên Trái">Câu trước</button>
+                    <button id="btn-next" class="btn-nav" title="Phím tắt: Mũi tên Phải">Câu sau</button>
                 </div>
                 <button id="btn-submit-exam" class="btn-submit">Nộp bài ngay</button>
             </footer>
@@ -182,7 +190,7 @@
                 Trả lời đúng: <strong id="modal-correct-text">0/0</strong> câu
             </div>
 
-            <!-- TÍNH NĂNG 3: Khu vực đánh giá -->
+            <!-- Khu vực đánh giá -->
             <div id="feedback-thankyou" class="feedback-thankyou">Cảm ơn bạn đã góp ý! 🎉</div>
             <div class="feedback-section" id="feedback-section">
                 <h4>Đánh giá đề thi này</h4>
@@ -200,7 +208,7 @@
             <div class="modal-actions">
                 <button class="btn-modal success" id="btn-modal-explain">Xem giải thích chi tiết</button>
                 <button class="btn-modal primary" id="btn-modal-retry">Làm lại đề này</button>
-                <button class="btn-modal outline" id="btn-modal-dashboard">Về phòng chờ</button>
+                <button class="btn-modal outline" id="btn-modal-dashboard-modal">Về phòng chờ</button>
             </div>
         </div>
     </div>
@@ -208,7 +216,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // Import BỔ SUNG: doc, getDoc, setDoc, increment cho Tính năng 1 và Tính năng 2
         import { getFirestore, collection, getDocs, addDoc, query, where, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -230,9 +237,8 @@
         let isShowExplanation = false; 
         let currentUser = null; 
 
-        // Biến cấu hình Thời gian đếm ngược
         let timerInterval;
-        let examDuration = 15 * 60; // Mặc định 15 phút (Tính năng 1 sẽ ghi đè lên)
+        let examDuration = 15 * 60; 
         let timeRemaining = examDuration;
 
         const app = initializeApp(firebaseConfig);
@@ -262,25 +268,20 @@
             } else {
                 currentUser = user;
                 document.getElementById('quiz-title-display').innerText = `Bài thi: ${currentExamId}`;
-                // TÍNH NĂNG 1: Tải dữ liệu đề thi trước để lấy thời gian
                 loadExamDataAndQuestions();
             }
         });
 
-        // TÍNH NĂNG 1: Lấy Time Limit từ hệ thống
         async function loadExamDataAndQuestions() {
             document.getElementById('question-text').innerText = "Đang tải đề thi từ hệ thống...";
             
             try {
-                // 1. Lấy thông tin cấu hình của đề thi (timeLimit)
                 const examDocRef = doc(db, "exams", currentExamId);
                 const examDoc = await getDoc(examDocRef);
                 
                 if (examDoc.exists() && examDoc.data().timeLimit) {
-                    examDuration = examDoc.data().timeLimit * 60; // Đổi phút ra giây
+                    examDuration = examDoc.data().timeLimit * 60; 
                 }
-
-                // 2. Lấy danh sách câu hỏi
                 await fetchQuestionsFromFirestore();
             } catch (error) {
                 console.error("Lỗi khi tải dữ liệu đề thi:", error);
@@ -320,12 +321,12 @@
             btnSubmit.innerText = "Nộp bài ngay"; 
 
             renderAll();
-            startTimer(); // TÍNH NĂNG 1: Bắt đầu đếm ngược
+            startTimer();
         }
 
         function startTimer() {
             clearInterval(timerInterval);
-            timeRemaining = examDuration; // Dùng thời gian đã lấy từ hệ thống
+            timeRemaining = examDuration; 
             updateTimerDisplay();
 
             timerInterval = setInterval(() => {
@@ -334,14 +335,13 @@
 
                 if (timeRemaining <= 0) {
                     clearInterval(timerInterval);
-                    // Hết giờ -> Tự động nộp bài (true = isAutoSubmit)
                     submitExam(true); 
                 }
             }, 1000);
         }
 
         function stopTimer() {
-            clearInterval(timerInterval); // Dừng đồng hồ khi nộp sớm
+            clearInterval(timerInterval);
         }
 
         function updateTimerDisplay() {
@@ -357,7 +357,6 @@
             const total = questions.length;
             const answeredCount = Object.keys(userAnswers).length;
             
-            // Nếu người dùng chủ động nộp bài (không phải tự động do hết giờ)
             if (!isAutoSubmit) {
                 if (!confirm(`Bạn đã làm ${answeredCount}/${total} câu. Bạn có chắc chắn muốn nộp bài?`)) {
                     return;
@@ -366,14 +365,13 @@
                 alert("Đã hết thời gian làm bài! Hệ thống tự động thu bài.");
             }
 
-            stopTimer(); // TÍNH NĂNG 1: Dừng đồng hồ
+            stopTimer(); 
             isSubmitted = true; 
             
             const btnSubmit = document.getElementById('btn-submit-exam');
             btnSubmit.disabled = true; 
             btnSubmit.innerText = "Đang xử lý..."; 
 
-            // Tính điểm
             let correctCount = 0;
             questions.forEach((question, idx) => {
                 if (userAnswers[idx] === question.correctAnswer) {
@@ -388,7 +386,6 @@
             btnSubmit.innerText = "Đã nộp bài";
 
             try {
-                // 1. Lưu kết quả lên Firestore
                 await addDoc(collection(db, "results"), {
                     email: currentUser.email,
                     examId: currentExamId,
@@ -398,7 +395,6 @@
                     timestamp: new Date().toISOString() 
                 });
 
-                // 2. TÍNH NĂNG 2: Đếm số lượt thi (cộng dồn vào bảng exams)
                 try {
                     const examDocRef = doc(db, "exams", currentExamId);
                     await setDoc(examDocRef, {
@@ -408,7 +404,6 @@
                     console.error("Lỗi cập nhật lượt thi:", incErr);
                 }
                 
-                // Hiển thị Modal Kết quả
                 showResultModal(correctCount, total, score);
 
             } catch (error) {
@@ -420,7 +415,7 @@
 
         document.getElementById('btn-submit-exam').onclick = () => submitExam(false);
 
-        // ================= TÍNH NĂNG 3: LOGIC FEEDBACK RATING =================
+        // ================= LOGIC FEEDBACK RATING =================
         let selectedStars = 0;
         const stars = document.querySelectorAll('#star-rating span');
         
@@ -448,7 +443,6 @@
             btn.disabled = true;
 
             try {
-                // Đẩy feedback lên Firestore
                 await addDoc(collection(db, "feedbacks"), {
                     examId: currentExamId,
                     email: currentUser.email,
@@ -457,7 +451,6 @@
                     timestamp: new Date().toISOString()
                 });
                 
-                // Ẩn form đánh giá, hiện thông báo cảm ơn
                 document.getElementById('feedback-section').style.display = 'none';
                 document.getElementById('feedback-thankyou').style.display = 'block';
             } catch (error) {
@@ -468,7 +461,6 @@
             }
         };
 
-        // Reset UI Feedback mỗi khi mở lại modal
         function resetFeedbackUI() {
             document.getElementById('feedback-section').style.display = 'block';
             document.getElementById('feedback-thankyou').style.display = 'none';
@@ -487,12 +479,11 @@
             document.getElementById('modal-score-text').innerText = score;
             document.getElementById('modal-correct-text').innerText = `${correctCount}/${total}`;
             
-            // Tính phần trăm để vẽ vòng tròn điểm
             const percentage = (correctCount / total) * 100;
             const circle = document.getElementById('modal-score-circle');
             circle.style.background = `conic-gradient(#10b981 ${percentage}%, #d1fae5 ${percentage}%)`;
 
-            resetFeedbackUI(); // TÍNH NĂNG 3: Reset giao diện đánh giá
+            resetFeedbackUI(); 
             modal.classList.add('active');
         }
 
@@ -500,24 +491,50 @@
             document.getElementById('result-modal').classList.remove('active');
         }
 
-        // Action: Về phòng chờ
-        document.getElementById('btn-modal-dashboard').onclick = () => {
-            redirect('dashboard.html');
-        };
+        // Đổi ID để không trùng lặp (trên Header cũng có nút về Dashboard)
+        document.getElementById('btn-modal-dashboard-modal').onclick = () => redirect('dashboard.html');
+        document.getElementById('btn-back-dashboard').onclick = () => redirect('dashboard.html');
 
-        // Action: Làm lại
         document.getElementById('btn-modal-retry').onclick = () => {
             closeModal();
-            initExamState(); // Reset toàn bộ state và đếm lại giờ
+            initExamState();
         };
 
-        // Action: Xem giải thích
         document.getElementById('btn-modal-explain').onclick = () => {
             closeModal();
-            isShowExplanation = true; // Kích hoạt biến cho phép hiển thị đáp án đúng/sai
-            renderAll(); // Render lại để áp dụng css màu xanh/đỏ
+            isShowExplanation = true; 
+            renderAll(); 
         };
 
+        // ================= YÊU CẦU 2 & 3: LOGIC CHỌN ĐÁP ÁN, AUTO-ADVANCE & AUTO-LOOP =================
+        function handleOptionSelect(idx) {
+            if (isSubmitted || isShowExplanation) return; // Chặn nếu đã nộp bài hoặc đang xem giải
+            
+            userAnswers[currentIndex] = idx; 
+            renderQuestion(); // Render ngay lập tức để tô màu tùy chọn (visual feedback)
+            renderPalette();  
+            
+            // Auto-advance sau 300ms
+            setTimeout(() => {
+                // Kiểm tra xem đã kết thúc bài (isSubmitted) bất ngờ chưa (ví dụ: hết giờ)
+                if (isSubmitted || isShowExplanation) return; 
+
+                if (currentIndex < questions.length - 1) {
+                    // Nếu chưa đến câu cuối -> Tiến thêm 1 câu
+                    currentIndex++; 
+                    renderAll();
+                } else {
+                    // YÊU CẦU 3: Nếu ở câu cuối cùng -> Tìm câu chưa làm để Loop
+                    const firstUnansweredIdx = questions.findIndex((_, i) => userAnswers[i] === undefined);
+                    
+                    if (firstUnansweredIdx !== -1) {
+                        currentIndex = firstUnansweredIdx; // Nhảy về câu chưa làm đầu tiên
+                        renderAll();
+                    }
+                    // Nếu firstUnansweredIdx === -1 (đã làm hết), không làm gì cả, giữ nguyên câu cuối.
+                }
+            }, 300);
+        }
 
         // ================= LOGIC GIAO DIỆN (UI) =================
 
@@ -543,34 +560,26 @@
                 
                 let extraClasses = '';
                 
-                // Khóa chọn khi đã nộp bài
                 if (isSubmitted) extraClasses += ' disabled';
                 
-                // TÔ MÀU ĐÁP ÁN: Chỉ xảy ra khi user bấm "Xem giải thích" (isShowExplanation = true)
                 if (isShowExplanation) {
                     if (idx === questionData.correctAnswer) {
-                        extraClasses += ' correct'; // Đáp án đúng thực sự
+                        extraClasses += ' correct';
                     } else if (userAnswers[currentIndex] === idx) {
-                        extraClasses += ' wrong'; // Trả lời sai
+                        extraClasses += ' wrong';
                     }
                 } else {
-                    // Nếu chưa xem giải thích, chỉ bôi xanh ô user đã chọn
                     if (userAnswers[currentIndex] === idx) extraClasses += ' selected';
                 }
 
                 div.className = 'option-item' + extraClasses;
                 div.innerHTML = `<div class="option-label">${['A','B','C','D'][idx]}</div><div>${opt}</div>`;
                 
-                div.onclick = () => { 
-                    if (isSubmitted) return; // Chặn click nếu đã nộp bài
-                    userAnswers[currentIndex] = idx; 
-                    renderQuestion(); 
-                    renderPalette();  
-                };
+                // Gọi hàm handleOptionSelect thay vì xử lý trực tiếp
+                div.onclick = () => handleOptionSelect(idx);
                 container.appendChild(div);
             });
 
-            // HIỆN GIẢI THÍCH: Chỉ hiện khi isShowExplanation = true
             const explanationBox = document.getElementById('explanation-box');
             const explanationContent = document.getElementById('explanation-content');
             
@@ -596,7 +605,6 @@
                 let btnClasses = 'palette-btn';
                 if (idx === currentIndex) btnClasses += ' current';
 
-                // Nếu đang chế độ xem giải thích: Phân màu Đúng/Sai
                 if (isShowExplanation) {
                     if (userAnswers[idx] === q.correctAnswer) {
                         btnClasses += ' correct-ans';
@@ -604,7 +612,6 @@
                         btnClasses += ' wrong-ans';
                     }
                 } else {
-                    // Trạng thái bình thường (hoặc vừa nộp bài xong nhưng chưa xem giải thích)
                     if (userAnswers[idx] !== undefined) btnClasses += ' answered';
                 }
 
@@ -633,6 +640,31 @@
                 console.error("Lỗi đăng xuất:", error);
                 alert("Có lỗi xảy ra khi đăng xuất. Vui lòng thử lại.");
             });
+        });
+
+        // ================= YÊU CẦU 4: PHÍM TẮT ĐIỀU HƯỚNG (KEYBOARD SHORTCUTS) =================
+        document.addEventListener('keydown', (e) => {
+            // Chỉ bắt phím tắt khi dữ liệu đã tải xong và không phải đang focus vào textarea góp ý
+            if (questions.length === 0 || document.activeElement.tagName === 'TEXTAREA') return;
+
+            const key = e.key;
+            
+            // Điều hướng bằng mũi tên
+            if (key === 'ArrowLeft') {
+                if(currentIndex > 0) { currentIndex--; renderAll(); } 
+            } else if (key === 'ArrowRight') {
+                if(currentIndex < questions.length - 1) { currentIndex++; renderAll(); } 
+            } 
+            // Chọn đáp án bằng phím A, B, C, D (áp dụng nếu chưa nộp bài)
+            else if (!isSubmitted && !isShowExplanation) {
+                const keyMap = { 'a': 0, 'A': 0, 'b': 1, 'B': 1, 'c': 2, 'C': 2, 'd': 3, 'D': 3 };
+                const optionIndex = keyMap[key];
+                
+                // Nếu phím bấm thuộc A-D và đáp án đó có tồn tại cho câu hỏi hiện tại
+                if (optionIndex !== undefined && questions[currentIndex].options && optionIndex < questions[currentIndex].options.length) {
+                    handleOptionSelect(optionIndex); // Sử dụng lại toàn bộ luồng xử lý chuẩn
+                }
+            }
         });
     </script>
 </body>
