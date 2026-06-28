@@ -18,14 +18,45 @@
         /* Thiết lập nền cho toàn bộ trang web (Có ảnh nền và lớp phủ tối) */
         body {
             /* Lớp phủ gradient màu đen mờ kết hợp ảnh nền Unsplash */
-            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), 
+            background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), 
                         url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1200') no-repeat center center / cover;
             background-attachment: fixed; /* Giúp ảnh nền đứng yên khi cuộn trang trên mobile */
             min-height: 100vh;
             color: #334155;
             display: flex;
+            flex-direction: column; /* Xếp dọc các phần tử (Tiêu đề -> Form) */
             justify-content: center;
             align-items: center;
+            padding: 20px; /* Thêm khoảng thở cho mobile */
+        }
+
+        /* === CSS CHO CỤM TIÊU ĐỀ LỚN === */
+        .system-title {
+            text-align: center;
+            margin-bottom: 40px; /* Khoảng cách với Card đăng nhập */
+            z-index: 1; /* Nổi lên trên nền */
+        }
+
+        .title-line-1 {
+            color: #e2e8f0; /* Màu xám sáng */
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .title-line-2 {
+            font-size: 34px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            /* Đổ màu gradient cho chữ */
+            background: linear-gradient(135deg, #60a5fa 0%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            /* Hiệu ứng đổ bóng viền mờ cho container */
+            filter: drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.5));
         }
 
         /* Hộp chứa form đăng nhập/đăng ký (Card) */
@@ -35,7 +66,8 @@
             max-width: 420px;
             padding: 45px 35px;
             border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            z-index: 1;
         }
 
         /* Tiêu đề của form */
@@ -43,7 +75,7 @@
             text-align: center;
             color: #1e293b;
             margin-bottom: 35px;
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
         }
 
@@ -75,6 +107,33 @@
         .form-group input:focus {
             border-color: #2563eb;
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        }
+        
+        /* CSS Nút Quên mật khẩu */
+        .forgot-password {
+            font-size: 13px;
+            color: #2563eb;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .forgot-password:hover {
+            color: #1e40af;
+            text-decoration: underline;
+        }
+
+        /* Container cho Nhãn Mật khẩu và Nút Quên mật khẩu */
+        .password-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .password-header label {
+            margin-bottom: 0;
         }
 
         /* Phần Checkbox Ghi nhớ đăng nhập */
@@ -197,15 +256,22 @@
         }
 
         /* --- RESPONSIVE MOBILE --- */
-        @media (max-width: 900px) {
+        @media (max-width: 600px) {
+            .title-line-1 { font-size: 14px; }
+            .title-line-2 { font-size: 24px; }
             .auth-container {
                 padding: 35px 25px;
-                margin: 20px;
             }
         }
     </style>
 </head>
 <body>
+
+    <!-- PHẦN 1.5: TIÊU ĐỀ HỆ THỐNG CHÍNH -->
+    <div class="system-title">
+        <div class="title-line-1">Ngân hàng câu hỏi trắc nghiệm chuyên ngành</div>
+        <div class="title-line-2">Kỹ thuật hình ảnh y học</div>
+    </div>
 
     <!-- PHẦN 2: CẤU TRÚC HTML GIAO DIỆN -->
     <div class="auth-container">
@@ -220,11 +286,13 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="login-password">Mật khẩu</label>
+                        <div class="password-header">
+                            <label for="login-password">Mật khẩu</label>
+                            <span id="btn-forgot-password" class="forgot-password">Quên mật khẩu?</span>
+                        </div>
                         <input type="password" id="login-password" placeholder="Nhập mật khẩu" required>
                     </div>
 
-                    <!-- Checkbox Ghi nhớ đăng nhập -->
                     <div class="remember-me-container">
                         <input type="checkbox" id="remember-me" checked>
                         <label for="remember-me">Ghi nhớ đăng nhập</label>
@@ -249,7 +317,7 @@
                     </div>
                 </div>
 
-                <!-- === FORM ĐĂNG KÝ (Mặc định được ẩn đi bởi class "hidden") === -->
+                <!-- === FORM ĐĂNG KÝ === -->
                 <div id="register-form" class="hidden">
                     <h2>Tạo Tài Khoản Mới</h2>
                     
@@ -303,17 +371,16 @@
             onAuthStateChanged,
             setPersistence,
             browserLocalPersistence,
-            browserSessionPersistence
+            browserSessionPersistence,
+            sendPasswordResetEmail
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Import thêm getFirestore, doc, và setDoc từ thư viện Firestore
         import {
             getFirestore,
             doc,
             setDoc
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CẤU HÌNH FIREBASE CỦA BẠN
         let firebaseConfig = {
             apiKey: "AIzaSyDqdo_DJIWa5iqxiCgBq-0iGX7f9sr6soo",
             authDomain: "rt-examination.firebaseapp.com",
@@ -332,33 +399,28 @@
             }
         }
 
-        // Khai báo thêm biến db để sử dụng Firestore
         let app, auth, db;
 
         if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "") {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
-            db = getFirestore(app); // Khởi tạo Firestore
+            db = getFirestore(app);
 
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    // Kẻ gác cổng: Chặn lại 1 nhịp để lưu thông tin vào Firestore trước!
                     try {
                         await setDoc(doc(db, "users", user.uid), { 
                             email: user.email,
                             isVip: false 
-                        }, { merge: true }); // merge:true để giữ nguyên quyền VIP của người cũ
+                        }, { merge: true });
                     } catch (error) {
                         console.error("Lỗi khi gác cổng lưu data:", error);
                     }
-                    
-                    // Lưu xong xuôi mới cho phép qua phòng chờ
                     window.location.href = 'dashboard.html';
                 }
             });
         }
 
-        // -- XỬ LÝ ĐĂNG KÝ TÀI KHOẢN (BẰNG EMAIL) --
         const btnRegister = document.getElementById('btn-register');
         btnRegister.addEventListener('click', () => {
             if (!auth || !db) {
@@ -376,7 +438,6 @@
 
             createUserWithEmailAndPassword(auth, email, password)
                 .then(async (userCredential) => {
-                    // Sử dụng setDoc để lưu thông tin tài khoản VIP ngay khi tạo user thành công
                     try {
                         await setDoc(doc(db, "users", userCredential.user.uid), {
                             email: email,
@@ -405,7 +466,6 @@
                 });
         });
 
-        // -- XỬ LÝ ĐĂNG NHẬP (BẰNG EMAIL) CÓ XỬ LÝ PERSISTENCE VÀ LƯU DATABASE --
         const btnLogin = document.getElementById('btn-login');
         btnLogin.addEventListener('click', () => {
             if (!auth) {
@@ -428,8 +488,7 @@
                 .then(() => {
                     return signInWithEmailAndPassword(auth, email, password);
                 })
-                .then(async (userCredential) => { // Đổi thành async
-                    // Lưu/Cập nhật thông tin user vào Firestore, dùng merge: true để không ghi đè dữ liệu cũ
+                .then(async (userCredential) => { 
                     try {
                         await setDoc(doc(db, "users", userCredential.user.uid), { 
                             email: userCredential.user.email,
@@ -452,7 +511,38 @@
                 });
         });
 
-        // -- XỬ LÝ ĐĂNG NHẬP BẰNG GOOGLE CÓ XỬ LÝ PERSISTENCE VÀ LƯU DATABASE --
+        const btnForgotPassword = document.getElementById('btn-forgot-password');
+        btnForgotPassword.addEventListener('click', async () => {
+            if (!auth) {
+                alert("Bạn chưa cấu hình Firebase!");
+                return;
+            }
+
+            let email = document.getElementById('login-email').value.trim();
+
+            if (!email) {
+                email = prompt("Vui lòng nhập địa chỉ email bạn đã dùng để đăng ký:");
+                if (!email) return;
+            }
+
+            email = email.trim();
+
+            try {
+                alert("Đang gửi yêu cầu... Vui lòng nhấn OK để tiếp tục.");
+                await sendPasswordResetEmail(auth, email);
+                alert(`✅ Link đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra Hộp thư đến (hoặc thư rác) của email: ${email}`);
+            } catch (error) {
+                const errorCode = error.code;
+                if (errorCode === 'auth/user-not-found') {
+                    alert("Lỗi: Email này chưa được đăng ký trong hệ thống!");
+                } else if (errorCode === 'auth/invalid-email') {
+                    alert("Lỗi: Định dạng email không hợp lệ!");
+                } else {
+                    alert("Lỗi: " + error.message);
+                }
+            }
+        });
+
         const btnGoogle = document.getElementById('btn-google');
         btnGoogle.addEventListener('click', () => {
             if (!auth) {
@@ -469,8 +559,7 @@
                     const provider = new GoogleAuthProvider();
                     return signInWithPopup(auth, provider);
                 })
-                .then(async (result) => { // Đổi thành async
-                    // Lưu/Cập nhật thông tin user vào Firestore, dùng merge: true để không ghi đè dữ liệu cũ
+                .then(async (result) => { 
                     try {
                         await setDoc(doc(db, "users", result.user.uid), { 
                             email: result.user.email,
