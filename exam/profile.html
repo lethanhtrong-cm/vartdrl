@@ -17,6 +17,7 @@
             --warning-orange: #f57c00;
             --success-green: #28a745;
             --border-color: #ddd;
+            --danger-red: #ef4444; /* Màu đỏ cho nút xóa */
         }
 
         body {
@@ -249,8 +250,19 @@
             cursor: pointer;
             font-size: 0.9rem;
         }
-        
         .btn-review:hover { background-color: #e65100; }
+
+        .btn-delete-history {
+            background-color: var(--danger-red);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+        .btn-delete-history:hover { background-color: #dc2626; }
 
         /* Badge hiển thị loại Đề thi */
         .exam-badge {
@@ -441,7 +453,8 @@
         // 1. Import các hàm Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Đã import thêm deleteDoc để hỗ trợ xóa lịch sử
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // 2. Cấu hình Firebase
         const firebaseConfig = {
@@ -574,7 +587,6 @@
                 
                 examsSnapshot.forEach(doc => {
                     const examData = doc.data();
-                    // Lưu ý: Tùy cách bạn cấu trúc db, id đề thi có thể lưu ở doc.id hoặc trường examId/examCode
                     const eId = examData.examId || examData.examCode || doc.id;
                     examVipMap[eId] = examData.isVip || false;
                 });
@@ -589,11 +601,24 @@
                     return;
                 }
 
+                // Bước 3: Đưa dữ liệu vào Mảng để sắp xếp
+                const resultsArray = [];
+                querySnapshot.forEach((doc) => {
+                    resultsArray.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sắp xếp mảng Mới nhất -> Cũ nhất dựa vào data.timestamp
+                resultsArray.sort((a, b) => {
+                    // Chuyển timestamp của Firebase (hoặc chuỗi ngày) thành Date object
+                    const dateA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(a.timestamp || 0);
+                    const dateB = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(b.timestamp || 0);
+                    return dateB - dateA;
+                });
+
+                // Bước 4: Render ra bảng
                 historyTableBody.innerHTML = ""; 
                 
-                // Bước 3: Render từng dòng lịch sử thi
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
+                resultsArray.forEach((data) => {
                     const tr = document.createElement("tr");
 
                     // Trích xuất mã đề và các thông số
@@ -616,10 +641,10 @@
                         timeSpentStr = `${m}p ${s}s`;
                     }
                     
-                    // Format Thời gian nộp (nếu có submitTime timestamp)
+                    // Format Thời gian nộp (Sử dụng timestamp thay vì submitTime)
                     let submitTime = "Không xác định";
-                    if (data.submitTime) {
-                        submitTime = formatDate(data.submitTime);
+                    if (data.timestamp) {
+                        submitTime = formatDate(data.timestamp);
                     }
 
                     tr.innerHTML = `
@@ -629,8 +654,12 @@
                         <td>${correctAnswers} câu</td>
                         <td style="color: var(--primary-blue); font-weight: bold;">${score}</td>
                         <td>
-                            <button class="btn-review" onclick="window.location.href='quiz.html?resultId=${doc.id}'">
+                            <button class="btn-review" onclick="window.location.href='quiz.html?resultId=${data.id}'">
                                 <i class="fa-solid fa-eye"></i> Xem lại
+                            </button>
+                            <!-- Nút Xóa Lịch sử -->
+                            <button class="btn-delete-history" data-id="${data.id}">
+                                <i class="fa-solid fa-trash"></i> Xóa
                             </button>
                         </td>
                     `;
@@ -642,6 +671,33 @@
                 historyTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Lỗi khi tải dữ liệu lịch sử!</td></tr>`;
             }
         }
+
+        // --- XỬ LÝ SỰ KIỆN XÓA LỊCH SỬ THI BẰNG EVENT DELEGATION ---
+        historyTableBody.addEventListener('click', async (e) => {
+            // Tìm phần tử chứa class btn-delete-history gần nhất (bao gồm cả khi người dùng bấm vào icon <i class="fa-trash"></i> bên trong)
+            const deleteBtn = e.target.closest('.btn-delete-history');
+            
+            if (deleteBtn) {
+                const docId = deleteBtn.getAttribute('data-id');
+                
+                // Hiển thị hộp thoại xác nhận
+                if (confirm("Bạn có chắc chắn muốn xóa kết quả bài thi này khỏi lịch sử?")) {
+                    try {
+                        // Xóa document khỏi collection "results" trên Firestore
+                        await deleteDoc(doc(db, "results", docId));
+                        alert("Đã xóa kết quả bài thi thành công!");
+                        
+                        // Tải lại bảng lịch sử để cập nhật giao diện
+                        if (auth.currentUser) {
+                            fetchHistory(auth.currentUser.email);
+                        }
+                    } catch (error) {
+                        console.error("Lỗi khi xóa kết quả:", error);
+                        alert("Đã xảy ra lỗi khi xóa: " + error.message);
+                    }
+                }
+            }
+        });
 
         function formatDate(dateData) {
             if (dateData && typeof dateData.toDate === 'function') {
