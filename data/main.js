@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         "Ngày": dateStr, "Giờ": timeStr, "Bệnh viện": e.hospitalName || '', "Hãng máy": e.manufacturer || '', 
                         "Protocol": e.protocol || '', "Mã BN": e.patientId || '', "Tuổi": e.age || '', "Giới tính": e.gender || '', 
                         "Cân nặng (kg)": e.weight || '', "Chiều cao (cm)": e.height || '', "BMI": bmi,
-                        "Số lát cắt": e.sliceCount || '', "kV": e.kv || '', "mAs": e.mas || '', "CTDIvol (mGy)": e.ctdi || '', "DLP (mGy.cm)": e.dlp || '', 
+                        "Số lát cắt": e.sliceCount || '', "kV": e.kV || e.kv || e.KV || '', "mAs": e.mAs || e.mas || e.MAS || '', "CTDIvol (mGy)": e.ctdi || '', "DLP (mGy.cm)": e.dlp || '', 
                         "Modulation": e.doseModulation || e.modulation || '', "Người nhập": e.userEmail || ''
                     };
                 });
