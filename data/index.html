@@ -8,125 +8,16 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        slate: { 850: '#1e293b' } // Custom dark shade
-                    },
-                    screens: {
-                        'xs': '475px', // Extra small screen breakpoint
-                    }
-                }
-            }
+            theme: { extend: { colors: { slate: { 850: '#1e293b' } }, screens: { 'xs': '475px' } } }
         }
     </script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #334155; display: flex; flex-direction: column; min-height: 100vh; transition: background-color 0.3s, color 0.3s; }
-        
-        /* Dark Mode Transitions */
-        .dark body { background: #0f172a; color: #cbd5e1; }
-        .dark .glass-card { background: #1e293b; border-color: #334155; }
-        .dark .stat-card { background: #1e293b; border-color: #334155; }
-        .dark .stat-value-big { color: #f1f5f9; }
-        .dark select, .dark input { background-color: #1e293b; border-color: #475569; color: #f1f5f9; }
-        .dark tr.hover\:bg-indigo-50\/50:hover { background-color: rgba(55, 65, 81, 0.5); }
-        .dark .table-header { background: #0f172a; }
-        .dark .border-slate-200 { border-color: #334155; }
-        .dark .text-slate-700 { color: #e2e8f0; }
-        .dark .text-slate-600 { color: #cbd5e1; }
-        .dark .text-slate-500 { color: #94a3b8; }
-        .dark .text-slate-400 { color: #64748b; }
-        .dark .bg-white { background-color: #1e293b; }
-        .dark .bg-slate-50 { background-color: #0f172a; }
-        .dark .filter-stat-card { background-color: #1e293b; border-color: #334155; }
-
-        .glass-card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); border: 1px solid #e2e8f0; }
-        
-        /* Updated Stat Card Styles */
-        .stat-card { background: white; border-radius: 1rem; padding: 1.5rem; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .stat-card::after { content: ""; position: absolute; top: 0; right: 0; width: 80px; height: 80px; background: radial-gradient(circle at top right, rgba(255,255,255,0.8), transparent); opacity: 0.5; pointer-events: none; }
-        .dark .stat-card::after { background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent); }
-
-        /* Dynamic Filtered Stats Card */
-        .filter-stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; flex-direction: column; transition: all 0.2s; position: relative; overflow: hidden; height: 100%; }
-        .filter-stat-card:hover { border-color: #cbd5e1; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05); }
-        .dark .filter-stat-card:hover { border-color: #475569; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); }
-
-        .stat-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
-        .stat-value-big { font-size: 2rem; font-weight: 900; line-height: 1; letter-spacing: -0.05em; margin-bottom: 0.25rem; }
-        
-        /* Small stats box inside card */
-        .stats-detail-box { background-color: rgba(241, 245, 249, 0.6); border-radius: 0.5rem; padding: 0.5rem; margin-top: auto; border: 1px solid rgba(226, 232, 240, 0.8); }
-        .dark .stats-detail-box { background-color: rgba(15, 23, 42, 0.6); border-color: #334155; }
-        
-        .stats-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; line-height: 1.25rem; }
-        .stats-row-label { color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .dark .stats-row-label { color: #94a3b8; }
-        .stats-row-val { font-weight: 700; color: #334155; font-family: 'Inter', monospace; }
-        .dark .stats-row-val { color: #e2e8f0; }
-
-        .custom-checkbox { appearance: none; background-color: #fff; width: 1.2em; height: 1.2em; border: 2px solid #cbd5e1; border-radius: 0.25em; display: grid; place-content: center; cursor: pointer; }
-        .dark .custom-checkbox { background-color: #1e293b; border-color: #475569; }
-        .custom-checkbox:checked { background-color: #4f46e5; border-color: #4f46e5; }
-        .custom-checkbox:checked::before { content: ""; width: 0.65em; height: 0.65em; box-shadow: inset 1em 1em white; transform-origin: center; clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
-        tr.row-selected { background-color: #eef2ff !important; }
-        .dark tr.row-selected { background-color: rgba(67, 56, 202, 0.2) !important; }
-        
-        .page-btn { padding: 0.35rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; border: 1px solid #e2e8f0; background: white; }
-        .dark .page-btn { background: #1e293b; border-color: #334155; color: #cbd5e1; }
-        .page-btn:hover:not(:disabled) { border-color: #4f46e5; color: #4f46e5; }
-        .page-btn.active { background-color: #4f46e5; color: white; border-color: #4f46e5; }
-        
-        .table-header { background: #1e1b4b; color: white; }
-        .dark .table-header { background: #312e81; }
-        .table-header th { font-weight: 600; letter-spacing: 0.05em; font-size: 0.7rem; text-transform: uppercase; }
-        
-        .badge-protocol { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.65rem; padding: 0.25rem 0.5rem; border-radius: 0.375rem; text-transform: uppercase; letter-spacing: 0.025em; }
-        .dark .badge-protocol { background: #0f172a; color: #94a3b8; border-color: #334155; }
-        
-        .badge-dose { background: #ecfdf5; color: #047857; font-weight: 800; padding: 0.25rem 0.5rem; border-radius: 0.375rem; border: 1px solid #d1fae5; }
-        .dark .badge-dose { background: rgba(6, 78, 59, 0.4); color: #34d399; border-color: rgba(6, 78, 59, 0.5); }
-        
-        .badge-dose-high { background: #fff1f2; color: #be123c; border: 1px solid #ffe4e6; }
-        .dark .badge-dose-high { background: rgba(136, 19, 55, 0.4); color: #fb7185; border-color: rgba(136, 19, 55, 0.5); }
-        
-        .badge-base { font-weight: 800; font-size: 0.65rem; padding: 0.25rem 0.5rem; border-radius: 0.375rem; text-transform: uppercase; letter-spacing: 0.025em; border: 1px solid transparent; }
-
-        /* Status Badge */
-        .status-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
-        .dark .status-pending { background: rgba(154, 52, 18, 0.2); color: #fdba74; border-color: rgba(154, 52, 18, 0.4); }
-        .status-approved { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
-        .dark .status-approved { background: rgba(22, 101, 52, 0.2); color: #86efac; border-color: rgba(22, 101, 52, 0.4); }
-        .status-rejected { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
-        .dark .status-rejected { background: rgba(153, 27, 27, 0.2); color: #fca5a5; border-color: rgba(153, 27, 27, 0.4); }
-
-        /* Tab Buttons */
-        .tab-btn { @apply px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wide transition-all; }
-        .tab-btn-active { background-color: #4f46e5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3); }
-        .tab-btn-inactive { @apply text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200; }
-        
-        /* Mobile Scroll Hide */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Pending Sync Row */
-        .row-pending { background: #fef3c7 !important; }
-        .dark .row-pending { background: rgba(217, 119, 6, 0.2) !important; }
-
-        /* My Data Button Active */
-        .btn-my-data-active { @apply bg-purple-800 text-white border-purple-800 ring-2 ring-purple-400 shadow-inner; }
-        .btn-my-data-inactive { @apply bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/30 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700; }
-    </style>
+    <link rel="stylesheet" href="./styles.css">
     <script>
-        // Init Theme trước để tránh chớp màn hình (FOUC)
-        if (localStorage.theme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+        if (localStorage.theme === 'dark') { document.documentElement.classList.add('dark'); } 
+        else { document.documentElement.classList.remove('dark'); }
     </script>
 </head>
 <body class="antialiased font-inter bg-slate-50/50 dark:bg-slate-900 transition-colors duration-300">
@@ -143,27 +34,22 @@
                 </div>
                 
                 <div class="flex items-center gap-2 md:gap-4">
-                    <!-- Navigation Links (Desktop) -->
                     <div id="mainNav" class="hidden md:flex gap-3 items-center">
                         <a href="https://vnrad.tech/drl" class="px-4 py-2.5 bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 rounded-xl font-bold text-xs flex items-center gap-2 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all shadow-sm hover:shadow-indigo-300 hover:-translate-y-0.5 active:translate-y-0">
-                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> 
-                            <span class="uppercase tracking-wide">Dashboard</span>
+                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> <span class="uppercase tracking-wide">Dashboard</span>
                         </a>
                         <a href="https://vnrad.tech/chart" class="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs flex items-center gap-2 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
-                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 
-                            <span class="uppercase tracking-wide">Biểu đồ</span>
+                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i> <span class="uppercase tracking-wide">Biểu đồ</span>
                         </a>
                     </div>
                     
                     <div class="h-6 md:h-8 w-px bg-slate-200 dark:bg-slate-700 hidden md:block"></div>
                     
-                    <!-- Dark Mode Toggle -->
                     <button onclick="toggleTheme()" class="p-2 md:p-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chuyển chế độ Sáng/Tối">
                         <i data-lucide="sun" class="w-4 h-4 md:w-5 md:h-5 hidden dark:block"></i>
                         <i data-lucide="moon" class="w-4 h-4 md:w-5 md:h-5 block dark:hidden"></i>
                     </button>
     
-                    <!-- Admin Button -->
                     <button id="authBtn" class="px-3 py-2 md:px-5 md:py-2.5 rounded-xl font-bold text-[10px] md:text-xs flex items-center gap-1.5 md:gap-2 border transition-all duration-300 shadow-md transform active:scale-95 bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700 hover:text-white">
                         <i data-lucide="lock" class="w-3 h-3 md:w-4 md:h-4"></i>
                         <span class="uppercase tracking-wide hidden xs:inline">Admin Access</span>
@@ -181,17 +67,9 @@
                 <i data-lucide="lock" class="w-8 h-8 md:w-10 md:h-10 text-slate-400"></i>
             </div>
             <h2 class="text-xl md:text-2xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight text-center">Yêu cầu đăng nhập</h2>
-            
-            <p class="text-xs md:text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-4 text-center max-w-lg">
-                So sánh liều CT trung vị (Median - 50th percentile) của một số bệnh viện Việt Nam với chuẩn quốc tế.
-            </p>
-
-            <p class="text-xs md:text-base text-slate-500 dark:text-slate-400 text-center max-w-md mb-8">
-                Vì lý do bảo mật, hệ thống VN-DRL Study yêu cầu xác thực để xem và nhập liệu dữ liệu đa trung tâm. Vui lòng đăng nhập để tiếp tục.
-            </p>
-            <button onclick="document.getElementById('authModal').classList.remove('hidden')" class="px-6 py-2.5 md:px-8 md:py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 hover:shadow-indigo-500/50 transition-all transform hover:-translate-y-1">
-                Đăng nhập ngay
-            </button>
+            <p class="text-xs md:text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-4 text-center max-w-lg">So sánh liều CT trung vị (Median - 50th percentile) của một số bệnh viện Việt Nam với chuẩn quốc tế.</p>
+            <p class="text-xs md:text-base text-slate-500 dark:text-slate-400 text-center max-w-md mb-8">Vì lý do bảo mật, hệ thống VN-DRL Study yêu cầu xác thực để xem và nhập liệu dữ liệu đa trung tâm. Vui lòng đăng nhập để tiếp tục.</p>
+            <button onclick="document.getElementById('authModal').classList.remove('hidden')" class="px-6 py-2.5 md:px-8 md:py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 hover:shadow-indigo-500/50 transition-all transform hover:-translate-y-1">Đăng nhập ngay</button>
         </div>
         
         <!-- Offline Warning -->
@@ -202,9 +80,7 @@
                     <p class="text-xs font-bold text-amber-800 dark:text-amber-200">Đang ở chế độ giới hạn (Hết hạn ngạch hoặc mất mạng)</p>
                     <p class="text-[10px] text-amber-600 dark:text-amber-400">Dữ liệu đang được hiển thị từ bộ nhớ tạm. Các thay đổi sẽ được lưu cục bộ và đồng bộ khi có kết nối.</p>
                 </div>
-                <button onclick="syncData()" id="btnSync" class="hidden px-3 py-1.5 bg-amber-600 text-white text-[10px] font-bold rounded-lg hover:bg-amber-700 transition-colors shadow-sm">
-                    Đồng bộ ngay (<span id="pendingCountDisplay">0</span>)
-                </button>
+                <button onclick="syncData()" id="btnSync" class="hidden px-3 py-1.5 bg-amber-600 text-white text-[10px] font-bold rounded-lg hover:bg-amber-700 transition-colors shadow-sm">Đồng bộ ngay (<span id="pendingCountDisplay">0</span>)</button>
             </div>
         </div>
 
@@ -225,22 +101,10 @@
                         </div>
                         
                         <div class="flex-1 border-l border-indigo-100 dark:border-slate-700 pl-3 md:pl-4 space-y-1 md:space-y-1.5 py-1">
-                            <div class="flex justify-between items-center text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                                <span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>Sọ não</span>
-                                <span class="text-slate-800 dark:text-white" id="countHead">0</span>
-                            </div>
-                            <div class="flex justify-between items-center text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                                <span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-cyan-500"></div>Ngực</span>
-                                <span class="text-slate-800 dark:text-white" id="countChest">0</span>
-                            </div>
-                            <div class="flex justify-between items-center text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                                <span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>Bụng</span>
-                                <span class="text-slate-800 dark:text-white" id="countAbd">0</span>
-                            </div>
-                            <div class="flex justify-between items-center text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                                <span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>Liều thấp</span>
-                                <span class="text-slate-800 dark:text-white" id="countLow">0</span>
-                            </div>
+                            <div class="flex justify-between items-center text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400"><span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>Sọ não</span><span class="text-slate-800 dark:text-white" id="countHead">0</span></div>
+                            <div class="flex justify-between items-center text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400"><span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-cyan-500"></div>Ngực</span><span class="text-slate-800 dark:text-white" id="countChest">0</span></div>
+                            <div class="flex justify-between items-center text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400"><span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>Bụng</span><span class="text-slate-800 dark:text-white" id="countAbd">0</span></div>
+                            <div class="flex justify-between items-center text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400"><span class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>Liều thấp</span><span class="text-slate-800 dark:text-white" id="countLow">0</span></div>
                         </div>
                     </div>
                 </div>
@@ -250,17 +114,12 @@
                         <span class="text-[10px] font-black text-emerald-500 uppercase tracking-wider bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded">Cơ sở y tế</span>
                         <span class="p-2 md:p-2.5 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none group-hover:scale-110 transition-transform"><i data-lucide="building-2" class="w-4 h-4 md:w-5 md:h-5"></i></span>
                     </div>
-                    
                     <div class="flex items-end gap-4 md:gap-6">
                         <div class="flex-1">
                             <h3 class="text-4xl md:text-5xl font-black text-slate-800 dark:text-white tracking-tight leading-none mb-1" id="statHosp">0</h3>
-                            <p class="text-[11px] font-bold text-slate-400 mt-2 flex items-center gap-1">
-                                <i data-lucide="info" class="w-3 h-3 text-emerald-500"></i> <span class="hidden xs:inline">Nhấn để xem DS</span><span class="inline xs:hidden">Xem DS</span>
-                            </p>
+                            <p class="text-[11px] font-bold text-slate-400 mt-2 flex items-center gap-1"><i data-lucide="info" class="w-3 h-3 text-emerald-500"></i> <span class="hidden xs:inline">Nhấn để xem DS</span><span class="inline xs:hidden">Xem DS</span></p>
                         </div>
-                        
-                        <div class="flex-1 border-l border-emerald-100 dark:border-slate-700 pl-3 md:pl-4 space-y-1.5 md:space-y-2 py-1" id="topHospitalsList">
-                        </div>
+                        <div class="flex-1 border-l border-emerald-100 dark:border-slate-700 pl-3 md:pl-4 space-y-1.5 md:space-y-2 py-1" id="topHospitalsList"></div>
                     </div>
                 </div>
             </div>
@@ -271,21 +130,11 @@
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 border-b border-slate-100 dark:border-slate-700 pb-4">
                         <h2 class="text-xs md:text-sm font-black uppercase text-slate-700 dark:text-slate-300 flex items-center gap-2"><i data-lucide="filter" class="w-3 h-3 md:w-4 md:h-4 text-indigo-600 dark:text-indigo-400"></i> Bộ lọc dữ liệu</h2>
                         <div class="flex flex-wrap gap-2">
-                             <button onclick="toggleMyData()" id="btnMyData" class="px-2.5 py-1.5 md:px-3 rounded-lg transition-all text-xs font-bold flex items-center gap-2 border bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/30 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700" title="Lọc dữ liệu của tôi">
-                                 <i data-lucide="user" class="w-3 h-3"></i> <span class="hidden xs:inline">Lọc ca của tôi</span>
-                             </button>
+                             <button onclick="toggleMyData()" id="btnMyData" class="px-2.5 py-1.5 md:px-3 rounded-lg transition-all text-xs font-bold flex items-center gap-2 border bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/30 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700" title="Lọc dữ liệu của tôi"><i data-lucide="user" class="w-3 h-3"></i> <span class="hidden xs:inline">Lọc ca của tôi</span></button>
                              <div class="w-px h-6 bg-slate-700 mx-1"></div>
-
-                            <button onclick="toggleTrashMode()" id="btnTrash" class="px-2 md:px-3 py-1.5 md:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-lg text-[10px] md:text-[11px] font-bold uppercase hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 hover:border-slate-300 transition-all flex items-center gap-2 active:scale-95" title="Thùng rác">
-                                <i data-lucide="trash-2" class="w-3 h-3"></i> <span class="hidden xs:inline">Thùng rác</span>
-                            </button>
-
-                            <button onclick="clearFilters()" class="px-2 md:px-3 py-1.5 md:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-lg text-[10px] md:text-[11px] font-bold uppercase hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-red-500 hover:border-red-200 transition-all flex items-center gap-2 active:scale-95" title="Xóa tất cả bộ lọc">
-                                <i data-lucide="filter-x" class="w-3 h-3"></i> <span class="hidden xs:inline">Xóa lọc</span>
-                            </button>
-                            
+                            <button onclick="toggleTrashMode()" id="btnTrash" class="px-2 md:px-3 py-1.5 md:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-lg text-[10px] md:text-[11px] font-bold uppercase hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 hover:border-slate-300 transition-all flex items-center gap-2 active:scale-95" title="Thùng rác"><i data-lucide="trash-2" class="w-3 h-3"></i> <span class="hidden xs:inline">Thùng rác</span></button>
+                            <button onclick="clearFilters()" class="px-2 md:px-3 py-1.5 md:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-lg text-[10px] md:text-[11px] font-bold uppercase hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-red-500 hover:border-red-200 transition-all flex items-center gap-2 active:scale-95" title="Xóa tất cả bộ lọc"><i data-lucide="filter-x" class="w-3 h-3"></i> <span class="hidden xs:inline">Xóa lọc</span></button>
                             <button onclick="fetchData(true)" class="px-2 md:px-3 py-1.5 md:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-[10px] md:text-[11px] font-bold uppercase hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-2 active:scale-95"><i data-lucide="refresh-cw" class="w-3 h-3"></i> <span class="hidden xs:inline">Tải lại</span></button>
-                            
                             <button id="btnExport" class="hidden px-2 md:px-3 py-1.5 md:py-2 bg-emerald-600 text-white rounded-lg text-[10px] md:text-[11px] font-bold uppercase hover:bg-emerald-700 flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all active:scale-95"><i data-lucide="download" class="w-3 h-3"></i> <span class="hidden xs:inline">Xuất Excel</span></button>
                         </div>
                     </div>
@@ -296,26 +145,12 @@
                         <div class="col-span-1 lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Hãng máy</label><select id="fManu" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"><option value="all">Tất cả</option></select></div>
                         <div class="col-span-1 lg:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Số lát cắt</label>
-                            <select id="fSlice" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500">
-                                <option value="all">Tất cả</option>
-                                <option value="16 - 32 lát">16 - 32 lát</option>
-                                <option value="64 - 128 lát">64 - 128 lát</option>
-                                <option value="256 - 512 lát">256 - 512 lát</option>
-                                <option value="Máy 2 bóng (Dual Source)">Máy 2 bóng (Dual Source)</option>
-                                <option value="other">Khác</option>
-                            </select>
+                            <select id="fSlice" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500"><option value="all">Tất cả</option><option value="16 - 32 lát">16 - 32 lát</option><option value="64 - 128 lát">64 - 128 lát</option><option value="256 - 512 lát">256 - 512 lát</option><option value="Máy 2 bóng (Dual Source)">Máy 2 bóng (Dual Source)</option><option value="other">Khác</option></select>
                         </div>
                         <div class="col-span-1 lg:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Chất lượng DL</label>
                             <select id="fQuality" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 text-slate-600 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">
-                                <option value="all" class="text-slate-700 dark:text-slate-200">Tất cả</option>
-                                <option value="any_issue" class="text-red-500">⚠ Có bất thường</option>
-                                <option value="abnormal_dose" class="text-purple-500 font-bold">⚠ Sai lệch Protocol (Nhầm liều)</option>
-                                <option value="swapped_hw" class="text-orange-500">⚠ Nghi ngờ nhầm Cân/Cao</option>
-                                <option value="missing_id">Thiếu ID bệnh nhân</option>
-                                <option value="missing_account">Thiếu tài khoản</option>
-                                <option value="missing_protocol">Thiếu Protocol</option>
-                                <option value="missing_dose">Thiếu Liều (CTDI/DLP)</option>
+                                <option value="all" class="text-slate-700 dark:text-slate-200">Tất cả</option><option value="any_issue" class="text-red-500">⚠ Có bất thường</option><option value="abnormal_dose" class="text-purple-500 font-bold">⚠ Sai lệch Protocol (Nhầm liều)</option><option value="swapped_hw" class="text-orange-500">⚠ Nghi ngờ nhầm Cân/Cao</option><option value="missing_id">Thiếu ID bệnh nhân</option><option value="missing_account">Thiếu tài khoản</option><option value="missing_protocol">Thiếu Protocol</option><option value="missing_dose">Thiếu Liều (CTDI/DLP)</option>
                             </select>
                         </div>
                         <div class="col-span-1 lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Tìm kiếm</label><div class="relative"><input id="fSearch" type="text" placeholder="ID, BV..." class="w-full p-2 pl-7 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-indigo-500"><i data-lucide="search" class="w-3 h-3 absolute left-2 top-2.5 text-slate-400"></i></div></div>
@@ -323,53 +158,18 @@
                     
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3">
                         <div class="col-span-1 lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Giới tính</label><select id="fGender" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500"><option value="all">Tất cả</option><option value="M">Nam (M)</option><option value="F">Nữ (F)</option></select></div>
-                        <div class="col-span-1 lg:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">BMI</label>
-                            <select id="fBMI" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500">
-                                <option value="all">Tất cả</option>
-                                <option value="yes">Có BMI</option>
-                                <option value="no">Không BMI</option>
-                            </select>
-                        </div>
+                        <div class="col-span-1 lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">BMI</label><select id="fBMI" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500"><option value="all">Tất cả</option><option value="yes">Có BMI</option><option value="no">Không BMI</option></select></div>
                         <div class="col-span-1 lg:col-span-2">
                             <label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Khoảng Cân nặng (kg)</label>
-                            <div class="flex items-center gap-2">
-                                <input type="number" id="fWeightMin" placeholder="Từ" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
-                                <span class="text-slate-400 text-xs">-</span>
-                                <input type="number" id="fWeightMax" placeholder="Đến" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
-                            </div>
+                            <div class="flex items-center gap-2"><input type="number" id="fWeightMin" placeholder="Từ" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"><span class="text-slate-400 text-xs">-</span><input type="number" id="fWeightMax" placeholder="Đến" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"></div>
                         </div>
-                        <div class="col-span-1 lg:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Modulation</label>
-                            <select id="fMod" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500">
-                                <option value="all">Tất cả</option>
-                                <option value="on">Có (On)</option>
-                                <option value="off">Không (Off)</option>
-                                <option value="unknown">Chưa xác định</option>
-                            </select>
-                        </div>
-                        <div class="col-span-1 lg:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Sắp xếp</label>
-                            <select id="fSort" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500">
-                                <option value="date_desc">Ngày mới nhất</option>
-                                <option value="date_asc">Ngày cũ nhất</option>
-                                <option value="dose_desc">DLP Cao nhất</option>
-                                <option value="dose_asc">DLP Thấp nhất</option>
-                                <option value="ctdi_desc">CTDI Cao nhất</option>
-                                <option value="ctdi_asc">CTDI Thấp nhất</option>
-                                <option value="weight_desc">Cân nặng Cao nhất</option>
-                                <option value="weight_asc">Cân nặng Thấp nhất</option>
-                                <option value="age_desc">Tuổi Cao nhất</option>
-                                <option value="age_asc">Tuổi Thấp nhất</option>
-                            </select>
-                        </div>
+                        <div class="col-span-1 lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Modulation</label><select id="fMod" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500"><option value="all">Tất cả</option><option value="on">Có (On)</option><option value="off">Không (Off)</option><option value="unknown">Chưa xác định</option></select></div>
+                        <div class="col-span-1 lg:col-span-1"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 block">Sắp xếp</label><select id="fSort" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-indigo-500"><option value="date_desc">Ngày mới nhất</option><option value="date_asc">Ngày cũ nhất</option><option value="dose_desc">DLP Cao nhất</option><option value="dose_asc">DLP Thấp nhất</option><option value="ctdi_desc">CTDI Cao nhất</option><option value="ctdi_asc">CTDI Thấp nhất</option><option value="weight_desc">Cân nặng Cao nhất</option><option value="weight_asc">Cân nặng Thấp nhất</option><option value="age_desc">Tuổi Cao nhất</option><option value="age_asc">Tuổi Thấp nhất</option></select></div>
                     </div>
                 </div>
                 
                 <div id="statsPlaceholder" class="glass-card p-8 flex flex-col items-center justify-center text-center gap-4 animate-in fade-in duration-500 border border-dashed border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-900/10">
-                    <div class="bg-indigo-100 dark:bg-indigo-900 p-4 rounded-full text-indigo-500 dark:text-indigo-400 shadow-sm">
-                        <i data-lucide="bar-chart-2" class="w-8 h-8"></i>
-                    </div>
+                    <div class="bg-indigo-100 dark:bg-indigo-900 p-4 rounded-full text-indigo-500 dark:text-indigo-400 shadow-sm"><i data-lucide="bar-chart-2" class="w-8 h-8"></i></div>
                     <div class="max-w-md">
                         <h3 class="text-sm font-black text-indigo-900 dark:text-indigo-300 uppercase tracking-tight mb-1">Vui lòng chọn Protocol để hiển thị thống kê</h3>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Hệ thống sẽ tính toán các chỉ số DRL (75th Percentile), Median, và Mean ± SD dựa trên protocol bạn chọn.</p>
@@ -379,79 +179,23 @@
                 <!-- Dynamic Stats Section -->
                 <div id="dynamicStats" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4 animate-in slide-in-from-top-4 duration-300 hidden">
                     <div class="filter-stat-card border-l-4 border-l-slate-400 dark:border-l-slate-500 justify-between">
-                        <div>
-                            <span class="stat-label text-slate-500 dark:text-slate-400">Số lượng mẫu</span>
-                            <div class="stat-value-big text-slate-700 dark:text-slate-200" id="dCount">0</div>
-                            <div class="text-[10px] text-slate-400 font-medium">Ca chụp hợp lệ</div>
-                        </div>
+                        <div><span class="stat-label text-slate-500 dark:text-slate-400">Số lượng mẫu</span><div class="stat-value-big text-slate-700 dark:text-slate-200" id="dCount">0</div><div class="text-[10px] text-slate-400 font-medium">Ca chụp hợp lệ</div></div>
                     </div>
-
                     <div class="filter-stat-card border-l-4 border-l-blue-500">
-                        <span class="stat-label text-blue-600 dark:text-blue-400">CTDIvol (mGy)</span>
-                        <div class="stat-value-big text-blue-700 dark:text-blue-300" id="dCTDIMedian">0</div>
-                        <div class="text-[10px] text-blue-400 dark:text-blue-500 font-bold mb-3 uppercase tracking-wider" id="lblCTDIMedian">Median (50th)</div>
-                        
-                        <div class="stats-detail-box">
-                            <div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1">
-                                <span class="stats-row-label">Mean ± SD</span>
-                                <span class="stats-row-val text-blue-600 dark:text-blue-400 font-black"><span id="dCTDIMean">0</span> ± <span id="dCTDISD">0</span></span>
-                            </div>
-                            <div class="stats-row">
-                                <span class="stats-row-label">75th (DRL)</span>
-                                <span class="stats-row-val" id="dCTDIP75">0</span>
-                            </div>
-                        </div>
+                        <span class="stat-label text-blue-600 dark:text-blue-400">CTDIvol (mGy)</span><div class="stat-value-big text-blue-700 dark:text-blue-300" id="dCTDIMedian">0</div><div class="text-[10px] text-blue-400 dark:text-blue-500 font-bold mb-3 uppercase tracking-wider" id="lblCTDIMedian">Median (50th)</div>
+                        <div class="stats-detail-box"><div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1"><span class="stats-row-label">Mean ± SD</span><span class="stats-row-val text-blue-600 dark:text-blue-400 font-black"><span id="dCTDIMean">0</span> ± <span id="dCTDISD">0</span></span></div><div class="stats-row"><span class="stats-row-label">75th (DRL)</span><span class="stats-row-val" id="dCTDIP75">0</span></div></div>
                     </div>
-
                     <div class="filter-stat-card border-l-4 border-l-emerald-500">
-                        <span class="stat-label text-emerald-600 dark:text-emerald-400">DLP (mGy.cm)</span>
-                        <div class="stat-value-big text-emerald-700 dark:text-emerald-300" id="dDLPMedian">0</div>
-                        <div class="text-[10px] text-emerald-400 dark:text-emerald-500 font-bold mb-3 uppercase tracking-wider" id="lblDLPMedian">Median (50th)</div>
-                        
-                        <div class="stats-detail-box">
-                            <div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1">
-                                <span class="stats-row-label">Mean ± SD</span>
-                                <span class="stats-row-val text-emerald-600 dark:text-emerald-400 font-black"><span id="dDLPMean">0</span> ± <span id="dDLPSD">0</span></span>
-                            </div>
-                            <div class="stats-row">
-                                <span class="stats-row-label">75th (DRL)</span>
-                                <span class="stats-row-val" id="dDLPP75">0</span>
-                            </div>
-                        </div>
+                        <span class="stat-label text-emerald-600 dark:text-emerald-400">DLP (mGy.cm)</span><div class="stat-value-big text-emerald-700 dark:text-emerald-300" id="dDLPMedian">0</div><div class="text-[10px] text-emerald-400 dark:text-emerald-500 font-bold mb-3 uppercase tracking-wider" id="lblDLPMedian">Median (50th)</div>
+                        <div class="stats-detail-box"><div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1"><span class="stats-row-label">Mean ± SD</span><span class="stats-row-val text-emerald-600 dark:text-emerald-400 font-black"><span id="dDLPMean">0</span> ± <span id="dDLPSD">0</span></span></div><div class="stats-row"><span class="stats-row-label">75th (DRL)</span><span class="stats-row-val" id="dDLPP75">0</span></div></div>
                     </div>
-
                     <div class="filter-stat-card border-l-4 border-l-amber-500">
-                        <span class="stat-label text-amber-600 dark:text-amber-400">Chiều dài quét (cm)</span>
-                        <div class="stat-value-big text-amber-700 dark:text-amber-300" id="dLenMedian">0</div>
-                        <div class="text-[10px] text-amber-400 dark:text-amber-500 font-bold mb-3 uppercase tracking-wider" id="lblLenMedian">Median (50th)</div>
-                        
-                        <div class="stats-detail-box">
-                            <div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1">
-                                <span class="stats-row-label">Mean ± SD</span>
-                                <span class="stats-row-val text-amber-600 dark:text-amber-400 font-black"><span id="dLenMean">0</span> ± <span id="dLenSD">0</span></span>
-                            </div>
-                            <div class="stats-row">
-                                <span class="stats-row-label">75th</span>
-                                <span class="stats-row-val" id="dLenP75">0</span>
-                            </div>
-                        </div>
+                        <span class="stat-label text-amber-600 dark:text-amber-400">Chiều dài quét (cm)</span><div class="stat-value-big text-amber-700 dark:text-amber-300" id="dLenMedian">0</div><div class="text-[10px] text-amber-400 dark:text-amber-500 font-bold mb-3 uppercase tracking-wider" id="lblLenMedian">Median (50th)</div>
+                        <div class="stats-detail-box"><div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1"><span class="stats-row-label">Mean ± SD</span><span class="stats-row-val text-amber-600 dark:text-amber-400 font-black"><span id="dLenMean">0</span> ± <span id="dLenSD">0</span></span></div><div class="stats-row"><span class="stats-row-label">75th</span><span class="stats-row-val" id="dLenP75">0</span></div></div>
                     </div>
-
                     <div class="filter-stat-card border-l-4 border-l-purple-500">
-                        <span class="stat-label text-purple-600 dark:text-purple-400">Liều hiệu dụng (mSv)</span>
-                        <div class="stat-value-big text-purple-700 dark:text-purple-300" id="dEffMedian">0</div>
-                        <div class="text-[10px] text-purple-400 dark:text-purple-500 font-bold mb-3 uppercase tracking-wider" id="lblEffMedian">Median (50th)</div>
-                        
-                        <div class="stats-detail-box">
-                            <div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1">
-                                <span class="stats-row-label">Mean ± SD</span>
-                                <span class="stats-row-val text-purple-600 dark:text-purple-400 font-black"><span id="dEffMean">0</span> ± <span id="dEffSD">0</span></span>
-                            </div>
-                            <div class="stats-row">
-                                <span class="stats-row-label">75th</span>
-                                <span class="stats-row-val" id="dEffP75">0</span>
-                            </div>
-                        </div>
+                        <span class="stat-label text-purple-600 dark:text-purple-400">Liều hiệu dụng (mSv)</span><div class="stat-value-big text-purple-700 dark:text-purple-300" id="dEffMedian">0</div><div class="text-[10px] text-purple-400 dark:text-purple-500 font-bold mb-3 uppercase tracking-wider" id="lblEffMedian">Median (50th)</div>
+                        <div class="stats-detail-box"><div class="stats-row border-b border-dashed border-slate-300 dark:border-slate-600 pb-1 mb-1"><span class="stats-row-label">Mean ± SD</span><span class="stats-row-val text-purple-600 dark:text-purple-400 font-black"><span id="dEffMean">0</span> ± <span id="dEffSD">0</span></span></div><div class="stats-row"><span class="stats-row-label">75th</span><span class="stats-row-val" id="dEffP75">0</span></div></div>
                     </div>
                 </div>
 
@@ -459,27 +203,17 @@
                 <div class="glass-card overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs whitespace-nowrap md:whitespace-normal">
-                            <thead class="table-header sticky top-0 z-10 shadow-md">
-                                <tr id="tableHeaderRow">
-                                    <!-- Header injected via JS -->
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody" class="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
-                                <!-- Rows -->
-                            </tbody>
+                            <thead class="table-header sticky top-0 z-10 shadow-md"><tr id="tableHeaderRow"></tr></thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800"></tbody>
                         </table>
                     </div>
                     
-                    <!-- Pagination Footer -->
                     <div class="p-3 md:p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
                         <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] font-bold text-slate-400 uppercase">Hiển thị</span>
                                 <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500">
-                                    <option value="10">10</option>
-                                    <option value="20" selected>20</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
+                                    <option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option>
                                 </select>
                             </div>
                             <div class="h-4 w-px bg-slate-200 dark:bg-slate-700 hidden md:block"></div>
@@ -514,15 +248,9 @@
             <div class="p-4 md:p-6 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-900">
                 <div class="flex justify-between mb-4">
                      <span class="text-xs font-bold text-slate-500">Danh sách bệnh viện</span>
-                     <div class="flex gap-2">
-                        <button onclick="toggleAllMultiHosp(true)" class="text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</button>
-                        <span class="text-slate-300">|</span>
-                        <button onclick="toggleAllMultiHosp(false)" class="text-[10px] font-bold text-slate-400 hover:underline">Bỏ chọn</button>
-                     </div>
+                     <div class="flex gap-2"><button onclick="toggleAllMultiHosp(true)" class="text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</button><span class="text-slate-300">|</span><button onclick="toggleAllMultiHosp(false)" class="text-[10px] font-bold text-slate-400 hover:underline">Bỏ chọn</button></div>
                 </div>
-                <div id="multiHospList" class="space-y-2">
-                    <!-- Checkboxes will be injected here -->
-                </div>
+                <div id="multiHospList" class="space-y-2"></div>
             </div>
             <div class="p-4 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2 flex-shrink-0">
                 <button onclick="closeMultiHospModal()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-lg text-xs hover:bg-slate-200">Hủy</button>
@@ -537,10 +265,8 @@
         <div class="flex gap-2">
             <button onclick="openBulkEditModal()" id="btnBulkEdit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1.5 md:px-3 rounded-lg transition-all text-xs font-bold flex items-center gap-2" title="Sửa"><i data-lucide="edit" class="w-3 h-3"></i> <span class="hidden xs:inline">Sửa</span></button>
             <div class="w-px h-6 bg-slate-700 mx-1"></div>
-            
             <button onclick="swapSelectedHeightWeight()" class="bg-orange-500 hover:bg-orange-600 text-white px-2.5 py-1.5 md:px-3 rounded-lg transition-all text-xs font-bold flex items-center gap-2" title="Đảo Cân/Cao"><i data-lucide="arrow-left-right" class="w-3 h-3"></i> <span class="hidden xs:inline">Đảo Cân/Cao</span></button>
             <div class="w-px h-6 bg-slate-700 mx-1"></div>
-
             <button onclick="deleteSelected()" class="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1.5 md:px-3 rounded-lg transition-all text-xs font-bold flex items-center gap-2" title="Xóa"><i data-lucide="trash-2" class="w-3 h-3"></i> <span class="hidden xs:inline">Xóa</span></button>
             <div class="w-px h-6 bg-slate-700 mx-1"></div>
             <button onclick="clearSelection()" class="text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase whitespace-nowrap">Hủy</button>
@@ -566,10 +292,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Protocol</label>
                         <select id="eProt" class="w-full p-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-semibold outline-none focus:border-indigo-500">
-                            <option value="Head Routine">Head Routine (Sọ não)</option>
-                            <option value="Chest Routine">Chest Routine (Ngực)</option>
-                            <option value="Abdomen Routine">Abdomen Routine (Bụng)</option>
-                            <option value="Low Dose Lung">Low Dose Lung (Phổi liều thấp)</option>
+                            <option value="Head Routine">Head Routine (Sọ não)</option><option value="Chest Routine">Chest Routine (Ngực)</option><option value="Abdomen Routine">Abdomen Routine (Bụng)</option><option value="Low Dose Lung">Low Dose Lung (Phổi liều thấp)</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
@@ -578,11 +301,7 @@
                         <div class="col-span-1">
                             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Số lát cắt</label>
                             <select id="eSlice" class="w-full p-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 outline-none">
-                                <option value="">-- Chọn --</option>
-                                <option value="16 - 32 lát">16 - 32 lát</option>
-                                <option value="64 - 128 lát">64 - 128 lát</option>
-                                <option value="256 - 512 lát">256 - 512 lát</option>
-                                <option value="Máy 2 bóng (Dual Source)">Máy 2 bóng (Dual Source)</option>
+                                <option value="">-- Chọn --</option><option value="16 - 32 lát">16 - 32 lát</option><option value="64 - 128 lát">64 - 128 lát</option><option value="256 - 512 lát">256 - 512 lát</option><option value="Máy 2 bóng (Dual Source)">Máy 2 bóng (Dual Source)</option>
                             </select>
                         </div>
                     </div>
@@ -590,9 +309,7 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center border-b border-indigo-50 dark:border-indigo-900 pb-2">
                         <h4 class="text-xs font-black text-indigo-900 dark:text-indigo-300 uppercase">Thông tin bệnh nhân</h4>
-                        <button type="button" onclick="swapHeightWeight()" class="text-[10px] font-bold text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 px-2 py-1 rounded border border-orange-200 dark:border-orange-800/50 flex items-center gap-1 transition-colors">
-                            <i data-lucide="arrow-left-right" class="w-3 h-3"></i> Đảo Cân/Chiều cao
-                        </button>
+                        <button type="button" onclick="swapHeightWeight()" class="text-[10px] font-bold text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 px-2 py-1 rounded border border-orange-200 dark:border-orange-800/50 flex items-center gap-1 transition-colors"><i data-lucide="arrow-left-right" class="w-3 h-3"></i> Đảo Cân/Chiều cao</button>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-3">
@@ -624,61 +341,13 @@
             </div>
             <div class="p-4 md:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 <p class="text-xs text-slate-500 dark:text-slate-400">Bạn đang chọn <span id="bulkEditCount" class="font-bold text-indigo-600 dark:text-indigo-400">0</span> dòng. Chỉ nhập các trường muốn thay đổi.</p>
-                
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tên cơ sở đơn vị</label>
-                        <select id="beHosp" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white">
-                            <option value="">(Giữ nguyên)</option>
-                        </select>
-                    </div>
-
-                    <div class="col-span-2">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Protocol mới</label>
-                        <select id="beProt" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white">
-                            <option value="">(Giữ nguyên)</option>
-                            <option value="Head Routine">Head Routine (Sọ não)</option>
-                            <option value="Chest Routine">Chest Routine (Ngực)</option>
-                            <option value="Abdomen Routine">Abdomen Routine (Bụng)</option>
-                            <option value="Low Dose Lung">Low Dose Lung (Phổi liều thấp)</option>
-                        </select>
-                    </div>
-
-                    <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hãng máy</label>
-                        <select id="beManu" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white">
-                            <option value="">(Giữ nguyên)</option>
-                        </select>
-                    </div>
-
-                    <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Số lát cắt</label>
-                        <select id="beSlice" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white">
-                            <option value="">(Giữ nguyên)</option>
-                            <option value="16 - 32 lát">16 - 32 lát</option>
-                            <option value="64 - 128 lát">64 - 128 lát</option>
-                            <option value="256 - 512 lát">256 - 512 lát</option>
-                            <option value="Máy 2 bóng (Dual Source)">Máy 2 bóng (Dual Source)</option>
-                        </select>
-                    </div>
-
-                    <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Giới tính</label>
-                        <select id="beGender" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white">
-                            <option value="">(Giữ nguyên)</option>
-                            <option value="M">Nam</option>
-                            <option value="F">Nữ</option>
-                        </select>
-                    </div>
-                    
-                    <div class="col-span-1">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Modulation</label>
-                        <select id="beMod" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white">
-                            <option value="">(Giữ nguyên)</option>
-                            <option value="Có">Có (On)</option>
-                            <option value="Không">Không (Off)</option>
-                        </select>
-                    </div>
+                    <div class="col-span-2"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tên cơ sở đơn vị</label><select id="beHosp" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white"><option value="">(Giữ nguyên)</option></select></div>
+                    <div class="col-span-2"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Protocol mới</label><select id="beProt" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white"><option value="">(Giữ nguyên)</option><option value="Head Routine">Head Routine (Sọ não)</option><option value="Chest Routine">Chest Routine (Ngực)</option><option value="Abdomen Routine">Abdomen Routine (Bụng)</option><option value="Low Dose Lung">Low Dose Lung (Phổi liều thấp)</option></select></div>
+                    <div class="col-span-1"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hãng máy</label><select id="beManu" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white"><option value="">(Giữ nguyên)</option></select></div>
+                    <div class="col-span-1"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Số lát cắt</label><select id="beSlice" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white"><option value="">(Giữ nguyên)</option><option value="16 - 32 lát">16 - 32 lát</option><option value="64 - 128 lát">64 - 128 lát</option><option value="256 - 512 lát">256 - 512 lát</option><option value="Máy 2 bóng (Dual Source)">Máy 2 bóng (Dual Source)</option></select></div>
+                    <div class="col-span-1"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Giới tính</label><select id="beGender" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white"><option value="">(Giữ nguyên)</option><option value="M">Nam</option><option value="F">Nữ</option></select></div>
+                    <div class="col-span-1"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Modulation</label><select id="beMod" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-white"><option value="">(Giữ nguyên)</option><option value="Có">Có (On)</option><option value="Không">Không (Off)</option></select></div>
                 </div>
             </div>
             <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2">
@@ -696,9 +365,7 @@
                 <h3 class="text-sm md:text-base font-black uppercase tracking-tight flex items-center gap-2"><i data-lucide="building-2" class="w-4 h-4"></i> Cơ sở y tế tham gia</h3>
                 <button onclick="closeHospitalModal()" class="text-emerald-100 hover:text-white bg-emerald-500/30 p-1.5 rounded-lg transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <div class="p-0 max-h-[60vh] overflow-y-auto bg-white dark:bg-slate-800">
-                <ul id="hospitalList" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></ul>
-            </div>
+            <div class="p-0 max-h-[60vh] overflow-y-auto bg-white dark:bg-slate-800"><ul id="hospitalList" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></ul></div>
             <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-700 flex justify-end">
                 <button onclick="closeHospitalModal()" class="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 font-bold rounded-lg text-xs hover:bg-slate-100 dark:hover:bg-slate-600">Đóng</button>
             </div>
@@ -708,79 +375,38 @@
     <!-- Auth Modal -->
     <div id="authModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div id="loginFormContainer" class="bg-white dark:bg-slate-800 rounded-[2rem] w-full max-w-2xl shadow-2xl p-6 md:p-8 relative overflow-hidden animate-in zoom-in-95 duration-200 w-[95%] md:w-auto">
-             <button onclick="document.getElementById('authModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                <i data-lucide="x" class="w-6 h-6"></i>
-             </button>
-
-             <div class="flex justify-center mb-4">
-                <div class="w-12 h-12 md:w-16 md:h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                    <i data-lucide="shield-check" class="w-6 h-6 md:w-8 md:h-8 text-white"></i>
-                </div>
-             </div>
-
+             <button onclick="document.getElementById('authModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
+             <div class="flex justify-center mb-4"><div class="w-12 h-12 md:w-16 md:h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30"><i data-lucide="shield-check" class="w-6 h-6 md:w-8 md:h-8 text-white"></i></div></div>
              <h2 class="text-xl md:text-2xl font-black text-center text-slate-800 dark:text-white mb-6 md:mb-8">Đăng Nhập</h2>
-
              <div id="normalLoginForm">
                  <div class="space-y-4">
-                     <div>
-                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Email Tài Khoản</label>
-                         <input type="email" id="authEmail" class="w-full p-3 md:p-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-slate-800 dark:text-white" placeholder="name@hospital.com">
-                     </div>
-                     <div>
-                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Mật khẩu</label>
-                         <input type="password" id="authPassword" class="w-full p-3 md:p-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-slate-800 dark:text-white" placeholder="••••••••">
-                     </div>
-                     <div class="flex items-center">
-                         <input type="checkbox" id="rememberMe" class="custom-checkbox">
-                         <label for="rememberMe" class="ml-2 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer">Ghi nhớ đăng nhập</label>
-                     </div>
+                     <div><label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Email Tài Khoản</label><input type="email" id="authEmail" class="w-full p-3 md:p-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-slate-800 dark:text-white" placeholder="name@hospital.com"></div>
+                     <div><label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Mật khẩu</label><input type="password" id="authPassword" class="w-full p-3 md:p-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-slate-800 dark:text-white" placeholder="••••••••"></div>
+                     <div class="flex items-center"><input type="checkbox" id="rememberMe" class="custom-checkbox"><label for="rememberMe" class="ml-2 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer">Ghi nhớ đăng nhập</label></div>
                  </div>
-
-                 <button onclick="doEmailLogin()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 md:py-3.5 rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform active:scale-95 flex items-center justify-center gap-2 text-sm">
-                     VÀO HỆ THỐNG <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                 </button>
-
-                 <div class="text-center mt-4">
-                     <a href="#" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">Chưa có tài khoản? <span class="underline">Đăng ký ngay</span></a>
-                 </div>
-
-                 <div class="relative my-6">
-                     <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
-                     <div class="relative flex justify-center text-xs"><span class="px-2 bg-white dark:bg-slate-800 text-slate-400 font-bold uppercase">Hoặc</span></div>
-                 </div>
-
+                 <button onclick="doEmailLogin()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 md:py-3.5 rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform active:scale-95 flex items-center justify-center gap-2 text-sm">VÀO HỆ THỐNG <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+                 <div class="text-center mt-4"><a href="#" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">Chưa có tài khoản? <span class="underline">Đăng ký ngay</span></a></div>
+                 <div class="relative my-6"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200 dark:border-slate-700"></div></div><div class="relative flex justify-center text-xs"><span class="px-2 bg-white dark:bg-slate-800 text-slate-400 font-bold uppercase">Hoặc</span></div></div>
                  <button onclick="doGoogleLogin()" class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-200 font-bold py-3 md:py-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600 transition-all flex items-center justify-center gap-3 text-sm">
                     <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                     Tiếp tục với Google
                  </button>
-
-                 <div class="mt-6 text-center">
-                     <button onclick="toggleAdminForm()" class="text-[10px] font-black text-slate-300 hover:text-slate-500 dark:hover:text-slate-400 uppercase tracking-widest transition-colors">Đăng nhập Admin (Key)</button>
-                 </div>
+                 <div class="mt-6 text-center"><button onclick="toggleAdminForm()" class="text-[10px] font-black text-slate-300 hover:text-slate-500 dark:hover:text-slate-400 uppercase tracking-widest transition-colors">Đăng nhập Admin (Key)</button></div>
              </div>
-
              <div id="adminKeyForm" class="hidden animate-in slide-in-from-right duration-300">
-                <div class="mb-4">
-                     <button onclick="toggleAdminForm()" class="text-xs font-bold text-slate-500 flex items-center gap-1 hover:text-indigo-600"><i data-lucide="arrow-left" class="w-3 h-3"></i> Quay lại</button>
-                </div>
-                <div>
-                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Mã khóa Admin (Secret Key)</label>
-                     <input type="password" id="adminKeyInput" class="w-full p-3 md:p-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-800 dark:text-white" placeholder="Nhập mã khóa...">
-                </div>
-                <button onclick="doAdminKeyLogin()" class="w-full mt-6 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 md:py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm">
-                     XÁC THỰC ADMIN <i data-lucide="shield" class="w-4 h-4"></i>
-                </button>
+                <div class="mb-4"><button onclick="toggleAdminForm()" class="text-xs font-bold text-slate-500 flex items-center gap-1 hover:text-indigo-600"><i data-lucide="arrow-left" class="w-3 h-3"></i> Quay lại</button></div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Mã khóa Admin (Secret Key)</label><input type="password" id="adminKeyInput" class="w-full p-3 md:p-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-slate-800 dark:text-white" placeholder="Nhập mã khóa..."></div>
+                <button onclick="doAdminKeyLogin()" class="w-full mt-6 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 md:py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm">XÁC THỰC ADMIN <i data-lucide="shield" class="w-4 h-4"></i></button>
              </div>
         </div>
     </div>
 
     <!-- Toast -->
     <div id="toast" class="fixed bottom-6 right-6 p-4 bg-slate-800 dark:bg-slate-700 text-white rounded-xl shadow-2xl z-[120] transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-3">
-        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
-        <p id="toastMessage" class="text-xs font-bold"></p>
+        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i><p id="toastMessage" class="text-xs font-bold"></p>
     </div>
 
-    <!-- IMPORT MODULE ENTRY -->
+    <!-- ENTRY POINT -->
     <script type="module" src="./main.js"></script>
 </body>
 </html>
